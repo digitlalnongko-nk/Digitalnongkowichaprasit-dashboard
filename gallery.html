@@ -4,9 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     
+    <!-- 🚫 ป้องกันมือถือ (โดยเฉพาะ iOS) ขีดเส้นใต้ข้อความที่คิดว่าเป็นเบอร์โทร ที่อยู่ หรือวันที่ อัตโนมัติ -->
+    <meta name="format-detection" content="telephone=no, date=no, address=no, email=no">
+    
     <!-- 🖼️ Meta Tags สำหรับภาพปกเวลาแชร์ลิงก์หน้าคลังภาพ -->
     <meta property="og:title" content="ระบบคลังรูปภาพกิจกรรม รร.หนองโกวิชาประสิทธิ์พิทยาคม">
-    <meta property="og:description" content="ประมวลภาพกิจกรรมและผลงานต่างๆ ">
+    <meta property="og:description" content="ประมวลภาพกิจกรรมและผลงานต่างๆ ของโรงเรียน">
     <meta property="og:type" content="website">
     <meta property="og:image" content="https://lh3.googleusercontent.com/d/1XvvNNsIH3ir3ITQLc5oEqMA9xYptQMwV">
     <link rel="icon" href="https://lh3.googleusercontent.com/d/1XvvNNsIH3ir3ITQLc5oEqMA9xYptQMwV" type="image/x-icon">
@@ -42,6 +45,11 @@
             padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
         }
         
+        /* เพิ่มเติม: บังคับไม่ให้มีเส้นใต้ใน h1-h6 และ p เพื่อความชัวร์ */
+        h1, h2, h3, h4, h5, h6, p {
+            text-decoration: none !important;
+        }
+
         /* 🌟 ปรับให้กว้างเต็มหน้าจอ (100%) และเว้นขอบตามสัดส่วนจอ (vw) */
         .container { 
             width: 100%; 
@@ -144,6 +152,39 @@
         #toast { visibility: hidden; min-width: 250px; background: var(--accent); color: #fff; text-align: center; border-radius: 50px; padding: 14px 28px; position: fixed; z-index: 10000; left: 50%; bottom: 40px; transform: translateX(-50%); opacity: 0; transition: 0.4s; font-weight: 500; font-family: 'Prompt'; box-shadow: 0 10px 30px rgba(22, 101, 52, 0.3); }
         #toast.show { visibility: visible; opacity: 1; bottom: 50px; }
 
+        /* ⬆️ ปุ่มเลื่อนขึ้นบนสุด (Back to Top) */
+        #backToTopBtn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 9900;
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(22, 101, 52, 0.3);
+            transition: all 0.4s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(20px);
+        }
+        #backToTopBtn.show {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+        }
+        #backToTopBtn:hover {
+            background-color: #15803d;
+            transform: translateY(-5px);
+            box-shadow: 0 6px 20px rgba(22, 101, 52, 0.4);
+        }
+
         /* จัดระเบียบหน้าจอสำหรับมือถือ */
         @media (max-width: 600px) {
             .action-bar { flex-direction: column; align-items: flex-start; }
@@ -157,6 +198,14 @@
             
             .header-row { flex-direction: column; align-items: flex-start; }
             .search-container { max-width: 100%; }
+
+            /* ปรับขนาดปุ่มเลื่อนขึ้นบนสุดในมือถือ */
+            #backToTopBtn {
+                bottom: 20px;
+                right: 20px;
+                width: 45px;
+                height: 45px;
+            }
         }
         
         /* สไตล์โครงร่างรอโหลด (Skeleton) */
@@ -166,6 +215,11 @@
 </head>
 <body>
     <div id="toast"></div>
+
+    <!-- ⬆️ ปุ่มเลื่อนขึ้นบนสุด -->
+    <button id="backToTopBtn" onclick="scrollToTop()" title="กลับขึ้นบนสุด">
+        <span class="material-icons-outlined">arrow_upward</span>
+    </button>
 
     <!-- หน้าแรก: รวมอัลบั้ม -->
     <div id="home-view" class="container">
@@ -471,6 +525,21 @@
         function showHome() { document.getElementById('home-view').style.display = 'block'; document.getElementById('album-view').style.display = 'none'; window.scrollTo(0,0); }
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
         function showToast(m) { const t = document.getElementById('toast'); t.innerText = m; t.classList.add("show"); setTimeout(() => t.classList.remove("show"), 3000); }
+
+        // ฟังก์ชันสั่งเลื่อนหน้าจอขึ้นบนสุด
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // เช็คการเลื่อนหน้าจอ เพื่อซ่อน/แสดงปุ่มกลับขึ้นบน
+        window.addEventListener('scroll', () => {
+            const btn = document.getElementById("backToTopBtn");
+            if (window.scrollY > 300) {
+                btn.classList.add("show");
+            } else {
+                btn.classList.remove("show");
+            }
+        });
 
         window.addEventListener('keydown', e => { 
             if(document.getElementById('imageModal').style.display === 'flex') { 
