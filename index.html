@@ -3,6 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    
+    <!-- 🖼️ ส่วนที่ทำให้ภาพปกขึ้นเวลาแชร์ลิงก์ (Open Graph) จะทำงานได้สมบูรณ์ 100% บน Vercel -->
+    <meta property="og:title" content="ระบบศูนย์ดิจิทัลชุมชน รร.หนองโกวิชาประสิทธิ์พิทยาคม">
+    <meta property="og:description" content="ระบบรายงานสรุปผลการให้บริการ และกิจกรรมต่างๆ">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="https://lh3.googleusercontent.com/d/1YiB5wUDnO1Migy-dI8vRq0kdmGj5bHVR">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+
     <title>Smart School Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
@@ -235,12 +244,91 @@
     </div>
 
     <script>
+        // ⚠️⚠️⚠️ [ส่วนที่ต้องแก้ไขสำหรับ Vercel] นำลิงก์ CSV จาก Google Sheets มาใส่ในเครื่องหมายคำพูดด้านล่างนี้ ⚠️⚠️⚠️
+        const CSV_URLS = {
+            'Usage': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRZZibUzzgdZ-lCiuC2r9LdaYrjHZKnbUdOYCxJLDaIF4qUmxw8LuKX1FlXr2ADxHPNknSsiWTkncqJ/pub?gid=0&single=true&output=csv',
+            'Borrow': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRZZibUzzgdZ-lCiuC2r9LdaYrjHZKnbUdOYCxJLDaIF4qUmxw8LuKX1FlXr2ADxHPNknSsiWTkncqJ/pub?gid=559563872&single=true&output=csv',
+            'Electric': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRZZibUzzgdZ-lCiuC2r9LdaYrjHZKnbUdOYCxJLDaIF4qUmxw8LuKX1FlXr2ADxHPNknSsiWTkncqJ/pub?gid=1214972960&single=true&output=csv',
+            'Activity': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRZZibUzzgdZ-lCiuC2r9LdaYrjHZKnbUdOYCxJLDaIF4qUmxw8LuKX1FlXr2ADxHPNknSsiWTkncqJ/pub?gid=1343315254&single=true&output=csv',
+            'Staff': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRZZibUzzgdZ-lCiuC2r9LdaYrjHZKnbUdOYCxJLDaIF4qUmxw8LuKX1FlXr2ADxHPNknSsiWTkncqJ/pub?gid=552763500&single=true&output=csv'
+        };
+
+        // --- ระบบดึงข้อมูลใหม่แบบ Fetch API (ใช้แทน google.script.run) ---
+        async function fetchSheetData(sheetName) {
+            const url = CSV_URLS[sheetName];
+            if (!url || url.includes('ใส่_ลิงก์_CSV')) return [];
+            try {
+                const response = await fetch(url);
+                const csvText = await response.text();
+                return csvToJSON(csvText);
+            } catch (err) {
+                console.error("Error fetching " + sheetName, err);
+                return [];
+            }
+        }
+
+        // แปลงข้อมูล CSV จาก Google Sheets ให้เป็น JSON รูปแบบเดียวกับที่ใช้ใน GAS
+        function csvToJSON(csv) {
+            const lines = csv.split('\n');
+            const result = [];
+            if(lines.length <= 1) return result;
+            const headers = lines[0].split(',').map(h => h.replace(/^"|"$/g, '').trim());
+            
+            for (let i = 1; i < lines.length; i++) {
+                if(!lines[i].trim()) continue;
+                const obj = {};
+                let rowStr = lines[i];
+                let inQuotes = false; let currentVal = ""; let cols = [];
+                // ตัวแยกคอลัมน์ที่รองรับเครื่องหมายลูกน้ำในข้อความ (Comma inside quotes)
+                for(let char of rowStr) {
+                    if(char === '"') inQuotes = !inQuotes;
+                    else if(char === ',' && !inQuotes) { cols.push(currentVal.trim()); currentVal = ""; }
+                    else currentVal += char;
+                }
+                cols.push(currentVal.trim());
+                
+                headers.forEach((header, index) => {
+                    obj[header] = cols[index] ? cols[index].replace(/^"|"$/g, '') : "";
+                });
+                result.push(obj);
+            }
+            return result;
+        }
+
+        async function fetchAllData() {
+            document.getElementById('mainLoader').classList.remove('hidden');
+            try {
+                // โหลดทุกแผ่นงานพร้อมกันเพื่อความรวดเร็ว
+                const [usage, borrow, electric, activity, staff] = await Promise.all([
+                    fetchSheetData('Usage'), fetchSheetData('Borrow'), fetchSheetData('Electric'), fetchSheetData('Activity'), fetchSheetData('Staff')
+                ]);
+                
+                let data = { usage, borrow, electric, activity, staff };
+                
+                // ประมวลผลข้อมูลต่างๆ เหมือนที่ทำใน GAS
+                data.electric = processElectricData(data.electric);
+                globalDataStore = data;
+                
+                renderUsage(data.usage);
+                renderBorrow(data.borrow);
+                renderElectric(data.electric);
+                renderActivity(data.activity);
+                renderStaff(data.staff);
+                updateCharts(data);
+            } catch (err) {
+                alert("ไม่สามารถซิงค์ข้อมูลได้: โปรดตรวจสอบการเผยแพร่ลิงก์ CSV จาก Google Sheets อีกครั้ง (" + err.message + ")");
+            } finally {
+                document.getElementById('mainLoader').classList.add('hidden');
+            }
+        }
+
         /* --- ฟังก์ชันสลับหน้าหลัก (Landing <-> Dashboard) --- */
         function enterDashboard() {
             document.getElementById('landing-view').classList.add('hidden');
             document.getElementById('landing-view').classList.remove('flex');
             document.getElementById('dashboard-view').classList.remove('hidden');
             document.getElementById('dashboard-view').classList.add('flex');
+            fetchAllData(); // โหลดข้อมูลอัตโนมัติเมื่อเข้าหน้า Dashboard
         }
 
         function enterLanding() {
@@ -250,7 +338,7 @@
             document.getElementById('landing-view').classList.add('flex');
         }
 
-        /* --- ฟังก์ชันใหม่สำหรับเปิด/ปิดเมนูในมือถือ --- */
+        /* --- ฟังก์ชันสำหรับเปิด/ปิดเมนูในมือถือ --- */
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('sidebarOverlay');
@@ -258,7 +346,7 @@
             overlay.classList.toggle('active');
         }
 
-        /* --- ฟังก์ชันเดิมทั้งหมด (ห้ามลบ) คงไว้เหมือนเดิมทุกประการ --- */
+        /* --- ฟังก์ชันเดิมทั้งหมด คงไว้เหมือนเดิม --- */
         const titles = { 'usage': 'รายงานสรุปผลการเข้าใช้งาน', 'borrow': 'รายงานสรุปผลสถานะการยืม-คืนอุปกรณ์', 'electric': 'รายงานสรุปผลการใช้งานไฟฟ้า', 'activity': 'รายงานสรุปผลคลังรูปภาพกิจกรรม', 'staff': 'รายงานสรุปผลการปฏิบัติงาน' };
         const RATE = 5.5; 
         const WEB_APP_LINK = "https://script.google.com/macros/s/AKfycbyEiHZWx58ROSmCQ1j25RRoXdxRSZlBC5c7ySwp6LJC6RZ8xKrk5IH6O-NTicExsEYvHg/exec";
@@ -285,27 +373,6 @@
             if(window.innerWidth < 1024) toggleSidebar();
             
             filterTables();
-        }
-
-        function fetchAllData() {
-            document.getElementById('mainLoader').classList.remove('hidden');
-            google.script.run
-                .withSuccessHandler(function(data) {
-                    data.electric = processElectricData(data.electric);
-                    globalDataStore = data;
-                    renderUsage(data.usage);
-                    renderBorrow(data.borrow);
-                    renderElectric(data.electric);
-                    renderActivity(data.activity);
-                    renderStaff(data.staff);
-                    updateCharts(data);
-                    document.getElementById('mainLoader').classList.add('hidden');
-                })
-                .withFailureHandler(function(err) {
-                    document.getElementById('mainLoader').classList.add('hidden');
-                    alert("ไม่สามารถซิงค์ข้อมูลได้: " + err);
-                })
-                .getAllData();
         }
 
         function processElectricData(rawElectric) {
@@ -458,7 +525,6 @@
 
         function emptyRow(cols) { return `<tr><td colspan="${cols}" class="text-center text-green-100 py-24 italic font-light tracking-widest text-xs uppercase">No Record Found</td></tr>`; }
 
-        window.addEventListener('DOMContentLoaded', fetchAllData);
     </script>
 </body>
 </html>
