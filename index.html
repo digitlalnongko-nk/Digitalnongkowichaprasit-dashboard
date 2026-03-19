@@ -12,6 +12,10 @@
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     <link rel="icon" href="https://lh3.googleusercontent.com/d/1Uj8sfOEzYJ5btXRIA2ixgoWwYTJvzNLY" type="image/x-icon">
+    
+    <!-- 🚫 ป้องกันมือถือ (โดยเฉพาะ iOS) แปลงข้อความอัตโนมัติ -->
+    <meta name="format-detection" content="telephone=no, date=no, address=no, email=no">
+
     <title> ระบบศูนย์ดิจิทัลชุมชน รร.หนองโกวิชาประสิทธิ์พิทยาคม </title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
@@ -27,6 +31,22 @@
             -webkit-tap-highlight-color: transparent; 
             padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
         }
+
+        /* 🚫 บังคับปิดเส้นใต้มั่วๆ ขั้นเด็ดขาดสำหรับตัวหนังสือทุกประเภท */
+        h1, h2, h3, h4, h5, h6, p, span, td, th, a, div {
+            text-decoration: none !important;
+        }
+
+        /* 🚫 จัดการ Safari iOS ที่แอบแทรกลิงก์ใส่ตัวเลขและวันที่แบบซ่อนรูป */
+        a[x-apple-data-detectors] {
+            color: inherit !important;
+            text-decoration: none !important;
+            font-size: inherit !important;
+            font-family: inherit !important;
+            font-weight: inherit !important;
+            line-height: inherit !important;
+        }
+
         .nav-item { cursor: pointer; transition: all 0.2s ease; border-radius: 20px; }
         .nav-item.active { background-color: #D8F5D8; color: #166534; font-weight: 600; border: 1px solid #bbf7bb; }
         .nav-item:hover:not(.active) { background-color: #f0fdf4; }
