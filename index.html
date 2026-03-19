@@ -4,24 +4,36 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     
-    <!-- 🖼️ ส่วนที่ทำให้ภาพปกขึ้นเวลาแชร์ลิงก์ (Open Graph) จะทำงานได้สมบูรณ์ 100% บน Vercel -->
-    <meta property="og:title" content="ระบบศูนย์ดิจิทัลชุมชน รร.หนองโกวิชาประสิทธิ์พิทยาคม">
-    <meta property="og:description" content="ระบบรายงานสรุปผลการให้บริการ และกิจกรรมต่างๆ">
-    <meta property="og:type" content="website">
-    <meta property="og:image" content="https://lh3.googleusercontent.com/d/1YiB5wUDnO1Migy-dI8vRq0kdmGj5bHVR">
-    <meta property="og:image:width" content="1200">
-    <meta property="og:image:height" content="630">
-    <link rel="icon" href="https://lh3.googleusercontent.com/d/1Uj8sfOEzYJ5btXRIA2ixgoWwYTJvzNLY" type="image/x-icon">
-    
-    <!-- 🚫 ป้องกันมือถือ (โดยเฉพาะ iOS) แปลงข้อความอัตโนมัติ -->
+    <!-- 🚫 ป้องกันมือถือ (โดยเฉพาะ iOS) แปลงข้อความและขีดเส้นใต้อัตโนมัติ -->
     <meta name="format-detection" content="telephone=no, date=no, address=no, email=no">
 
+    <!-- 🖼️ Meta Tags สำหรับภาพปกเวลาแชร์ลิงก์ (Open Graph) -->
+    <meta property="og:url" content="https://smartdigitalnongko-dashboard.vercel.app/">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="ระบบศูนย์ดิจิทัลชุมชน รร.หนองโกวิชาประสิทธิ์พิทยาคม">
+    <meta property="og:description" content="ระบบรายงานสรุปผลการให้บริการ และกิจกรรมต่างๆ">
+    <!-- ⚠️ เปลี่ยนมาเรียกใช้ภาพ cover.jpg ที่อยู่ใน Vercel โดยตรง (ห้ามใช้ลิงก์ Google Drive) -->
+    <meta property="og:image" content="https://smartdigitalnongko-dashboard.vercel.app/cover.jpg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+
+    <!-- Twitter / LINE Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta property="twitter:domain" content="smartdigitalnongko-dashboard.vercel.app">
+    <meta property="twitter:url" content="https://smartdigitalnongko-dashboard.vercel.app/">
+    <meta name="twitter:title" content="ระบบศูนย์ดิจิทัลชุมชน รร.หนองโกวิชาประสิทธิ์พิทยาคม">
+    <meta name="twitter:description" content="ระบบรายงานสรุปผลการให้บริการ และกิจกรรมต่างๆ">
+    <meta name="twitter:image" content="https://smartdigitalnongko-dashboard.vercel.app/cover.jpg">
+
+    <link rel="icon" href="https://lh3.googleusercontent.com/d/1Uj8sfOEzYJ5btXRIA2ixgoWwYTJvzNLY" type="image/x-icon">
     <title> ระบบศูนย์ดิจิทัลชุมชน รร.หนองโกวิชาประสิทธิ์พิทยาคม </title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
     <style> 
         /* เพิ่ม padding safe-area เพื่อไม่ให้เนื้อหาจมขอบจอมือถือ iPhone */
         body { 
@@ -33,10 +45,8 @@
         }
 
         /* 🚫 บังคับปิดเส้นใต้มั่วๆ ขั้นเด็ดขาดสำหรับตัวหนังสือทุกประเภท */
-        h1, h2, h3, h4, h5, h6, p, span, td, th, a, div {
-            text-decoration: none !important;
-        }
-
+        *, ::before, ::after { text-decoration: none !important; }
+        
         /* 🚫 จัดการ Safari iOS ที่แอบแทรกลิงก์ใส่ตัวเลขและวันที่แบบซ่อนรูป */
         a[x-apple-data-detectors] {
             color: inherit !important;
