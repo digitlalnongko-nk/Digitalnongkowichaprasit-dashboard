@@ -153,6 +153,10 @@
             .header-row { flex-direction: column; align-items: flex-start; }
             .search-container { max-width: 100%; }
         }
+        
+        /* สไตล์โครงร่างรอโหลด (Skeleton) */
+        .skeleton { background: #eee; background: linear-gradient(110deg, #ececec 8%, #f5f5f5 18%, #ececec 33%); background-size: 200% 100%; animation: 1.5s shine linear infinite; border-radius: 16px; width: 100%; }
+        @keyframes shine { to { background-position-x: -200%; } }
     </style>
 </head>
 <body>
@@ -169,7 +173,7 @@
             <div class="hero-overlay"></div>
             <div class="hero-content">
                 <p style="letter-spacing: 2px; font-size: 12px; margin-bottom: 8px; opacity: 0.9; font-weight: 600;">GALLERY & MEMORIES</p>
-                <h2 style="margin: 0; font-weight: 600;">คลังรูปภาพกิจกรรม</h2>
+                <h2 id="home-hero-text" style="margin: 0; font-weight: 600;">กำลังซิงค์ข้อมูล...</h2>
                 <p style="margin: 5px 0 0 0; font-size: clamp(14px, 2vw, 18px); opacity: 0.8; font-weight: 300;">ศูนย์ดิจิทัลชุมชน รร.หนองโกวิชาประสิทธิ์พิทยาคม</p>
             </div>
         </div>
@@ -206,7 +210,7 @@
                 <p id="album-details-text" style="color:var(--icon-dark); font-size:15px; margin-top:8px; line-height:1.6; font-weight: 300;"></p>
             </div>
             <div class="action-icons">
-                <div class="action-item" onclick="confirmDownload()"><span class="material-icons-outlined">file_download</span> โหลดทั้งหมด</div>
+                <div class="action-item" onclick="confirmDownload()"><span class="material-icons-outlined">file_download</span> โหลดทั้งหมด (ZIP)</div>
                 <div class="action-item" onclick="confirmShare()"><span class="material-icons-outlined">share</span> แชร์อัลบั้ม</div>
             </div>
         </div>
@@ -220,11 +224,14 @@
         <div class="confirm-popup">
             <span class="material-icons-outlined close-mini" onclick="closeModal('dlModal')">close</span>
             <div style="background: var(--accent-light); width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; color: var(--accent);">
-                <span class="material-icons-outlined" style="font-size: 30px;">info</span>
+                <span class="material-icons-outlined" style="font-size: 30px;">folder_zip</span>
             </div>
-            <h3 style="margin: 0; font-size: 20px; color: var(--text);">การดาวน์โหลดรูปภาพ</h3>
-            <p style="font-size: 14px; color: var(--icon-dark); margin: 15px 0; line-height: 1.6;">เนื่องจากรูปภาพถูกจัดเก็บแบบความละเอียดสูง (High-Res)<br><b>แนะนำให้กดเข้าไปดูรูปที่ต้องการ แล้วกดปุ่ม "ดาวน์โหลดรูปภาพนี้" ทีละภาพ</b> เพื่อป้องกันข้อผิดพลาดครับ</p>
-            <button onclick="closeModal('dlModal')" class="btn-minimal" style="width: 100%; margin-top: 10px;">เข้าใจแล้ว</button>
+            <h3 style="margin: 0; font-size: 20px; color: var(--text);">ยืนยันการดาวน์โหลด</h3>
+            <p style="font-size: 14px; color: var(--icon-dark); margin: 15px 0; line-height: 1.6;">ต้องการดาวน์โหลดรูปภาพทั้งหมดในอัลบั้มนี้<br>เป็นไฟล์ (.ZIP) หรือไม่?</p>
+            <div style="display:flex; gap:10px; margin-top:20px;">
+                <button onclick="closeModal('dlModal')" style="flex:1; padding:12px; background: #f3f4f6; color: #4b5563; border:none; border-radius:16px; cursor:pointer; font-family: 'Prompt';">ยกเลิก</button>
+                <button onclick="executeZipDownload()" style="flex:1; padding:12px; background:var(--accent); color:white; border:none; border-radius:16px; cursor:pointer; font-family: 'Prompt';">ตกลง</button>
+            </div>
         </div>
     </div>
 
@@ -252,100 +259,109 @@
 
     <script>
         // =========================================================================
-        // 🌟 ใส่ข้อมูลอัลบั้มและรูปภาพของคุณครูได้ที่นี่ (แก้เฉพาะตรงนี้ได้เลยครับ) 🌟
+        // ⚠️ นำลิงก์ Web App (GAS) ของ "คลังรูปภาพ" มาใส่ในช่องนี้ ⚠️
         // =========================================================================
-        const GALLERY_DATA = [
-            {
-                id: "album-01",
-                name: "กิจกรรมทัศนศึกษา ประจำปี 2568",
-                date: "12 กุมภาพันธ์ 2568",
-                details: "ประมวลภาพบรรยากาศการไปทัศนศึกษาของนักเรียน เพื่อเปิดโลกการเรียนรู้นอกห้องเรียน",
-                coverImage: "https://lh3.googleusercontent.com/d/1mlaNnvlym7D8GBJRA0oPuGo5JdMKBtSp", // ใส่ลิงก์ภาพหน้าปก
-                images: [
-                    "https://lh3.googleusercontent.com/d/1XvvNNsIH3ir3ITQLc5oEqMA9xYptQMwV", // ใส่ลิงก์รูปที่ 1
-                    "https://lh3.googleusercontent.com/d/1mlaNnvlym7D8GBJRA0oPuGo5JdMKBtSp", // ใส่ลิงก์รูปที่ 2
-                    // เพิ่มลิงก์รูปภาพอื่นๆ ในอัลบั้มนี้ได้เรื่อยๆ ครับ
-                ]
-            },
-            {
-                id: "album-02",
-                name: "งานกีฬาสี โรงเรียนหนองโกวิชาประสิทธิ์พิทยาคม",
-                date: "25 ธันวาคม 2567",
-                details: "ภาพบรรยากาศความสนุกสนานและสามัคคีในงานกีฬาสีประจำปี",
-                coverImage: "https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?q=80&w=800",
-                images: [
-                    "https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?q=80&w=1200",
-                    "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=1200",
-                    "https://images.unsplash.com/photo-1511632765486-a01980e01a18?q=80&w=1200",
-                    "https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=1200"
-                ]
-            }
-        ];
-        // =========================================================================
-
+        const GAS_API_URL = "https://script.google.com/macros/s/AKfycbyEiHZWx58ROSmCQ1j25RRoXdxRSZlBC5c7ySwp6LJC6RZ8xKrk5IH6O-NTicExsEYvHg/exec"; 
+        
         let currentAlbumImages = [];
         let currentIndex = 0;
+        let isDownloading = false;
 
-        function init() {
-            if (GALLERY_DATA.length > 0) {
-                document.getElementById('home-hero-bg').style.backgroundImage = `url('${GALLERY_DATA[0].coverImage}')`;
-            }
-
+        async function init() {
             const list = document.getElementById('album-list');
-            list.innerHTML = '';
+            // โชว์โครงโหลด (Skeleton) ระหว่างรอข้อมูล
+            list.innerHTML = ''; 
+            for(let i=0; i<6; i++) { list.innerHTML += `<div class="skeleton" style="height: 250px;"></div>`; }
             
-            if (GALLERY_DATA.length === 0) {
-                list.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: #9ca3af; padding: 50px;">ยังไม่มีอัลบั้มกิจกรรม</div>';
-                return;
-            }
+            try {
+                // พยายามดึงภาพหน้าปก
+                try {
+                    const resHero = await fetch(GAS_API_URL + "?action=getRandomHero");
+                    const hero = await resHero.json();
+                    if(hero && hero.url) {
+                        document.getElementById('home-hero-bg').style.backgroundImage = `url('${hero.url}')`; 
+                        document.getElementById('home-hero-text').innerText = hero.activityName || "คลังรูปภาพกิจกรรม";
+                    } else {
+                        document.getElementById('home-hero-text').innerText = "คลังรูปภาพกิจกรรม";
+                    }
+                } catch(e) { document.getElementById('home-hero-text').innerText = "คลังรูปภาพกิจกรรม"; }
 
-            GALLERY_DATA.forEach(album => {
-                const card = document.createElement('div'); 
-                card.className = 'album-card'; 
-                card.setAttribute('data-name', album.name.toLowerCase());
-                card.onclick = () => openAlbum(album);
+                // โหลดรายการอัลบั้ม
+                const response = await fetch(GAS_API_URL + "?action=getAlbums");
+                const albums = await response.json();
                 
-                card.innerHTML = `
-                    <img src="${album.coverImage}" alt="${album.name}" loading="lazy">
-                    <div style="padding: 20px 25px;">
-                        <p style="margin: 0 0 5px 0; font-size: 12px; color: var(--accent); font-weight: 600;">${album.date}</p>
-                        <h3 style="margin:0; font-size:18px; font-weight:600; color: var(--text); line-height: 1.4;">${album.name}</h3>
-                    </div>`;
-                list.appendChild(card);
-            });
+                list.innerHTML = '';
+                if (!albums || albums.length === 0) {
+                    list.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: #9ca3af; padding: 50px;">ยังไม่มีอัลบั้มกิจกรรม</div>';
+                    return;
+                }
+
+                albums.forEach(album => {
+                    const card = document.createElement('div'); 
+                    card.className = 'album-card'; 
+                    card.setAttribute('data-name', album.name.toLowerCase());
+                    card.onclick = () => openAlbum(album);
+                    
+                    // ป้องกัน error ถ้าไม่มีวันที่
+                    const albumDate = album.date || '';
+                    
+                    card.innerHTML = `
+                        <img src="https://drive.google.com/thumbnail?id=${album.coverId}&sz=w800" alt="${album.name}" loading="lazy">
+                        <div style="padding: 20px 25px;">
+                            <p style="margin: 0 0 5px 0; font-size: 12px; color: var(--accent); font-weight: 600;">${albumDate}</p>
+                            <h3 style="margin:0; font-size:18px; font-weight:600; color: var(--text); line-height: 1.4;">${album.name}</h3>
+                        </div>`;
+                    list.appendChild(card);
+                });
+            } catch (err) {
+                console.error("Error fetching albums:", err);
+                list.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color:#ef4444; padding:50px;">ไม่สามารถดึงข้อมูลได้ โปรดตรวจสอบการตั้งค่า Google Apps Script (API)</p>';
+            }
         }
 
-        function openAlbum(album) {
+        async function openAlbum(album) {
             document.getElementById('home-view').style.display = 'none'; 
             document.getElementById('album-view').style.display = 'block';
             window.scrollTo(0,0);
             
             document.getElementById('hero-text').innerText = album.name; 
-            document.getElementById('hero-date').innerText = album.date;
+            document.getElementById('hero-date').innerText = album.date || '';
             document.getElementById('album-title-sub').innerText = album.name; 
             document.getElementById('album-details-text').innerText = album.details || '';
-            document.getElementById('hero-bg').style.backgroundImage = `url('${album.coverImage}')`;
+            document.getElementById('hero-bg').style.backgroundImage = `url('https://drive.google.com/thumbnail?id=${album.coverId}&sz=w1600')`;
             
-            currentAlbumImages = album.images || [];
             const container = document.getElementById('photo-container');
+            // โชว์โครงโหลด (Skeleton) สำหรับรูป
             container.innerHTML = ''; 
+            for(let i=0; i<8; i++) { container.innerHTML += `<div class="skeleton" style="aspect-ratio: 4/3;"></div>`; }
+            
+            try {
+                const response = await fetch(GAS_API_URL + "?action=getImages&folderId=" + album.folderId);
+                const images = await response.json();
+                
+                currentAlbumImages = images; 
+                container.innerHTML = '';
 
-            if (currentAlbumImages.length === 0) {
-                container.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: #9ca3af; padding: 50px;">ไม่มีรูปภาพในอัลบั้มนี้</div>';
-                return;
+                if (currentAlbumImages.length === 0) {
+                    container.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: #9ca3af; padding: 50px;">ไม่มีรูปภาพในโฟลเดอร์นี้</div>';
+                    return;
+                }
+
+                images.forEach((img, idx) => {
+                    const item = document.createElement('div'); 
+                    item.className = 'grid-item';
+                    item.onclick = () => openLightbox(idx);
+                    item.innerHTML = `
+                        <img src="${img.url}" loading="lazy">
+                        <div class="img-action-container">
+                            <div class="mini-btn" onclick="event.stopPropagation(); startDownload('${img.downloadUrl || img.url}')"><span class="material-icons-outlined">file_download</span></div>
+                        </div>`;
+                    container.appendChild(item);
+                });
+            } catch (err) {
+                console.error("Error fetching images:", err);
+                container.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color:#ef4444; padding:50px;">ไม่สามารถโหลดรูปภาพได้</p>';
             }
-
-            currentAlbumImages.forEach((imgUrl, idx) => {
-                const item = document.createElement('div'); 
-                item.className = 'grid-item';
-                item.onclick = () => openLightbox(idx);
-                item.innerHTML = `
-                    <img src="${imgUrl}" loading="lazy">
-                    <div class="img-action-container">
-                        <div class="mini-btn" onclick="event.stopPropagation(); startDownload('${imgUrl}')"><span class="material-icons-outlined">file_download</span></div>
-                    </div>`;
-                container.appendChild(item);
-            });
         }
 
         function filterAlbums(q) { 
@@ -365,15 +381,76 @@
             document.body.style.overflow = 'auto'; 
         }
         function updateLightbox() { 
-            document.getElementById('lightboxImg').src = currentAlbumImages[currentIndex]; 
+            document.getElementById('lightboxImg').src = currentAlbumImages[currentIndex].url || currentAlbumImages[currentIndex]; 
             document.getElementById('imgCounter').innerText = `${currentIndex + 1} / ${currentAlbumImages.length}`; 
         }
         function nextImage() { currentIndex = (currentIndex + 1) % currentAlbumImages.length; updateLightbox(); }
         function prevImage() { currentIndex = (currentIndex - 1 + currentAlbumImages.length) % currentAlbumImages.length; updateLightbox(); }
 
         function startDownload(url) { window.open(url, '_blank'); }
-        function triggerDownload() { startDownload(currentAlbumImages[currentIndex]); }
+        function triggerDownload() { 
+            const url = currentAlbumImages[currentIndex].downloadUrl || currentAlbumImages[currentIndex].url || currentAlbumImages[currentIndex];
+            startDownload(url); 
+        }
         function confirmDownload() { document.getElementById('dlModal').style.display = 'flex'; }
+        
+        async function executeZipDownload() { 
+            if(isDownloading) return;
+            closeModal('dlModal'); 
+            
+            const t = document.getElementById('toast');
+            t.innerText = "กำลังเชื่อมต่อระบบดาวน์โหลด...";
+            t.classList.add("show");
+            isDownloading = true;
+            
+            try {
+                const zip = new JSZip();
+                let successCount = 0;
+                const total = currentAlbumImages.length;
+
+                for(let i = 0; i < total; i++) {
+                    t.innerText = `กำลังดึงภาพและบีบอัด (${i+1}/${total})...`;
+                    try {
+                        let fileId = "";
+                        const imgUrl = currentAlbumImages[i].url || currentAlbumImages[i];
+                        if (imgUrl.includes('id=')) {
+                            fileId = imgUrl.split('id=')[1].split('&')[0];
+                        }
+
+                        if (fileId) {
+                            // ให้ Vercel ดึงข้อมูลรูปภาพ (Base64) จาก Google Script API 
+                            const response = await fetch(GAS_API_URL + "?action=getBase64&fileId=" + fileId);
+                            const json = await response.json();
+                            const base64Data = json.data;
+                            
+                            if (base64Data) {
+                                const fileName = currentAlbumImages[i].fileName || `image_${i+1}.jpg`;
+                                zip.file(fileName, base64Data, {base64: true});
+                                successCount++;
+                            }
+                        }
+                    } catch (e) {
+                        console.error("ดึงภาพล้มเหลว", i, e);
+                    }
+                }
+
+                if(successCount === 0) throw new Error("ไม่สามารถดึงรูปภาพได้");
+
+                t.innerText = "กำลังแพ็คไฟล์ ZIP ขั้นตอนสุดท้าย... (รอสักครู่)";
+                const content = await zip.generateAsync({type:"blob"});
+                saveAs(content, document.getElementById('hero-text').innerText + ".zip");
+                
+                t.innerText = "ดาวน์โหลดสำเร็จ!";
+                setTimeout(() => t.classList.remove("show"), 3000);
+
+            } catch (error) {
+                console.error(error);
+                t.innerText = "เกิดข้อผิดพลาด กรุณาดาวน์โหลดทีละรูปครับ";
+                setTimeout(() => t.classList.remove("show"), 3000);
+            } finally {
+                isDownloading = false;
+            }
+        }
         
         function confirmShare() { 
             document.getElementById('shareUrlDisplay').innerText = window.location.href; 
@@ -402,3 +479,41 @@
     </script>
 </body>
 </html>
+```
+
+### ⚠️ **ข้อควรระวัง (สำคัญมาก)** ⚠️
+เพื่อให้ Vercel สามารถอ่านโฟลเดอร์ใน Google Drive ของคุณครูได้ คุณครูต้องเข้าไปเปลี่ยนโค้ดใน **"Google Apps Script ฝั่งระบบคลังรูปภาพ"** ด้วยนะครับ (ที่เป็นลิงก์ `.../exec` อันเดิม) โดยให้ลบฟังก์ชัน `doGet` อันเก่าออก แล้วเอาโค้ดนี้ไปวางแทนครับ:
+
+```javascript
+// เปลี่ยน doGet เดิมให้ทำหน้าที่เป็น API รับส่งข้อมูล JSON แทนการสร้างเว็บ
+function doGet(e) {
+  if (e && e.parameter && e.parameter.action) {
+    var action = e.parameter.action;
+
+    // 1. ดึงข้อมูลรายชื่ออัลบั้มทั้งหมด (เชื่อมกับฟังก์ชันเดิมของคุณครู)
+    if (action === 'getAlbums') {
+      return ContentService.createTextOutput(JSON.stringify(getAlbumData()))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // 2. ดึงรูปภาพในอัลบั้มนั้นๆ (เชื่อมกับฟังก์ชันเดิมของคุณครู)
+    if (action === 'getImages') {
+      return ContentService.createTextOutput(JSON.stringify(getImagesFromFolder(e.parameter.folderId)))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // 3. ดึงไฟล์ภาพเพื่อแพ็คไฟล์ ZIP
+    if (action === 'getBase64') {
+      return ContentService.createTextOutput(JSON.stringify({ data: getFileBase64(e.parameter.fileId) }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    // 4. สุ่มรูปภาพหน้าปก
+    if (action === 'getRandomHero') {
+      return ContentService.createTextOutput(JSON.stringify(getRandomHero()))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+  }
+
+  return ContentService.createTextOutput("Gallery API is Online.");
+}
