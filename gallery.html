@@ -148,8 +148,13 @@
         @media (max-width: 600px) {
             .action-bar { flex-direction: column; align-items: flex-start; }
             .action-icons { width: 100%; justify-content: flex-start; }
-            .btn-view-gallery { width: 100%; text-align: center; border-color: rgba(255,255,255,0.5); margin-top: 15px;}
-            .hero-section-content { flex-direction: column; align-items: flex-start; }
+            
+            /* 🌟 ปรับแก้ Layout หน้าปกสำหรับมือถือที่มีชื่ออัลบั้มยาวๆ */
+            .home-hero, .hero-section { height: auto; min-height: 380px; padding-top: 50px; }
+            .hero-section-content { flex-direction: column; align-items: flex-start; gap: 15px; padding: 25px 5vw; }
+            .hero-section-content h1 { font-size: 22px; line-height: 1.4; }
+            .btn-view-gallery { width: 100%; text-align: center; border-color: rgba(255,255,255,0.6); margin-top: 10px; box-sizing: border-box; }
+            
             .header-row { flex-direction: column; align-items: flex-start; }
             .search-container { max-width: 100%; }
         }
