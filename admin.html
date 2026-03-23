@@ -31,6 +31,7 @@
 </head>
 <body class="min-h-screen flex flex-col items-center justify-center p-4">
 
+    <!-- 🔒 โซนล็อกอิน -->
     <div id="loginZone" class="w-full max-w-sm card p-8 text-center animate-[fadeIn_0.5s_ease-out]">
         <div class="w-20 h-20 bg-green-100 text-green-700 rounded-full flex items-center justify-center mx-auto mb-6">
             <i class="ph ph-shield-check text-4xl"></i>
@@ -49,7 +50,7 @@
         <a href="index.html" class="block mt-6 text-xs text-gray-400 hover:text-gray-600 underline"><i class="ph ph-arrow-left"></i> กลับหน้ารายงานสรุปผล</a>
     </div>
 
-    <!-- 📝 โซนกรอกข้อมูล (ซ่อนไว้ก่อน) -->
+    <!-- 📝 โซนกรอกข้อมูลหลัก -->
     <div id="adminZone" class="hidden w-full max-w-2xl">
         <div class="flex items-center justify-between mb-4">
             <div>
@@ -61,18 +62,19 @@
             </button>
         </div>
 
-        <!-- แถบเมนู (Tabs) เลื่อนซ้ายขวาได้ -->
+        <!-- 🌟 แถบเมนู 6 หัวข้อ เลื่อนซ้ายขวาได้ -->
         <div class="flex overflow-x-auto gap-2 pb-2 mb-4 hide-scrollbar">
             <button class="tab-btn active flex items-center" onclick="switchTab('usage', this)"><i class="ph ph-users mr-1.5"></i> ผู้เข้าใช้งาน</button>
             <button class="tab-btn flex items-center" onclick="switchTab('borrow', this)"><i class="ph ph-archive mr-1.5"></i> ยืม-คืน</button>
             <button class="tab-btn flex items-center" onclick="switchTab('electric', this)"><i class="ph ph-plug mr-1.5"></i> ไฟฟ้า</button>
             <button class="tab-btn flex items-center" onclick="switchTab('activity', this)"><i class="ph ph-images-square mr-1.5"></i> กิจกรรม</button>
+            <button class="tab-btn flex items-center" onclick="switchTab('gallery', this)"><i class="ph ph-folder-star mr-1.5"></i> แกลอรีรูปภาพ</button>
             <button class="tab-btn flex items-center" onclick="switchTab('staff', this)"><i class="ph ph-user-circle-gear mr-1.5"></i> เจ้าหน้าที่</button>
         </div>
 
         <div class="card p-6 md:p-8">
             
-            <!-- ฟอร์ม 1: บันทึกผู้เข้าใช้งาน -->
+            <!-- ฟอร์ม 1: ผู้เข้าใช้งาน -->
             <div id="form-usage" class="form-section active">
                 <h2 class="text-lg font-bold text-gray-800 mb-4 border-b border-gray-100 pb-3 flex items-center gap-2">
                     <i class="ph ph-chart-pie-slice text-green-600 text-xl"></i> เพิ่มข้อมูลผู้เข้าใช้งาน (Usage)
@@ -84,7 +86,7 @@
                         <div><label class="block text-sm font-medium text-gray-700 mb-1">จำนวนผู้ใช้งาน (คน) *</label><input type="number" id="u_count" required min="1" placeholder="ระบุตัวเลข" class="input-field"></div>
                         <div><label class="block text-sm font-medium text-gray-700 mb-1">หมายเหตุ</label><input type="text" id="u_note" placeholder="เช่น ใช้งานทั่วไป" class="input-field"></div>
                     </div>
-                    <button type="submit" id="btn-usage" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3.5 rounded-xl transition flex items-center justify-center shadow-lg hover:shadow-green-600/30 text-lg"><i class="ph ph-paper-plane-right mr-2"></i> บันทึกข้อมูลลงฐานข้อมูล</button>
+                    <button type="submit" id="btn-usage" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3.5 rounded-xl transition flex items-center justify-center shadow-lg hover:shadow-green-600/30 text-lg"><i class="ph ph-paper-plane-right mr-2"></i> บันทึกข้อมูล</button>
                 </form>
             </div>
 
@@ -108,7 +110,7 @@
                         </div>
                         <div class="md:col-span-2"><label class="block text-sm font-medium text-gray-700 mb-1">หมายเหตุ</label><input type="text" id="b_note" placeholder="รายละเอียดเพิ่มเติม" class="input-field"></div>
                     </div>
-                    <button type="submit" id="btn-borrow" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3.5 rounded-xl transition flex items-center justify-center shadow-lg hover:shadow-green-600/30 text-lg"><i class="ph ph-paper-plane-right mr-2"></i> บันทึกข้อมูลลงฐานข้อมูล</button>
+                    <button type="submit" id="btn-borrow" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3.5 rounded-xl transition flex items-center justify-center shadow-lg hover:shadow-green-600/30 text-lg"><i class="ph ph-paper-plane-right mr-2"></i> บันทึกข้อมูล</button>
                 </form>
             </div>
 
@@ -125,7 +127,7 @@
                         <div><label class="block text-sm font-medium text-gray-700 mb-1">ค่าไฟรวม (บาท) (เว้นว่างได้)</label><input type="number" step="0.01" id="e_total" placeholder="ระบบจะคำนวณให้อัตโนมัติ" class="input-field"></div>
                         <div class="md:col-span-2"><label class="block text-sm font-medium text-gray-700 mb-1">หมายเหตุ</label><input type="text" id="e_note" placeholder="รายละเอียดเพิ่มเติม" class="input-field"></div>
                     </div>
-                    <button type="submit" id="btn-electric" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3.5 rounded-xl transition flex items-center justify-center shadow-lg hover:shadow-green-600/30 text-lg"><i class="ph ph-paper-plane-right mr-2"></i> บันทึกข้อมูลลงฐานข้อมูล</button>
+                    <button type="submit" id="btn-electric" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3.5 rounded-xl transition flex items-center justify-center shadow-lg hover:shadow-green-600/30 text-lg"><i class="ph ph-paper-plane-right mr-2"></i> บันทึกข้อมูล</button>
                 </form>
             </div>
 
@@ -140,14 +142,45 @@
                             <div><label class="block text-sm font-medium text-gray-700 mb-1">วันที่ *</label><input type="text" id="a_date" required placeholder="เช่น 15 ม.ค. 69" class="input-field"></div>
                             <div><label class="block text-sm font-medium text-gray-700 mb-1">ชื่อกิจกรรม *</label><input type="text" id="a_name" required placeholder="ระบุชื่อกิจกรรม" class="input-field"></div>
                         </div>
-                        <div><label class="block text-sm font-medium text-gray-700 mb-1">ลิงก์รูปภาพหน้าปก * (ลิงก์ Direct url เช่น จาก postimages)</label><input type="url" id="a_link" required placeholder="https://..." class="input-field"></div>
+                        <div><label class="block text-sm font-medium text-gray-700 mb-1">ลิงก์รูปภาพหน้าปก *</label><input type="url" id="a_link" required placeholder="https://..." class="input-field"></div>
                         <div><label class="block text-sm font-medium text-gray-700 mb-1">รายละเอียดกิจกรรม</label><textarea id="a_detail" rows="2" placeholder="เขียนอธิบายกิจกรรมสั้นๆ..." class="input-field resize-none"></textarea></div>
                     </div>
-                    <button type="submit" id="btn-activity" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3.5 rounded-xl transition flex items-center justify-center shadow-lg hover:shadow-green-600/30 text-lg"><i class="ph ph-paper-plane-right mr-2"></i> บันทึกข้อมูลลงฐานข้อมูล</button>
+                    <button type="submit" id="btn-activity" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3.5 rounded-xl transition flex items-center justify-center shadow-lg hover:shadow-green-600/30 text-lg"><i class="ph ph-paper-plane-right mr-2"></i> บันทึกข้อมูล</button>
                 </form>
             </div>
 
-            <!-- ฟอร์ม 5: เจ้าหน้าที่ -->
+            <!-- 🌟 ฟอร์ม 5: แกลอรี (เพิ่มใหม่) -->
+            <div id="form-gallery" class="form-section">
+                <h2 class="text-lg font-bold text-gray-800 mb-4 border-b border-gray-100 pb-3 flex items-center gap-2">
+                    <i class="ph ph-folder-star text-pink-600 text-xl"></i> เพิ่มข้อมูลแกลอรี (Gallery)
+                </h2>
+                <form onsubmit="submitData(event, 'Gallery', ['g_name', 'g_year', 'g_cover', 'g_folder', 'g_theme', 'g_details'], 'btn-gallery')">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
+                        <div class="md:col-span-2"><label class="block text-sm font-medium text-gray-700 mb-1">ชื่อกิจกรรม (Name) *</label><input type="text" id="g_name" required placeholder="เช่น กิจกรรมปัจฉิมนิเทศ..." class="input-field font-semibold text-green-900"></div>
+                        <div><label class="block text-sm font-medium text-gray-700 mb-1">ปีการศึกษา/พ.ศ. (Year) *</label><input type="text" id="g_year" required placeholder="เช่น 2569" class="input-field"></div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">สีธีม (ThemeColor) *</label>
+                            <div class="flex items-center gap-2">
+                                <!-- ตัวเลือกสีอัจฉริยะ -->
+                                <input type="color" id="g_theme_picker" class="h-11 w-12 rounded cursor-pointer border-0 p-0 shadow-sm" value="#FFD1E4" onchange="document.getElementById('g_theme').value = this.value.toUpperCase()">
+                                <input type="text" id="g_theme" required placeholder="#FFD1E4" value="#FFD1E4" class="input-field flex-1 uppercase tracking-widest font-medium" oninput="document.getElementById('g_theme_picker').value = this.value">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">รหัสรูปปก (CoverID) *</label>
+                            <input type="text" id="g_cover" required placeholder="เช่น 18MNsl... (เอาเฉพาะ ID)" class="input-field">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">รหัสโฟลเดอร์ (FolderID) *</label>
+                            <input type="text" id="g_folder" required placeholder="เช่น 12mWQ... (เอาเฉพาะ ID)" class="input-field">
+                        </div>
+                        <div class="md:col-span-2"><label class="block text-sm font-medium text-gray-700 mb-1">รายละเอียด (Details)</label><input type="text" id="g_details" placeholder="อธิบายเพิ่มเติม (ถ้ามี)" class="input-field"></div>
+                    </div>
+                    <button type="submit" id="btn-gallery" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3.5 rounded-xl transition flex items-center justify-center shadow-lg hover:shadow-green-600/30 text-lg"><i class="ph ph-paper-plane-right mr-2"></i> บันทึกข้อมูลแกลอรี</button>
+                </form>
+            </div>
+
+            <!-- ฟอร์ม 6: เจ้าหน้าที่ (พร้อมปุ่มเวลา) -->
             <div id="form-staff" class="form-section">
                 <h2 class="text-lg font-bold text-gray-800 mb-4 border-b border-gray-100 pb-3 flex items-center gap-2">
                     <i class="ph ph-user-circle-gear text-red-600 text-xl"></i> เพิ่มข้อมูลเจ้าหน้าที่ (Staff)
@@ -166,11 +199,9 @@
                             </select>
                         </div>
                         
-                        <!-- 🌟 แก้ไขส่วนหมายเหตุ ให้มีปุ่มเลือกเวลาด่วน -->
+                        <!-- 🌟 ปุ่มเลือกเวลาด่วน -->
                         <div class="md:col-span-2">
                             <label class="block text-sm font-medium text-gray-700 mb-2">เวลาปฏิบัติงาน / หมายเหตุ</label>
-                            
-                            <!-- ปุ่มลัดเลือกเวลา -->
                             <div class="flex flex-wrap gap-2 mb-3">
                                 <button type="button" onclick="document.getElementById('s_note').value='08:30 - 16:30'" class="px-3 py-1.5 text-xs font-medium bg-green-50 text-green-700 border border-green-200 rounded-lg hover:bg-green-100 transition shadow-sm">08:30 - 16:30</button>
                                 <button type="button" onclick="document.getElementById('s_note').value='08:30 - 12:00'" class="px-3 py-1.5 text-xs font-medium bg-green-50 text-green-700 border border-green-200 rounded-lg hover:bg-green-100 transition shadow-sm">08:30 - 12:00</button>
@@ -178,12 +209,11 @@
                                 <button type="button" onclick="document.getElementById('s_note').value='06:30 - 16:30'" class="px-3 py-1.5 text-xs font-medium bg-green-50 text-green-700 border border-green-200 rounded-lg hover:bg-green-100 transition shadow-sm">06:30 - 16:30</button>
                                 <button type="button" onclick="document.getElementById('s_note').value=''" class="px-3 py-1.5 text-xs font-medium bg-gray-50 text-gray-500 border border-gray-200 rounded-lg hover:bg-gray-100 transition shadow-sm">ล้างค่า</button>
                             </div>
-                            
                             <input type="text" id="s_note" placeholder="คลิกปุ่มเลือกเวลาด้านบน หรือ พิมพ์รายละเอียดเพิ่มเติม..." class="input-field">
                         </div>
 
                     </div>
-                    <button type="submit" id="btn-staff" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3.5 rounded-xl transition flex items-center justify-center shadow-lg hover:shadow-green-600/30 text-lg"><i class="ph ph-paper-plane-right mr-2"></i> บันทึกข้อมูลลงฐานข้อมูล</button>
+                    <button type="submit" id="btn-staff" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3.5 rounded-xl transition flex items-center justify-center shadow-lg hover:shadow-green-600/30 text-lg"><i class="ph ph-paper-plane-right mr-2"></i> บันทึกข้อมูล</button>
                 </form>
             </div>
 
@@ -197,16 +227,13 @@
 
     <script>
         // =========================================================================
-        // ⚠️ นำลิงก์ Web App (GAS) ตัวเดิมของคุณครูมาใส่ในช่องนี้ ⚠️
+        // ⚠️ ลิงก์ GAS ของคุณครู ถูกใส่ไว้ให้เรียบร้อยแล้ว ไม่ต้องแก้ครับ ⚠️
         // =========================================================================
-        const GAS_URL = "https://script.google.com/macros/s/AKfycbyEiHZWx58ROSmCQ1j25RRoXdxRSZlBC5c7ySwp6LJC6RZ8xKrk5IH6O-NTicExsEYvHg/exec"; 
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbwnu_wHUys0gK1cv8YmPb39ziTCa_TbTFBXm-DIpIDzViFpJC0fSkHg_a_30841p_pRFQ/exec"; 
 
-        // ระบบล็อกอิน
         function login() {
             const u = document.getElementById('username').value;
             const p = document.getElementById('password').value;
-            
-            // ตรวจสอบ Username และ Password ตามที่คุณครูกำหนด
             if(u === 'Admin' && p === '66440763') {
                 document.getElementById('loginZone').style.display = 'none';
                 document.getElementById('adminZone').style.display = 'block';
@@ -219,7 +246,6 @@
             }
         }
 
-        // กด Enter ตอนกรอกรหัสได้
         document.getElementById('password').addEventListener('keypress', function (e) {
             if (e.key === 'Enter') login();
         });
@@ -229,7 +255,6 @@
             document.getElementById('loginZone').style.display = 'block';
         }
 
-        // --- ฟังก์ชันสำหรับกดสลับเมนู (Tabs) ---
         function switchTab(tabId, btnElement) {
             // ซ่อนทุกหน้า
             document.querySelectorAll('.form-section').forEach(el => el.classList.remove('active'));
@@ -254,17 +279,13 @@
             setTimeout(() => toast.style.opacity = '0', 4000);
         }
 
-        // --- ระบบส่งข้อมูลไป Google Sheets (ทำหน้าที่ครอบจักรวาลทุกฟอร์ม) ---
         async function submitData(e, sheetName, inputIds, btnId) {
-            e.preventDefault(); // กันหน้าเว็บรีเฟรช
+            e.preventDefault(); 
             
             const btn = document.getElementById(btnId);
             const originalContent = btn.innerHTML;
-            
-            // ดึงค่าจากฟอร์มนั้นๆ และเรียงตามลำดับของ array inputIds ที่ส่งมา (คอลัมน์ A, B, C, ...)
             const rowData = inputIds.map(id => document.getElementById(id).value);
 
-            // โครงสร้างที่ส่งไปให้ GAS
             const payload = {
                 sheetName: sheetName,
                 rowData: rowData
@@ -275,7 +296,6 @@
             btn.innerHTML = '<div class="spinner"></div> กำลังบันทึกข้อมูล...';
 
             try {
-                // ส่งข้อมูล (POST)
                 const response = await fetch(GAS_URL, {
                     method: 'POST',
                     body: JSON.stringify(payload)
@@ -285,18 +305,19 @@
                 
                 if(result.status === 'success') {
                     showToast('บันทึกข้อมูลหน้า [' + sheetName + '] สำเร็จ!', 'success');
-                    e.target.reset(); // ล้างฟอร์มเฉพาะอันที่เพิ่งกดส่ง
+                    e.target.reset(); // ล้างฟอร์ม
+                    // รีเซ็ตสีกลับเป็นสีชมพูเริ่มต้น
+                    if(sheetName === 'Gallery') document.getElementById('g_theme_picker').value = '#FFD1E4'; 
                 } else {
                     showToast('Error: ' + result.message, 'error');
                 }
 
             } catch (error) {
                 console.error("Error:", error);
-                // ⚠️ ปัญหาเรื่อง CORS ถ้าขึ้น Error ใน Console แต่ข้อมูลเข้าชีตก็ปล่อยผ่านได้ครับ
                 showToast('ส่งข้อมูลแล้ว (หากไม่ขึ้นในเว็บ กรุณาเช็คใน Google Sheets)', 'success');
                 e.target.reset();
+                if(sheetName === 'Gallery') document.getElementById('g_theme_picker').value = '#FFD1E4';
             } finally {
-                // คืนค่าปุ่มเหมือนเดิม
                 btn.disabled = false;
                 btn.classList.remove('opacity-70');
                 btn.innerHTML = originalContent;
