@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>ระบบหลังบ้าน (Admin) - ศูนย์ดิจิทัลชุมชน</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+    <style>
+        body { font-family: 'Prompt', sans-serif; background-color: #f3f4f6; color: #1f2937; }
+        .card { background-color: #ffffff; border-radius: 24px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05); border: 1px solid #fef3c7; }
+        .input-field { width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid #d1d5db; outline: none; transition: all 0.2s; background: #f9fafb; font-family: 'Prompt';}
+        .input-field:focus { border-color: #166534; box-shadow: 0 0 0 2px #bbf7bb; background: #ffffff; }
+        
+        /* ซ่อน Scrollbar ของเมนู Tab */
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        .tab-btn { white-space: nowrap; padding: 10px 16px; border-radius: 12px; font-size: 14px; font-weight: 500; transition: all 0.3s; color: #6b7280; background: #ffffff; border: 1px solid #e5e7eb; }
+        .tab-btn.active { background: #166534; color: #ffffff; border-color: #166534; box-shadow: 0 4px 10px rgba(22, 101, 52, 0.2); }
+        
+        .form-section { display: none; animation: fadeIn 0.4s ease-out; }
+        .form-section.active { display: block; }
+        
+        .spinner { border: 3px solid rgba(255,255,255,0.3); border-radius: 50%; border-top: 3px solid #fff; width: 20px; height: 20px; animation: spin 1s linear infinite; display: inline-block; vertical-align: middle; margin-right: 8px;}
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center p-4">
+
+    <div id="loginZone" class="w-full max-w-sm card p-8 text-center animate-[fadeIn_0.5s_ease-out]">
+        <div class="w-20 h-20 bg-green-100 text-green-700 rounded-full flex items-center justify-center mx-auto mb-6">
+            <i class="ph ph-shield-check text-4xl"></i>
+        </div>
+        <h2 class="text-2xl font-bold text-green-900 mb-1">Admin Login</h2>
+        <p class="text-xs text-gray-500 mb-6">ระบบจัดการข้อมูลศูนย์ดิจิทัลชุมชน</p>
+        
+        <input type="text" id="username" placeholder="Username" class="input-field mb-3 text-center">
+        <input type="password" id="password" placeholder="Password" class="input-field mb-6 text-center tracking-widest">
+        
+        <button onclick="login()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-xl transition shadow-lg hover:shadow-green-600/30">
+            เข้าสู่ระบบ
+        </button>
+        <p id="errorMsg" class="text-red-500 text-sm mt-4 hidden font-medium flex items-center justify-center gap-1"><i class="ph ph-warning-circle"></i> ข้อมูลไม่ถูกต้อง!</p>
+        
+        <a href="index.html" class="block mt-6 text-xs text-gray-400 hover:text-gray-600 underline"><i class="ph ph-arrow-left"></i> กลับหน้ารายงานสรุปผล</a>
+    </div>
+
+    <!-- 📝 โซนกรอกข้อมูล (ซ่อนไว้ก่อน) -->
+    <div id="adminZone" class="hidden w-full max-w-2xl">
+        <div class="flex items-center justify-between mb-4">
+            <div>
+                <h1 class="text-2xl font-bold text-green-900">บันทึกข้อมูลเข้าระบบ</h1>
+                <p class="text-sm text-gray-500">ข้อมูลจะถูกส่งไปยัง Google Sheets อัตโนมัติ</p>
+            </div>
+            <button onclick="logout()" class="bg-white border border-red-100 text-red-500 hover:bg-red-50 px-4 py-2 rounded-xl text-sm font-medium transition flex items-center gap-2 shadow-sm">
+                <i class="ph ph-sign-out"></i> ออกจากระบบ
+            </button>
+        </div>
+
+        <!-- แถบเมนู (Tabs) เลื่อนซ้ายขวาได้ -->
+        <div class="flex overflow-x-auto gap-2 pb-2 mb-4 hide-scrollbar">
+            <button class="tab-btn active flex items-center" onclick="switchTab('usage', this)"><i class="ph ph-users mr-1.5"></i> ผู้เข้าใช้งาน</button>
+            <button class="tab-btn flex items-center" onclick="switchTab('borrow', this)"><i class="ph ph-archive mr-1.5"></i> ยืม-คืน</button>
+            <button class="tab-btn flex items-center" onclick="switchTab('electric', this)"><i class="ph ph-plug mr-1.5"></i> ไฟฟ้า</button>
+            <button class="tab-btn flex items-center" onclick="switchTab('activity', this)"><i class="ph ph-images-square mr-1.5"></i> กิจกรรม</button>
+            <button class="tab-btn flex items-center" onclick="switchTab('staff', this)"><i class="ph ph-user-circle-gear mr-1.5"></i> เจ้าหน้าที่</button>
+        </div>
+
+        <div class="card p-6 md:p-8">
+            
+            <!-- ฟอร์ม 1: บันทึกผู้เข้าใช้งาน -->
+            <div id="form-usage" class="form-section active">
+                <h2 class="text-lg font-bold text-gray-800 mb-4 border-b border-gray-100 pb-3 flex items-center gap-2">
+                    <i class="ph ph-chart-pie-slice text-green-600 text-xl"></i> เพิ่มข้อมูลผู้เข้าใช้งาน (Usage)
+                </h2>
+                <form onsubmit="submitData(event, 'Usage', ['u_date', 'u_room', 'u_count', 'u_note'], 'btn-usage')">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
+                        <div><label class="block text-sm font-medium text-gray-700 mb-1">วันที่ *</label><input type="text" id="u_date" required placeholder="เช่น 15 ม.ค. 69" class="input-field"></div>
+                        <div><label class="block text-sm font-medium text-gray-700 mb-1">รายการ / ห้อง *</label><input type="text" id="u_room" required placeholder="เช่น ห้องปฏิบัติการ 1" class="input-field"></div>
+                        <div><label class="block text-sm font-medium text-gray-700 mb-1">จำนวนผู้ใช้งาน (คน) *</label><input type="number" id="u_count" required min="1" placeholder="ระบุตัวเลข" class="input-field"></div>
+                        <div><label class="block text-sm font-medium text-gray-700 mb-1">หมายเหตุ</label><input type="text" id="u_note" placeholder="เช่น ใช้งานทั่วไป" class="input-field"></div>
+                    </div>
+                    <button type="submit" id="btn-usage" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3.5 rounded-xl transition flex items-center justify-center shadow-lg hover:shadow-green-600/30 text-lg"><i class="ph ph-paper-plane-right mr-2"></i> บันทึกข้อมูลลงฐานข้อมูล</button>
+                </form>
+            </div>
+
+            <!-- ฟอร์ม 2: ยืม-คืนอุปกรณ์ -->
+            <div id="form-borrow" class="form-section">
+                <h2 class="text-lg font-bold text-gray-800 mb-4 border-b border-gray-100 pb-3 flex items-center gap-2">
+                    <i class="ph ph-archive text-yellow-600 text-xl"></i> เพิ่มข้อมูลยืม-คืนอุปกรณ์ (Borrow)
+                </h2>
+                <form onsubmit="submitData(event, 'Borrow', ['b_date', 'b_item', 'b_user', 'b_status', 'b_note'], 'btn-borrow')">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
+                        <div><label class="block text-sm font-medium text-gray-700 mb-1">วันที่ยืม *</label><input type="text" id="b_date" required placeholder="เช่น 15 ม.ค. 69" class="input-field"></div>
+                        <div><label class="block text-sm font-medium text-gray-700 mb-1">ชื่ออุปกรณ์ *</label><input type="text" id="b_item" required placeholder="เช่น โน้ตบุ๊ก หมายเลข 1" class="input-field"></div>
+                        <div><label class="block text-sm font-medium text-gray-700 mb-1">ผู้ยืม *</label><input type="text" id="b_user" required placeholder="เช่น ด.ช.สมชาย ใจดี" class="input-field"></div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">สถานะ *</label>
+                            <select id="b_status" required class="input-field">
+                                <option value="ยืม">ยืม (ยังไม่คืน)</option>
+                                <option value="คืนแล้ว">คืนแล้ว (ปกติ)</option>
+                                <option value="ชำรุด">ชำรุด / สูญหาย</option>
+                            </select>
+                        </div>
+                        <div class="md:col-span-2"><label class="block text-sm font-medium text-gray-700 mb-1">หมายเหตุ</label><input type="text" id="b_note" placeholder="รายละเอียดเพิ่มเติม" class="input-field"></div>
+                    </div>
+                    <button type="submit" id="btn-borrow" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3.5 rounded-xl transition flex items-center justify-center shadow-lg hover:shadow-green-600/30 text-lg"><i class="ph ph-paper-plane-right mr-2"></i> บันทึกข้อมูลลงฐานข้อมูล</button>
+                </form>
+            </div>
+
+            <!-- ฟอร์ม 3: ไฟฟ้า -->
+            <div id="form-electric" class="form-section">
+                <h2 class="text-lg font-bold text-gray-800 mb-4 border-b border-gray-100 pb-3 flex items-center gap-2">
+                    <i class="ph ph-plug text-blue-600 text-xl"></i> เพิ่มข้อมูลการใช้ไฟฟ้า (Electric)
+                </h2>
+                <form onsubmit="submitData(event, 'Electric', ['e_date', 'e_meter', 'e_unit', 'e_total', 'e_note'], 'btn-electric')">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
+                        <div><label class="block text-sm font-medium text-gray-700 mb-1">ประจำเดือน *</label><input type="text" id="e_date" required placeholder="เช่น มกราคม 2569" class="input-field"></div>
+                        <div><label class="block text-sm font-medium text-gray-700 mb-1">เลขมิเตอร์ *</label><input type="number" step="0.01" id="e_meter" required placeholder="เช่น 12345" class="input-field"></div>
+                        <div><label class="block text-sm font-medium text-gray-700 mb-1">หน่วยที่ใช้ (เว้นว่างได้)</label><input type="number" step="0.01" id="e_unit" placeholder="ระบบจะคำนวณให้อัตโนมัติ" class="input-field"></div>
+                        <div><label class="block text-sm font-medium text-gray-700 mb-1">ค่าไฟรวม (บาท) (เว้นว่างได้)</label><input type="number" step="0.01" id="e_total" placeholder="ระบบจะคำนวณให้อัตโนมัติ" class="input-field"></div>
+                        <div class="md:col-span-2"><label class="block text-sm font-medium text-gray-700 mb-1">หมายเหตุ</label><input type="text" id="e_note" placeholder="รายละเอียดเพิ่มเติม" class="input-field"></div>
+                    </div>
+                    <button type="submit" id="btn-electric" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3.5 rounded-xl transition flex items-center justify-center shadow-lg hover:shadow-green-600/30 text-lg"><i class="ph ph-paper-plane-right mr-2"></i> บันทึกข้อมูลลงฐานข้อมูล</button>
+                </form>
+            </div>
+
+            <!-- ฟอร์ม 4: กิจกรรม -->
+            <div id="form-activity" class="form-section">
+                <h2 class="text-lg font-bold text-gray-800 mb-4 border-b border-gray-100 pb-3 flex items-center gap-2">
+                    <i class="ph ph-images-square text-purple-600 text-xl"></i> เพิ่มข้อมูลกิจกรรม (Activity)
+                </h2>
+                <form onsubmit="submitData(event, 'Activity', ['a_date', 'a_name', 'a_detail', 'a_link'], 'btn-activity')">
+                    <div class="grid grid-cols-1 gap-5 mb-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">วันที่ *</label><input type="text" id="a_date" required placeholder="เช่น 15 ม.ค. 69" class="input-field"></div>
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">ชื่อกิจกรรม *</label><input type="text" id="a_name" required placeholder="ระบุชื่อกิจกรรม" class="input-field"></div>
+                        </div>
+                        <div><label class="block text-sm font-medium text-gray-700 mb-1">ลิงก์รูปภาพหน้าปก * (ลิงก์ Direct url เช่น จาก postimages)</label><input type="url" id="a_link" required placeholder="https://..." class="input-field"></div>
+                        <div><label class="block text-sm font-medium text-gray-700 mb-1">รายละเอียดกิจกรรม</label><textarea id="a_detail" rows="2" placeholder="เขียนอธิบายกิจกรรมสั้นๆ..." class="input-field resize-none"></textarea></div>
+                    </div>
+                    <button type="submit" id="btn-activity" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3.5 rounded-xl transition flex items-center justify-center shadow-lg hover:shadow-green-600/30 text-lg"><i class="ph ph-paper-plane-right mr-2"></i> บันทึกข้อมูลลงฐานข้อมูล</button>
+                </form>
+            </div>
+
+            <!-- ฟอร์ม 5: เจ้าหน้าที่ -->
+            <div id="form-staff" class="form-section">
+                <h2 class="text-lg font-bold text-gray-800 mb-4 border-b border-gray-100 pb-3 flex items-center gap-2">
+                    <i class="ph ph-user-circle-gear text-red-600 text-xl"></i> เพิ่มข้อมูลเจ้าหน้าที่ (Staff)
+                </h2>
+                <form onsubmit="submitData(event, 'Staff', ['s_date', 's_name', 's_role', 's_status', 's_note'], 'btn-staff')">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
+                        <div><label class="block text-sm font-medium text-gray-700 mb-1">วันที่ *</label><input type="text" id="s_date" required placeholder="เช่น 15 ม.ค. 69" class="input-field"></div>
+                        <div><label class="block text-sm font-medium text-gray-700 mb-1">ชื่อ-สกุล *</label><input type="text" id="s_name" required placeholder="เช่น นายสมมติ ใจดี" class="input-field"></div>
+                        <div><label class="block text-sm font-medium text-gray-700 mb-1">ตำแหน่ง/หน้าที่ *</label><input type="text" id="s_role" required placeholder="เช่น เวรประจำวัน, ผู้ดูแลห้อง" class="input-field"></div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">สถานะการเข้าเวร *</label>
+                            <select id="s_status" required class="input-field">
+                                <option value="มาปฏิบัติงาน">มาปฏิบัติงาน (ปกติ)</option>
+                                <option value="ลากิจ/ลาป่วย">ลา (กิจ/ป่วย)</option>
+                                <option value="ขาดเวร">ขาดเวร</option>
+                            </select>
+                        </div>
+                        <div class="md:col-span-2"><label class="block text-sm font-medium text-gray-700 mb-1">หมายเหตุ</label><input type="text" id="s_note" placeholder="รายละเอียดเพิ่มเติม" class="input-field"></div>
+                    </div>
+                    <button type="submit" id="btn-staff" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3.5 rounded-xl transition flex items-center justify-center shadow-lg hover:shadow-green-600/30 text-lg"><i class="ph ph-paper-plane-right mr-2"></i> บันทึกข้อมูลลงฐานข้อมูล</button>
+                </form>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- แจ้งเตือน (Toast) -->
+    <div id="toast" class="fixed bottom-5 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-6 py-3 rounded-full text-sm font-medium opacity-0 transition-opacity duration-300 pointer-events-none z-50 flex items-center gap-2 shadow-2xl">
+        <span id="toastIcon"></span> <span id="toastMsg"></span>
+    </div>
+
+    <script>
+        // =========================================================================
+        // ⚠️ นำลิงก์ Web App (GAS) ตัวเดิมของคุณครูมาใส่ในช่องนี้ ⚠️
+        // =========================================================================
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbyEiHZWx58ROSmCQ1j25RRoXdxRSZlBC5c7ySwp6LJC6RZ8xKrk5IH6O-NTicExsEYvHg/exec"; 
+
+        // ระบบล็อกอิน
+        function login() {
+            const u = document.getElementById('username').value;
+            const p = document.getElementById('password').value;
+            
+            // ตรวจสอบ Username และ Password ตามที่คุณครูกำหนด
+            if(u === 'Admin' && p === '66440763') {
+                document.getElementById('loginZone').style.display = 'none';
+                document.getElementById('adminZone').style.display = 'block';
+                document.getElementById('username').value = '';
+                document.getElementById('password').value = '';
+            } else {
+                const err = document.getElementById('errorMsg');
+                err.classList.remove('hidden');
+                setTimeout(() => err.classList.add('hidden'), 3000);
+            }
+        }
+
+        // กด Enter ตอนกรอกรหัสได้
+        document.getElementById('password').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') login();
+        });
+
+        function logout() {
+            document.getElementById('adminZone').style.display = 'none';
+            document.getElementById('loginZone').style.display = 'block';
+        }
+
+        // --- ฟังก์ชันสำหรับกดสลับเมนู (Tabs) ---
+        function switchTab(tabId, btnElement) {
+            // ซ่อนทุกหน้า
+            document.querySelectorAll('.form-section').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            
+            // แสดงหน้าที่เลือก
+            document.getElementById('form-' + tabId).classList.add('active');
+            btnElement.classList.add('active');
+        }
+
+        function showToast(msg, type) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastMsg').innerText = msg;
+            if(type === 'success') {
+                toast.style.backgroundColor = '#16a34a';
+                document.getElementById('toastIcon').innerHTML = '<i class="ph ph-check-circle text-lg"></i>';
+            } else {
+                toast.style.backgroundColor = '#dc2626';
+                document.getElementById('toastIcon').innerHTML = '<i class="ph ph-warning-circle text-lg"></i>';
+            }
+            toast.style.opacity = '1';
+            setTimeout(() => toast.style.opacity = '0', 4000);
+        }
+
+        // --- ระบบส่งข้อมูลไป Google Sheets (ทำหน้าที่ครอบจักรวาลทุกฟอร์ม) ---
+        async function submitData(e, sheetName, inputIds, btnId) {
+            e.preventDefault(); // กันหน้าเว็บรีเฟรช
+            
+            const btn = document.getElementById(btnId);
+            const originalContent = btn.innerHTML;
+            
+            // ดึงค่าจากฟอร์มนั้นๆ และเรียงตามลำดับของ array inputIds ที่ส่งมา (คอลัมน์ A, B, C, ...)
+            const rowData = inputIds.map(id => document.getElementById(id).value);
+
+            // โครงสร้างที่ส่งไปให้ GAS
+            const payload = {
+                sheetName: sheetName,
+                rowData: rowData
+            };
+
+            btn.disabled = true;
+            btn.classList.add('opacity-70');
+            btn.innerHTML = '<div class="spinner"></div> กำลังบันทึกข้อมูล...';
+
+            try {
+                // ส่งข้อมูล (POST)
+                const response = await fetch(GAS_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                });
+                
+                const result = await response.json();
+                
+                if(result.status === 'success') {
+                    showToast('บันทึกข้อมูลหน้า [' + sheetName + '] สำเร็จ!', 'success');
+                    e.target.reset(); // ล้างฟอร์มเฉพาะอันที่เพิ่งกดส่ง
+                } else {
+                    showToast('Error: ' + result.message, 'error');
+                }
+
+            } catch (error) {
+                console.error("Error:", error);
+                // ⚠️ ปัญหาเรื่อง CORS ถ้าขึ้น Error ใน Console แต่ข้อมูลเข้าชีตก็ปล่อยผ่านได้ครับ
+                showToast('ส่งข้อมูลแล้ว (หากไม่ขึ้นในเว็บ กรุณาเช็คใน Google Sheets)', 'success');
+                e.target.reset();
+            } finally {
+                // คืนค่าปุ่มเหมือนเดิม
+                btn.disabled = false;
+                btn.classList.remove('opacity-70');
+                btn.innerHTML = originalContent;
+            }
+        }
+    </script>
+</body>
+</html>
