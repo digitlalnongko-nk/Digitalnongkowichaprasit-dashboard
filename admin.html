@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>ระบบบันทึกข้อมูล (Admin) - ศูนย์ดิจิทัลชุมชน</title>
+    <title>ระบบหลังบ้าน (Admin) - ศูนย์ดิจิทัลชุมชน</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
@@ -570,15 +570,20 @@
             document.getElementById('upd_brand').value = row['ยี่ห้อ'] || '';
             document.getElementById('upd_model').value = row['รุ่น'] || '';
             document.getElementById('upd_year').value = row['ปีที่จัดซื้อ'] || '';
-            document.getElementById('upd_warranty').value = row['สถานะการรับประกัน'] || '';
 
             let currStatus = (row['สถานะปัจจุบัน'] || row['สถานะ'] || '').trim();
             let warrantyStatus = (row['สถานะการรับประกัน'] || row['การรับประกัน'] || '').trim();
 
+            // 🌟 แก้ไข: สลับข้อมูลที่ผิดเพี้ยน ให้กลับมาถูกต้องก่อน
             if ((currStatus.includes('ปี') || currStatus.includes('ประกัน') || currStatus.includes('ไม่มี')) &&
                 (warrantyStatus.includes('ใช้งาน') || warrantyStatus.includes('ชำรุด') || warrantyStatus.includes('ซ่อม'))) {
+                let temp = currStatus;
                 currStatus = warrantyStatus;
+                warrantyStatus = temp;
             }
+
+            // 🌟 แก้ไข: นำค่าการรับประกันที่ถูกต้องแล้ว ใส่ในช่องที่ซ่อนไว้
+            document.getElementById('upd_warranty').value = warrantyStatus;
 
             const statusSelect = document.getElementById('upd_status');
             if (currStatus.includes('ใช้งานได้') || currStatus === 'ปกติ') statusSelect.value = 'ใช้งานได้';
@@ -602,6 +607,7 @@
             btn.disabled = true;
             btn.innerHTML = '<div class="spinner"></div> กำลังบันทึก...';
 
+            // 🌟 แก้ไขปัญหาหลัก: เรียงลำดับ Array ใหม่ให้ตรงกับ Google Sheets (G=สถานะปัจจุบัน, H=การรับประกัน)
             const rowData = [
                 document.getElementById('upd_date').value,
                 document.getElementById('upd_id').value,
@@ -609,8 +615,8 @@
                 document.getElementById('upd_brand').value,
                 document.getElementById('upd_model').value,
                 document.getElementById('upd_year').value,
-                document.getElementById('upd_warranty').value,
-                document.getElementById('upd_status').value,
+                document.getElementById('upd_status').value,     // คอลัมน์ G
+                document.getElementById('upd_warranty').value,   // คอลัมน์ H
                 document.getElementById('upd_note').value
             ];
 
