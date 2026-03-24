@@ -35,51 +35,42 @@
         .badge-danger { background-color: #fee2e2; color: #991b1b; }
         .badge-warning { background-color: #fef9c3; color: #854d0e; }
         
-        /* 🌟 ระบบแสดงผลสำหรับ PDF โดยเฉพาะ (แก้ตารางล้น และตัวหนังสือทับกัน) */
+        /* 🌟 ระบบแสดงผลสำหรับ PDF (แก้ตารางล้นแบบปลอดภัย ไม่ทำฟอนต์พัง) */
         .pdf-header { display: none; text-align: center; margin-bottom: 20px; }
         .pdf-mode .pdf-header { display: block; }
         .pdf-mode .no-print { display: none !important; }
         
         .pdf-mode { 
             background: white !important; 
-            padding: 15px !important; 
-            width: 1122px !important; /* ขนาดความกว้าง A4 แนวนอนพอดีเป๊ะ */
+            padding: 20px !important; 
+            /* กางกระดาษจำลองให้กว้าง 1300px เพื่อให้ตารางวางได้เต็มๆ โดยไม่โดนบีบ */
+            width: 1300px !important; 
             max-width: none !important;
-            margin: 0 auto !important;
+            margin: 0 !important;
         }
-        .pdf-mode .card { box-shadow: none !important; border: none !important; border-radius: 0 !important; }
-        .pdf-mode .table-wrapper { overflow: hidden !important; width: 100% !important; } 
         
-        /* 🌟 บังคับให้ตารางยืดหดพอดี A4 และกำหนดตารางให้ตายตัวมากขึ้น */
+        .pdf-mode .card { box-shadow: none !important; border: none !important; border-radius: 0 !important; padding: 0 !important; }
+        /* ปลดล็อกให้ตารางแสดงเต็มความกว้าง */
+        .pdf-mode .table-wrapper { overflow: visible !important; width: 100% !important; } 
+        
+        /* ปล่อยให้ตารางจัด Layout ตามธรรมชาติ ป้องกันฟอนต์ไทยสระลอย/แตก */
         .pdf-mode .table-minimal { 
             min-width: 100% !important; 
             width: 100% !important; 
-            table-layout: fixed !important; /* สำคัญมาก: ป้องกันไม่ให้คอลัมน์ขยายตามความยาวตัวหนังสือ */
-            border-collapse: collapse !important; /* เปลี่ยนเป็น collapse เพื่อลบช่องว่างระหว่างเซลล์ออกนิดหน่อย */
+            table-layout: auto !important; 
+            border-collapse: collapse !important; 
         }
         
         .pdf-mode .table-minimal th, 
         .pdf-mode .table-minimal td { 
-            padding: 8px 4px !important; /* ลด padding เพื่อเพิ่มพื้นที่ */
-            font-size: 11px !important; 
+            padding: 10px 8px !important; 
+            font-size: 12px !important; /* ปรับขนาดให้พอดีตา */
             white-space: normal !important; 
-            word-wrap: break-word !important; /* บังคับให้คำยาวๆ ตัดขึ้นบรรทัดใหม่ */
-            overflow-wrap: break-word !important;
-            border-bottom: 1px solid #f1f5f9 !important;
+            border-bottom: 1px solid #e2e8f0 !important;
+            vertical-align: top !important; /* จัดข้อความให้อยู่ด้านบน */
         } 
-        
-        /* 🌟 กำหนดความกว้างเป๊ะๆ ให้แต่ละคอลัมน์ในโหมด PDF */
-        .pdf-mode .table-minimal th:nth-child(1) { width: 9% !important; } /* วันที่ */
-        .pdf-mode .table-minimal th:nth-child(2) { width: 13% !important; } /* รหัส */
-        .pdf-mode .table-minimal th:nth-child(3) { width: 20% !important; } /* ชื่ออุปกรณ์ */
-        .pdf-mode .table-minimal th:nth-child(4) { width: 9% !important; } /* ยี่ห้อ */
-        .pdf-mode .table-minimal th:nth-child(5) { width: 10% !important; } /* รุ่น */
-        .pdf-mode .table-minimal th:nth-child(6) { width: 7% !important; } /* ปี */
-        .pdf-mode .table-minimal th:nth-child(7) { width: 9% !important; } /* ประกัน */
-        .pdf-mode .table-minimal th:nth-child(8) { width: 8% !important; } /* สถานะ */
-        .pdf-mode .table-minimal th:nth-child(9) { width: 15% !important; } /* หมายเหตุ */
 
-        .pdf-mode .badge { padding: 4px 6px !important; font-size: 10px !important; }
+        .pdf-mode .badge { padding: 4px 8px !important; font-size: 11px !important; }
     </style>
 </head>
 <body class="min-h-screen p-4 md:p-8">
@@ -143,13 +134,13 @@
                     <thead>
                         <tr>
                             <th width="10%" class="text-center">วันที่อัปเดต</th>
-                            <th width="12%" class="text-center">รหัสพัสดุ / ครุภัณฑ์</th>
+                            <th width="13%" class="text-center">รหัสพัสดุ / ครุภัณฑ์</th>
                             <th width="16%" class="text-left">ชื่ออุปกรณ์</th>
-                            <th width="10%" class="text-center">ยี่ห้อ</th>
+                            <th width="9%" class="text-center">ยี่ห้อ</th>
                             <th width="10%" class="text-center">รุ่น</th>
-                            <th width="7%" class="text-center">ปีที่จัดซื้อ</th>
+                            <th width="8%" class="text-center">ปีที่จัดซื้อ</th>
                             <th width="10%" class="text-center">การรับประกัน</th>
-                            <th width="10%" class="text-center">สถานะ</th>
+                            <th width="9%" class="text-center">สถานะ</th>
                             <th width="15%" class="text-left">หมายเหตุ / การซ่อม</th>
                         </tr>
                     </thead>
@@ -182,7 +173,6 @@
             }
         }
 
-        // 🌟 อัปเกรดตัวอ่าน CSV ให้ป้องกันการกด Alt+Enter ใน Google Sheets
         function parseRobustCSV(csv) {
             const result = [];
             let rows = [];
@@ -190,14 +180,13 @@
             let curVal = '';
             let inQuotes = false;
 
-            // วนอ่านทีละตัวอักษรเพื่อป้องกันการตัดบรรทัดผิดพลาด
             for (let i = 0; i < csv.length; i++) {
                 let char = csv[i];
                 let nextChar = csv[i + 1];
 
                 if (char === '"') {
                     if (inQuotes && nextChar === '"') {
-                        curVal += '"'; i++; // ข้าม quote ซ้อน
+                        curVal += '"'; i++; 
                     } else {
                         inQuotes = !inQuotes;
                     }
@@ -223,7 +212,7 @@
             const headers = rows[0].map(h => h.replace(/\s+/g, ' ').trim());
             
             for (let i = 1; i < rows.length; i++) {
-                if (rows[i].length === 1 && !rows[i][0]) continue; // ข้ามบรรทัดว่าง
+                if (rows[i].length === 1 && !rows[i][0]) continue; 
                 let obj = {};
                 headers.forEach((header, index) => {
                     obj[header] = rows[i][index] || "";
@@ -266,7 +255,6 @@
                     warrantyHtml = `<span class="text-green-600 font-medium"><i class="ph ph-shield-check"></i> ในประกัน</span>`;
                 }
 
-                // ป้องกันปัญหาการตัดคำด้วยการแทนที่เว้นวรรค
                 const noteText = (row['รายละเอียดการซ่อม / หมายเหตุ'] || row['รายละเอียดการซ่อม/หมายเหตุ'] || row['หมายเหตุ'] || '-').replace(/\n/g, '<br>');
                 const nameText = (row['ชื่ออุปกรณ์'] || '-').replace(/\n/g, ' ');
 
@@ -323,7 +311,7 @@
             window.scrollTo(0, 0);
             element.classList.add('pdf-mode');
             
-            // 🌟 ตั้งค่าความกว้าง A4 แนวนอนพอดีเป๊ะ (1122px)
+            // 🌟 ให้ระบบทำงานด้วยขนาดกว้าง 1300px แล้วย่อส่วนให้พอดีกับกระดาษ A4 แนวนอนอัตโนมัติ
             const opt = { 
                 margin: [0.3, 0.2, 0.3, 0.2], 
                 filename: `Equipment_Report_${today.getTime()}.pdf`, 
@@ -332,10 +320,10 @@
                     scale: 2, 
                     useCORS: true,
                     scrollY: 0,
-                    windowWidth: 1122 // A4 Landscape width
+                    windowWidth: 1300 // ความกว้างต้องเท่ากับใน CSS .pdf-mode
                 }, 
                 jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' },
-                pagebreak: { mode: 'css', avoid: 'tr' } // ห้ามตัดครึ่งบรรทัดตาราง
+                pagebreak: { mode: 'css', avoid: 'tr' } 
             };
             
             setTimeout(() => {
