@@ -25,7 +25,6 @@
         .table-wrapper::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         .table-wrapper::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
-        /* ขยายตารางเป็น 1200px เพื่อรองรับ 9 คอลัมน์ ไม่ให้บีบอัดเกินไป */
         .table-minimal { min-width: 1200px; width: 100%; border-collapse: separate; border-spacing: 0; }
         .table-minimal th { background-color: #f8fafc; color: #0f766e; font-weight: 600; padding: 1rem 1.5rem; font-size: 0.85rem; border-bottom: 2px solid #e2e8f0; white-space: nowrap; text-align: left;}
         .table-minimal td { padding: 1.25rem 1.5rem; color: #4b5563; font-size: 0.875rem; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
@@ -106,8 +105,8 @@
                             <th width="10%">วันที่อัปเดต</th>
                             <th width="12%">รหัสพัสดุ / ครุภัณฑ์</th>
                             <th width="15%">ชื่ออุปกรณ์</th>
-                            <th width="10%">รุ่น</th>
                             <th width="10%">ยี่ห้อ</th>
+                            <th width="10%">รุ่น</th>
                             <th width="8%" class="text-center">ปีที่จัดซื้อ</th>
                             <th width="10%" class="text-center">การรับประกัน</th>
                             <th width="12%" class="text-center">สถานะ</th>
@@ -127,7 +126,7 @@
         // =========================================================================
         // ⚠️ ขั้นตอนที่ 1: นำลิงก์ CSV จาก Google Sheets แผ่นงาน Equipment มาใส่ตรงนี้ ⚠️
         // =========================================================================
-        const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRZZibUzzgdZ-lCiuC2r9LdaYrjHZKnbUdOYCxJLDaIF4qUmxw8LuKX1FlXr2ADxHPNknSsiWTkncqJ/pub?gid=850126798&single=true&output=csv"; 
+        const CSV_URL = "ใส่_ลิงก์_CSV_ของแผ่นงาน_Equipment_ตรงนี้"; 
 
         async function fetchEquipmentData() {
             if (!CSV_URL || CSV_URL.includes('ใส่_ลิงก์_CSV')) {
@@ -138,13 +137,18 @@
             try {
                 const response = await fetch(CSV_URL);
                 const csvText = await response.text();
-                const data = csvToJSON(csvText);
                 
+                // ตรวจสอบเบื้องต้นว่าเป็นไฟล์ HTML หรือเปล่า (กรณีเผลอก๊อปลิงก์ผิด)
+                if (csvText.trim().toLowerCase().startsWith('<!doctype html>') || csvText.includes('<html')) {
+                    throw new Error("ลิงก์ที่ใส่ไม่ใช่ไฟล์ CSV (น่าจะเป็นลิงก์หน้าเว็บ กรุณากดเผยแพร่ให้เป็นค่าที่คั่นด้วยจุลภาค)");
+                }
+
+                const data = csvToJSON(csvText);
                 renderTable(data);
                 updateDashboardCounts(data);
             } catch (err) {
                 console.error("Error:", err);
-                document.getElementById('equipmentTableBody').innerHTML = `<tr><td colspan="9" class="text-center py-10 text-red-500 text-sm">ไม่สามารถดึงข้อมูลได้ กรุณาตรวจสอบลิงก์ CSV</td></tr>`;
+                document.getElementById('equipmentTableBody').innerHTML = `<tr><td colspan="9" class="text-center py-10 text-red-500 text-sm bg-red-50">เกิดข้อผิดพลาด: ${err.message}</td></tr>`;
             }
         }
 
@@ -152,10 +156,13 @@
             const lines = csv.split('\n');
             const result = [];
             if(lines.length <= 1) return result;
-            const headers = lines[0].split(',').map(h => h.replace(/^"|"$/g, '').trim());
+            
+            // ลบ \r ออกเผื่อมี
+            const headers = lines[0].split(',').map(h => h.replace(/^"|"$/g, '').trim().replace(/\r$/, ''));
             
             for (let i = 1; i < lines.length; i++) {
-                if(!lines[i].trim()) continue;
+                if(!lines[i].trim() || lines[i].trim() === '\r') continue; // ข้ามบรรทัดว่าง
+                
                 const obj = {};
                 let rowStr = lines[i];
                 let inQuotes = false; let currentVal = ""; let cols = [];
@@ -164,10 +171,16 @@
                     else if(char === ',' && !inQuotes) { cols.push(currentVal.trim()); currentVal = ""; }
                     else currentVal += char;
                 }
-                cols.push(currentVal.trim());
+                cols.push(currentVal.trim().replace(/\r$/, ''));
                 
+                // ถ้ารายการว่างเปล่าหมดเลย ให้ข้าม
+                if (cols.every(val => !val || val === '')) continue;
+
                 headers.forEach((header, index) => {
-                    obj[header] = cols[index] ? cols[index].replace(/^"|"$/g, '') : "";
+                    let val = cols[index] ? cols[index].replace(/^"|"$/g, '') : "";
+                    // จัดการชื่อคอลัมน์ที่มีเว้นวรรคให้ตรงเป๊ะ
+                    const cleanHeader = header.replace(/\s+/g, ' ').trim(); 
+                    obj[cleanHeader] = val;
                 });
                 result.push(obj);
             }
@@ -179,7 +192,7 @@
             let html = '';
             
             data.slice().reverse().forEach(row => {
-                // 1. สถานะการใช้งาน (ป้ายสี)
+                // 1. สถานะการใช้งาน (อ่านจากคอลัมน์ สถานะปัจจุบัน)
                 const status = row['สถานะปัจจุบัน'] || row['สถานะ'] || '-';
                 let badgeClass = 'badge-warning'; 
                 let icon = 'ph-clock';
@@ -196,7 +209,7 @@
                 const badgeHtml = `<span class="badge ${badgeClass}"><i class="ph ${icon}"></i> ${status}</span>`;
                 
                 // 2. ปีที่จัดซื้อ (แปลง ค.ศ. เป็น พ.ศ. อัตโนมัติ)
-                let yearPurchased = row['ปีที่จัดซื้อ'] || row['จำนวน'] || '-'; 
+                let yearPurchased = row['ปีที่จัดซื้อ'] || '-'; 
                 if (yearPurchased !== '-') {
                     let yearMatch = yearPurchased.toString().match(/\b(19\d{2}|20\d{2}|24\d{2}|25\d{2})\b/);
                     if (yearMatch) {
@@ -205,32 +218,31 @@
                     }
                 }
 
-                // 3. สถานะการรับประกัน (ทำสีข้อความและไอคอน)
+                // 3. สถานะการรับประกัน (อ่านจากคอลัมน์ สถานะการรับประกัน)
                 const warrantyStatus = row['สถานะการรับประกัน'] || '-';
                 let warrantyHtml = `<span class="text-gray-600 text-sm">${warrantyStatus}</span>`;
                 
-                if(warrantyStatus.includes('หมดประกัน')) {
+                if(warrantyStatus.includes('หมดประกัน') || warrantyStatus.includes('ไม่มี')) {
                     warrantyHtml = `<span class="text-red-500 text-sm font-medium"><i class="ph ph-shield-warning"></i> หมดประกัน</span>`;
-                } else if(warrantyStatus.includes('ในประกัน') || warrantyStatus.includes('มีประกัน')) {
+                } else if(warrantyStatus.includes('ในประกัน') || warrantyStatus.includes('มีประกัน') || warrantyStatus.includes('ปี')) {
                     warrantyHtml = `<span class="text-green-600 text-sm font-medium"><i class="ph ph-shield-check"></i> ในประกัน</span>`;
                 }
 
-                // 4. ดึงข้อมูล รุ่น และ ยี่ห้อ
                 const model = row['รุ่น'] || '-';
                 const brand = row['ยี่ห้อ'] || '-';
                 
-                // 5. สร้างแถวข้อมูลตาราง 9 คอลัมน์
+                // สร้างแถวข้อมูลตาราง 9 คอลัมน์ (สลับ ยี่ห้อ ขึ้นก่อน รุ่น)
                 html += `
                 <tr class="search-row">
-                    <td class="text-gray-500">${row['วันที่อัปเดต'] || row['วันที่'] || '-'}</td>
-                    <td class="font-bold text-teal-900 font-mono">${row['เลขพัสดุ / รหัสครุภัณฑ์'] || row['รหัสพัสดุ'] || '-'}</td>
+                    <td class="text-gray-500">${row['วันที่อัปเดต'] || '-'}</td>
+                    <td class="font-bold text-teal-900 font-mono">${row['เลขพัสดุ / รหัสครุภัณฑ์'] || row['เลขพัสดุ/รหัสครุภัณฑ์'] || '-'}</td>
                     <td class="font-medium text-gray-800">${row['ชื่ออุปกรณ์'] || '-'}</td>
-                    <td class="text-gray-600">${model}</td>
                     <td class="text-gray-600">${brand}</td>
+                    <td class="text-gray-600">${model}</td>
                     <td class="text-center text-gray-600 font-medium">${yearPurchased}</td>
                     <td class="text-center">${warrantyHtml}</td>
                     <td class="text-center">${badgeHtml}</td>
-                    <td class="text-gray-500 text-sm">${row['รายละเอียดการซ่อม / หมายเหตุ'] || row['หมายเหตุ'] || '-'}</td>
+                    <td class="text-gray-500 text-sm">${row['รายละเอียดการซ่อม / หมายเหตุ'] || row['รายละเอียดการซ่อม/หมายเหตุ'] || row['หมายเหตุ'] || '-'}</td>
                 </tr>`;
             });
             
