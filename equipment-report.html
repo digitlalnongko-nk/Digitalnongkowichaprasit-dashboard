@@ -36,7 +36,7 @@
         .badge-warning { background-color: #fef9c3; color: #854d0e; }
         
         /* =======================================================
-           🌟 ระบบหน้าจอสำหรับ PDF โดยเฉพาะ (แก้ปัญหาขาด/ทับ/ล้น 100%)
+           🌟 ระบบหน้าจอสำหรับ PDF แนวนอน (A4 Landscape)
            ======================================================= */
         .pdf-header { display: none; text-align: center; margin-bottom: 20px; }
         .pdf-mode .pdf-header { display: block; }
@@ -45,17 +45,17 @@
         .pdf-mode { 
             background: white !important; 
             padding: 15px 20px !important; 
-            width: 1122px !important; /* ล็อคความกว้างเท่ากระดาษ A4 แนวนอนพอดีเป๊ะ */
+            width: 1122px !important; /* ล็อคความกว้าง A4 แนวนอน (96 DPI) */
             max-width: 1122px !important;
             margin: 0 !important;
             box-sizing: border-box !important;
         }
         
-        /* ปลดล็อกการซ่อนข้อมูล (Overflow) เพื่อไม่ให้โดนตัดขอบ */
+        /* 1. ยกเลิกกล่องครอบและ Scrollbar ทั้งหมด เพื่อให้กล้องแคปได้เต็มๆ */
         .pdf-mode .card { box-shadow: none !important; border: none !important; border-radius: 0 !important; padding: 0 !important; overflow: visible !important; }
-        .pdf-mode .table-wrapper { overflow: visible !important; width: 100% !important; } 
+        .pdf-mode .table-wrapper { overflow: visible !important; width: 1082px !important; /* 1122 - padding ซ้ายขวา */ margin: 0 !important;} 
         
-        /* ล็อคตารางให้จัดวางแบบ Fixed เพื่อควบคุมความกว้างได้ 100% */
+        /* 2. ล็อคโครงสร้างตารางไม่ให้ดิ้น */
         .pdf-mode .table-minimal { 
             min-width: 100% !important; 
             width: 100% !important; 
@@ -63,26 +63,28 @@
             border-collapse: collapse !important; 
         }
         
+        /* 3. จัดการข้อความยาวๆ ให้ตัดขึ้นบรรทัดใหม่ ไม่ทับกัน */
         .pdf-mode .table-minimal th, 
         .pdf-mode .table-minimal td { 
-            padding: 6px 4px !important; 
+            padding: 8px 4px !important; 
             font-size: 11px !important; 
             white-space: normal !important; 
             word-wrap: break-word !important; 
+            overflow-wrap: break-word !important;
             border-bottom: 1px solid #e2e8f0 !important;
             vertical-align: top !important; 
         } 
 
-        /* 🌟 ล็อคความกว้างแต่ละคอลัมน์ให้รวมกันได้ 100% พอดี ป้องกันการทับกัน */
-        .pdf-mode .table-minimal th:nth-child(1), .pdf-mode .table-minimal td:nth-child(1) { width: 9%; }  /* วันที่ */
-        .pdf-mode .table-minimal th:nth-child(2), .pdf-mode .table-minimal td:nth-child(2) { width: 14%; } /* รหัสพัสดุ */
-        .pdf-mode .table-minimal th:nth-child(3), .pdf-mode .table-minimal td:nth-child(3) { width: 17%; } /* ชื่ออุปกรณ์ */
-        .pdf-mode .table-minimal th:nth-child(4), .pdf-mode .table-minimal td:nth-child(4) { width: 9%; }  /* ยี่ห้อ */
-        .pdf-mode .table-minimal th:nth-child(5), .pdf-mode .table-minimal td:nth-child(5) { width: 9%; }  /* รุ่น */
-        .pdf-mode .table-minimal th:nth-child(6), .pdf-mode .table-minimal td:nth-child(6) { width: 7%; }  /* ปีที่จัดซื้อ */
-        .pdf-mode .table-minimal th:nth-child(7), .pdf-mode .table-minimal td:nth-child(7) { width: 10%; } /* ประกัน */
-        .pdf-mode .table-minimal th:nth-child(8), .pdf-mode .table-minimal td:nth-child(8) { width: 10%; }  /* สถานะ */
-        .pdf-mode .table-minimal th:nth-child(9), .pdf-mode .table-minimal td:nth-child(9) { width: 15%; } /* หมายเหตุ */
+        /* 4. แบ่งสัดส่วน 9 คอลัมน์ให้รวมกันได้ 100% พอดีเป๊ะ */
+        .pdf-mode .table-minimal th:nth-child(1), .pdf-mode .table-minimal td:nth-child(1) { width: 9%; }   /* วันที่ */
+        .pdf-mode .table-minimal th:nth-child(2), .pdf-mode .table-minimal td:nth-child(2) { width: 13%; }  /* รหัส */
+        .pdf-mode .table-minimal th:nth-child(3), .pdf-mode .table-minimal td:nth-child(3) { width: 18%; }  /* ชื่ออุปกรณ์ */
+        .pdf-mode .table-minimal th:nth-child(4), .pdf-mode .table-minimal td:nth-child(4) { width: 9%; }   /* ยี่ห้อ */
+        .pdf-mode .table-minimal th:nth-child(5), .pdf-mode .table-minimal td:nth-child(5) { width: 10%; }  /* รุ่น */
+        .pdf-mode .table-minimal th:nth-child(6), .pdf-mode .table-minimal td:nth-child(6) { width: 6%; }   /* ปี */
+        .pdf-mode .table-minimal th:nth-child(7), .pdf-mode .table-minimal td:nth-child(7) { width: 9%; }   /* ประกัน */
+        .pdf-mode .table-minimal th:nth-child(8), .pdf-mode .table-minimal td:nth-child(8) { width: 11%; }  /* สถานะ */
+        .pdf-mode .table-minimal th:nth-child(9), .pdf-mode .table-minimal td:nth-child(9) { width: 15%; }  /* หมายเหตุ */
 
         .pdf-mode .badge { padding: 4px 6px !important; font-size: 10px !important; }
     </style>
@@ -143,7 +145,7 @@
 
         <!-- ตารางข้อมูล -->
         <div class="card overflow-hidden">
-            <div class="table-wrapper">
+            <div class="table-wrapper" id="print-table-wrapper">
                 <table class="table-minimal" id="equipment-table">
                     <thead>
                         <tr>
@@ -155,6 +157,7 @@
                             <th class="text-center">ปีที่จัดซื้อ</th>
                             <th class="text-center">การรับประกัน</th>
                             <th class="text-center">สถานะ</th>
+                            <!-- 🌟 แก้ไขชื่อคอลัมน์เป็น "หมายเหตุ" -->
                             <th class="text-left">หมายเหตุ</th>
                         </tr>
                     </thead>
@@ -322,13 +325,15 @@
             const today = new Date();
             document.getElementById('print-date').innerText = `ข้อมูล ณ วันที่: ${today.toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}`;
             
-            // 🌟 ท่าไม้ตาย: เลื่อนตารางไปซ้ายสุดก่อนแคปภาพ ป้องกันคอลัมน์แรกๆ โดนตัดหายไป
-            const tableWrapper = document.querySelector('.table-wrapper');
+            // 🌟 แก้ปัญหาคอลัมน์หาย: บังคับเคลียร์ระยะ Scroll ให้เป็น 0
+            const tableWrapper = document.getElementById('print-table-wrapper');
             if (tableWrapper) {
-                tableWrapper.scrollLeft = 0;
+                tableWrapper.style.scrollBehavior = 'auto'; // ปิด smooth scroll ชั่วคราว
+                tableWrapper.scrollLeft = 0; 
             }
             window.scrollTo(0, 0);
 
+            // ใส่โหมด PDF
             element.classList.add('pdf-mode');
             
             const opt = { 
@@ -338,14 +343,17 @@
                 html2canvas: { 
                     scale: 2, 
                     useCORS: true,
+                    x: 0, // บังคับเริ่มแคปเจอร์ที่จุดซ้ายสุด
+                    y: 0,
+                    scrollX: 0,
                     scrollY: 0,
-                    scrollX: 0, // บังคับให้แกน X เริ่มจาก 0 เสมอ
-                    windowWidth: 1122 // แมทช์กับความกว้าง A4 แนวนอน
+                    windowWidth: 1122 
                 }, 
                 jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' },
                 pagebreak: { mode: 'css', avoid: 'tr' } 
             };
             
+            // 🌟 หน่วงเวลาเพิ่มขึ้นเป็น 600ms ให้เบราว์เซอร์ล้างค่า Scroll และเคลียร์หน้าจอก่อนถ่ายภาพ
             setTimeout(() => {
                 html2pdf().set(opt).from(element).save().then(() => {
                     element.classList.remove('pdf-mode');
@@ -357,7 +365,7 @@
                     btn.innerHTML = originalBtnHtml;
                     btn.disabled = false;
                 });
-            }, 500);
+            }, 600);
         }
 
         window.onload = fetchEquipmentData;
