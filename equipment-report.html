@@ -35,42 +35,56 @@
         .badge-danger { background-color: #fee2e2; color: #991b1b; }
         .badge-warning { background-color: #fef9c3; color: #854d0e; }
         
-        /* 🌟 ระบบแสดงผลสำหรับ PDF (แก้ตารางล้นแบบปลอดภัย ไม่ทำฟอนต์พัง) */
+        /* =======================================================
+           🌟 ระบบหน้าจอสำหรับ PDF โดยเฉพาะ (แก้ปัญหาขาด/ทับ/ล้น 100%)
+           ======================================================= */
         .pdf-header { display: none; text-align: center; margin-bottom: 20px; }
         .pdf-mode .pdf-header { display: block; }
         .pdf-mode .no-print { display: none !important; }
         
         .pdf-mode { 
             background: white !important; 
-            padding: 20px !important; 
-            /* กางกระดาษจำลองให้กว้าง 1300px เพื่อให้ตารางวางได้เต็มๆ โดยไม่โดนบีบ */
-            width: 1300px !important; 
-            max-width: none !important;
+            padding: 15px 20px !important; 
+            width: 1122px !important; /* ล็อคความกว้างเท่ากระดาษ A4 แนวนอนพอดีเป๊ะ */
+            max-width: 1122px !important;
             margin: 0 !important;
+            box-sizing: border-box !important;
         }
         
-        .pdf-mode .card { box-shadow: none !important; border: none !important; border-radius: 0 !important; padding: 0 !important; }
-        /* ปลดล็อกให้ตารางแสดงเต็มความกว้าง */
+        /* ปลดล็อกการซ่อนข้อมูล (Overflow) เพื่อไม่ให้โดนตัดขอบ */
+        .pdf-mode .card { box-shadow: none !important; border: none !important; border-radius: 0 !important; padding: 0 !important; overflow: visible !important; }
         .pdf-mode .table-wrapper { overflow: visible !important; width: 100% !important; } 
         
-        /* ปล่อยให้ตารางจัด Layout ตามธรรมชาติ ป้องกันฟอนต์ไทยสระลอย/แตก */
+        /* ล็อคตารางให้จัดวางแบบ Fixed เพื่อควบคุมความกว้างได้ 100% */
         .pdf-mode .table-minimal { 
             min-width: 100% !important; 
             width: 100% !important; 
-            table-layout: auto !important; 
+            table-layout: fixed !important; 
             border-collapse: collapse !important; 
         }
         
         .pdf-mode .table-minimal th, 
         .pdf-mode .table-minimal td { 
-            padding: 10px 8px !important; 
-            font-size: 12px !important; /* ปรับขนาดให้พอดีตา */
+            padding: 6px 4px !important; 
+            font-size: 11px !important; 
             white-space: normal !important; 
+            word-wrap: break-word !important; 
             border-bottom: 1px solid #e2e8f0 !important;
-            vertical-align: top !important; /* จัดข้อความให้อยู่ด้านบน */
+            vertical-align: top !important; 
         } 
 
-        .pdf-mode .badge { padding: 4px 8px !important; font-size: 11px !important; }
+        /* 🌟 ล็อคความกว้างแต่ละคอลัมน์ให้รวมกันได้ 100% พอดี ป้องกันการทับกัน */
+        .pdf-mode .table-minimal th:nth-child(1), .pdf-mode .table-minimal td:nth-child(1) { width: 9%; }  /* วันที่ */
+        .pdf-mode .table-minimal th:nth-child(2), .pdf-mode .table-minimal td:nth-child(2) { width: 14%; } /* รหัสพัสดุ */
+        .pdf-mode .table-minimal th:nth-child(3), .pdf-mode .table-minimal td:nth-child(3) { width: 17%; } /* ชื่ออุปกรณ์ */
+        .pdf-mode .table-minimal th:nth-child(4), .pdf-mode .table-minimal td:nth-child(4) { width: 9%; }  /* ยี่ห้อ */
+        .pdf-mode .table-minimal th:nth-child(5), .pdf-mode .table-minimal td:nth-child(5) { width: 9%; }  /* รุ่น */
+        .pdf-mode .table-minimal th:nth-child(6), .pdf-mode .table-minimal td:nth-child(6) { width: 7%; }  /* ปีที่จัดซื้อ */
+        .pdf-mode .table-minimal th:nth-child(7), .pdf-mode .table-minimal td:nth-child(7) { width: 10%; } /* ประกัน */
+        .pdf-mode .table-minimal th:nth-child(8), .pdf-mode .table-minimal td:nth-child(8) { width: 10%; }  /* สถานะ */
+        .pdf-mode .table-minimal th:nth-child(9), .pdf-mode .table-minimal td:nth-child(9) { width: 15%; } /* หมายเหตุ */
+
+        .pdf-mode .badge { padding: 4px 6px !important; font-size: 10px !important; }
     </style>
 </head>
 <body class="min-h-screen p-4 md:p-8">
@@ -133,15 +147,15 @@
                 <table class="table-minimal" id="equipment-table">
                     <thead>
                         <tr>
-                            <th width="10%" class="text-center">วันที่อัปเดต</th>
-                            <th width="13%" class="text-center">รหัสพัสดุ / ครุภัณฑ์</th>
-                            <th width="16%" class="text-left">ชื่ออุปกรณ์</th>
-                            <th width="9%" class="text-center">ยี่ห้อ</th>
-                            <th width="10%" class="text-center">รุ่น</th>
-                            <th width="8%" class="text-center">ปีที่จัดซื้อ</th>
-                            <th width="10%" class="text-center">การรับประกัน</th>
-                            <th width="9%" class="text-center">สถานะ</th>
-                            <th width="15%" class="text-left">หมายเหตุ / การซ่อม</th>
+                            <th class="text-center">วันที่อัปเดต</th>
+                            <th class="text-center">รหัสพัสดุ / ครุภัณฑ์</th>
+                            <th class="text-left">ชื่ออุปกรณ์</th>
+                            <th class="text-center">ยี่ห้อ</th>
+                            <th class="text-center">รุ่น</th>
+                            <th class="text-center">ปีที่จัดซื้อ</th>
+                            <th class="text-center">การรับประกัน</th>
+                            <th class="text-center">สถานะ</th>
+                            <th class="text-left">หมายเหตุ</th>
                         </tr>
                     </thead>
                     <tbody id="equipmentTableBody">
@@ -308,10 +322,15 @@
             const today = new Date();
             document.getElementById('print-date').innerText = `ข้อมูล ณ วันที่: ${today.toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}`;
             
+            // 🌟 ท่าไม้ตาย: เลื่อนตารางไปซ้ายสุดก่อนแคปภาพ ป้องกันคอลัมน์แรกๆ โดนตัดหายไป
+            const tableWrapper = document.querySelector('.table-wrapper');
+            if (tableWrapper) {
+                tableWrapper.scrollLeft = 0;
+            }
             window.scrollTo(0, 0);
+
             element.classList.add('pdf-mode');
             
-            // 🌟 ให้ระบบทำงานด้วยขนาดกว้าง 1300px แล้วย่อส่วนให้พอดีกับกระดาษ A4 แนวนอนอัตโนมัติ
             const opt = { 
                 margin: [0.3, 0.2, 0.3, 0.2], 
                 filename: `Equipment_Report_${today.getTime()}.pdf`, 
@@ -320,7 +339,8 @@
                     scale: 2, 
                     useCORS: true,
                     scrollY: 0,
-                    windowWidth: 1300 // ความกว้างต้องเท่ากับใน CSS .pdf-mode
+                    scrollX: 0, // บังคับให้แกน X เริ่มจาก 0 เสมอ
+                    windowWidth: 1122 // แมทช์กับความกว้าง A4 แนวนอน
                 }, 
                 jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' },
                 pagebreak: { mode: 'css', avoid: 'tr' } 
