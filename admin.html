@@ -51,42 +51,44 @@
     </div>
 
     <!-- 📝 โซนกรอกข้อมูลหลัก -->
-    <div id="adminZone" class="hidden w-full max-w-2xl">
-        <div class="flex items-center justify-between mb-4">
-            <div>
-                <h1 class="text-2xl font-bold text-green-900">บันทึกข้อมูลเข้าระบบ</h1>
-                <p class="text-sm text-gray-500">ข้อมูลจะถูกส่งไปยัง Google Sheets อัตโนมัติ</p>
-            </div>
-            <button onclick="logout()" class="bg-white border border-red-100 text-red-500 hover:bg-red-50 px-4 py-2 rounded-xl text-sm font-medium transition flex items-center gap-2 shadow-sm">
-                <i class="ph ph-sign-out"></i> ออกจากระบบ
-            </button>
-        </div>
-
-        <!-- 🌟 แถบเมนู 6 หัวข้อ เลื่อนซ้ายขวาได้ -->
-        <div class="flex overflow-x-auto gap-2 pb-2 mb-4 hide-scrollbar">
-            <button class="tab-btn active flex items-center" onclick="switchTab('usage', this)"><i class="ph ph-users mr-1.5"></i> ผู้เข้าใช้งาน</button>
-            <button class="tab-btn flex items-center" onclick="switchTab('borrow', this)"><i class="ph ph-archive mr-1.5"></i> ยืม-คืน</button>
-            <button class="tab-btn flex items-center" onclick="switchTab('electric', this)"><i class="ph ph-plug mr-1.5"></i> ไฟฟ้า</button>
-            <button class="tab-btn flex items-center" onclick="switchTab('activity', this)"><i class="ph ph-images-square mr-1.5"></i> กิจกรรม</button>
-            <button class="tab-btn flex items-center" onclick="switchTab('gallery', this)"><i class="ph ph-folder-star mr-1.5"></i> แกลอรีรูปภาพ</button>
-            <button class="tab-btn flex items-center" onclick="switchTab('staff', this)"><i class="ph ph-user-circle-gear mr-1.5"></i> เจ้าหน้าที่</button>
-        </div>
-
-        <div class="card p-6 md:p-8">
-            
-            <!-- ฟอร์ม 1: ผู้เข้าใช้งาน -->
-            <div id="form-usage" class="form-section active">
+            <!-- 🌟 ฟอร์ม 7: อุปกรณ์/พัสดุ (อัปเดต 9 คอลัมน์) -->
+            <div id="form-equipment" class="form-section">
                 <h2 class="text-lg font-bold text-gray-800 mb-4 border-b border-gray-100 pb-3 flex items-center gap-2">
-                    <i class="ph ph-chart-pie-slice text-green-600 text-xl"></i> เพิ่มข้อมูลผู้เข้าใช้งาน (Usage)
+                    <i class="ph ph-desktop text-teal-600 text-xl"></i> อัปเดตสถานะอุปกรณ์ (Equipment)
                 </h2>
-                <form onsubmit="submitData(event, 'Usage', ['u_date', 'u_room', 'u_count', 'u_note'], 'btn-usage')">
+                <!-- ⚠️ แก้ไข Array การส่งข้อมูลให้รับ 9 ค่า ตรงตามคอลัมน์ A ถึง I -->
+                <form onsubmit="submitData(event, 'Equipment', ['eq_date', 'eq_id', 'eq_name', 'eq_model', 'eq_brand', 'eq_year', 'eq_warranty', 'eq_status', 'eq_note'], 'btn-equipment')">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
-                        <div><label class="block text-sm font-medium text-gray-700 mb-1">วันที่ *</label><input type="text" id="u_date" required placeholder="เช่น 15 ม.ค. 69" class="input-field"></div>
-                        <div><label class="block text-sm font-medium text-gray-700 mb-1">รายการ / ห้อง *</label><input type="text" id="u_room" required placeholder="เช่น ห้องปฏิบัติการ 1" class="input-field"></div>
-                        <div><label class="block text-sm font-medium text-gray-700 mb-1">จำนวนผู้ใช้งาน (คน) *</label><input type="number" id="u_count" required min="1" placeholder="ระบุตัวเลข" class="input-field"></div>
-                        <div><label class="block text-sm font-medium text-gray-700 mb-1">หมายเหตุ</label><input type="text" id="u_note" placeholder="เช่น ใช้งานทั่วไป" class="input-field"></div>
+                        <div><label class="block text-sm font-medium text-gray-700 mb-1">วันที่อัปเดต *</label><input type="text" id="eq_date" required placeholder="เช่น 15 ม.ค. 69" class="input-field"></div>
+                        <div><label class="block text-sm font-medium text-gray-700 mb-1">เลขพัสดุ / รหัสครุภัณฑ์ *</label><input type="text" id="eq_id" required placeholder="เช่น 1234-567-89" class="input-field font-semibold text-teal-900"></div>
+                        
+                        <div class="md:col-span-2"><label class="block text-sm font-medium text-gray-700 mb-1">ชื่ออุปกรณ์ *</label><input type="text" id="eq_name" required placeholder="เช่น คอมพิวเตอร์ตั้งโต๊ะ เครื่องที่ 1" class="input-field"></div>
+                        
+                        <!-- 🌟 เพิ่มช่องกรอก รุ่น และ ยี่ห้อ -->
+                        <div><label class="block text-sm font-medium text-gray-700 mb-1">รุ่น *</label><input type="text" id="eq_model" required placeholder="เช่น Aspire 3" class="input-field"></div>
+                        <div><label class="block text-sm font-medium text-gray-700 mb-1">ยี่ห้อ *</label><input type="text" id="eq_brand" required placeholder="เช่น Acer, HP" class="input-field"></div>
+
+                        <div><label class="block text-sm font-medium text-gray-700 mb-1">ปีที่จัดซื้อ (พ.ศ.) *</label><input type="text" id="eq_year" required placeholder="เช่น 2567" class="input-field"></div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">สถานะการรับประกัน *</label>
+                            <select id="eq_warranty" required class="input-field">
+                                <option value="อยู่ในประกัน">✅ อยู่ในประกัน</option>
+                                <option value="หมดประกัน">❌ หมดประกันแล้ว</option>
+                                <option value="ไม่ระบุ/ไม่ทราบ">❓ ไม่ระบุ/ไม่ทราบ</option>
+                            </select>
+                        </div>
+
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">สถานะปัจจุบัน *</label>
+                            <select id="eq_status" required class="input-field">
+                                <option value="ใช้งานได้">✅ ใช้งานได้ (ปกติ)</option>
+                                <option value="ชำรุด">❌ ใช้งานไม่ได้ (ชำรุด)</option>
+                                <option value="อยู่ระหว่างดำเนินการซ่อม">⏳ ใช้งานไม่ได้ (อยู่ระหว่างดำเนินการซ่อม)</option>
+                            </select>
+                        </div>
+                        <div class="md:col-span-2"><label class="block text-sm font-medium text-gray-700 mb-1">รายละเอียดการซ่อม / หมายเหตุ</label><input type="text" id="eq_note" placeholder="ระบุอาการเสีย หรือข้อมูลเพิ่มเติม" class="input-field"></div>
                     </div>
-                    <button type="submit" id="btn-usage" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3.5 rounded-xl transition flex items-center justify-center shadow-lg hover:shadow-green-600/30 text-lg"><i class="ph ph-paper-plane-right mr-2"></i> บันทึกข้อมูล</button>
+                    <button type="submit" id="btn-equipment" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-medium py-3.5 rounded-xl transition flex items-center justify-center shadow-lg hover:shadow-teal-600/30 text-lg"><i class="ph ph-paper-plane-right mr-2"></i> บันทึกข้อมูลสถานะ</button>
                 </form>
             </div>
 
@@ -214,6 +216,31 @@
 
                     </div>
                     <button type="submit" id="btn-staff" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3.5 rounded-xl transition flex items-center justify-center shadow-lg hover:shadow-green-600/30 text-lg"><i class="ph ph-paper-plane-right mr-2"></i> บันทึกข้อมูล</button>
+                </form>
+            </div>
+
+            <!-- 🌟 ฟอร์ม 7: อุปกรณ์/พัสดุ (เพิ่มใหม่) -->
+            <div id="form-equipment" class="form-section">
+                <h2 class="text-lg font-bold text-gray-800 mb-4 border-b border-gray-100 pb-3 flex items-center gap-2">
+                    <i class="ph ph-desktop text-teal-600 text-xl"></i> อัปเดตสถานะอุปกรณ์ (Equipment)
+                </h2>
+                <form onsubmit="submitData(event, 'Equipment', ['eq_date', 'eq_id', 'eq_name', 'eq_qty', 'eq_status', 'eq_note'], 'btn-equipment')">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
+                        <div><label class="block text-sm font-medium text-gray-700 mb-1">วันที่อัปเดต *</label><input type="text" id="eq_date" required placeholder="เช่น 15 ม.ค. 69" class="input-field"></div>
+                        <div><label class="block text-sm font-medium text-gray-700 mb-1">เลขพัสดุ / รหัสครุภัณฑ์ *</label><input type="text" id="eq_id" required placeholder="เช่น 1234-567-89" class="input-field font-semibold text-teal-900"></div>
+                        <div class="md:col-span-2"><label class="block text-sm font-medium text-gray-700 mb-1">ชื่ออุปกรณ์ *</label><input type="text" id="eq_name" required placeholder="เช่น คอมพิวเตอร์ตั้งโต๊ะ เครื่องที่ 1" class="input-field"></div>
+                        <div><label class="block text-sm font-medium text-gray-700 mb-1">จำนวน *</label><input type="number" id="eq_qty" required min="1" value="1" placeholder="ระบุจำนวน" class="input-field"></div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">สถานะปัจจุบัน *</label>
+                            <select id="eq_status" required class="input-field">
+                                <option value="ใช้งานได้">✅ ใช้งานได้ (ปกติ)</option>
+                                <option value="ชำรุด">❌ ใช้งานไม่ได้ (ชำรุด)</option>
+                                <option value="อยู่ระหว่างดำเนินการซ่อม">⏳ ใช้งานไม่ได้ (อยู่ระหว่างดำเนินการซ่อม)</option>
+                            </select>
+                        </div>
+                        <div class="md:col-span-2"><label class="block text-sm font-medium text-gray-700 mb-1">รายละเอียดการซ่อม / หมายเหตุ</label><input type="text" id="eq_note" placeholder="ระบุอาการเสีย หรือข้อมูลเพิ่มเติม" class="input-field"></div>
+                    </div>
+                    <button type="submit" id="btn-equipment" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3.5 rounded-xl transition flex items-center justify-center shadow-lg hover:shadow-green-600/30 text-lg"><i class="ph ph-paper-plane-right mr-2"></i> บันทึกข้อมูลสถานะ</button>
                 </form>
             </div>
 
