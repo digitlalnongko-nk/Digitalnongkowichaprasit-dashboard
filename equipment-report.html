@@ -26,7 +26,6 @@
         .table-wrapper::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
         .table-minimal { min-width: 1200px; width: 100%; border-collapse: separate; border-spacing: 0; }
-        /* 🌟 เอา text-align: left ออก เพื่อให้จัดกลางได้ตามคลาสของ Tailwind */
         .table-minimal th { background-color: #f8fafc; color: #0f766e; font-weight: 600; padding: 1rem 1.5rem; font-size: 0.85rem; border-bottom: 2px solid #e2e8f0; white-space: nowrap; }
         .table-minimal td { padding: 1.25rem 1.5rem; color: #4b5563; font-size: 0.875rem; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
         .table-minimal tbody tr:hover { background-color: #f8fafc; }
@@ -36,11 +35,22 @@
         .badge-danger { background-color: #fee2e2; color: #991b1b; }
         .badge-warning { background-color: #fef9c3; color: #854d0e; }
         
+        /* 🌟 ปรับปรุงระบบแสดงผลสำหรับ PDF เพื่อแก้ปัญหาตารางแหว่ง */
         .pdf-header { display: none; text-align: center; margin-bottom: 20px; }
         .pdf-mode .pdf-header { display: block; }
         .pdf-mode .no-print { display: none !important; }
-        .pdf-mode { background: white; padding: 20px; }
-        .pdf-mode .card { box-shadow: none; border: none; }
+        
+        .pdf-mode { 
+            background: white !important; 
+            padding: 0 !important; 
+            width: 1400px !important; /* บังคับความกว้างให้ครอบคลุมตาราง */
+            max-width: none !important;
+            margin: 0 !important;
+        }
+        .pdf-mode .card { box-shadow: none !important; border: none !important; }
+        .pdf-mode .table-wrapper { overflow: visible !important; width: auto !important; } /* ปลดล็อก scroll */
+        .pdf-mode .table-minimal th { padding: 0.75rem 1rem !important; } /* ลด padding ตอนปริ้น */
+        .pdf-mode .table-minimal td { padding: 0.75rem 1rem !important; }
     </style>
 </head>
 <body class="min-h-screen p-4 md:p-8">
@@ -71,7 +81,8 @@
                     <i class="ph ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
                     <input type="text" id="searchInput" placeholder="ค้นหารหัส ชื่อ ยี่ห้อ..." class="w-full pl-9 pr-3 py-2 md:py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 text-xs md:text-sm transition" onkeyup="filterData()">
                 </div>
-                <button onclick="exportToPDF()" class="bg-teal-600 hover:bg-teal-700 text-white px-4 md:px-5 py-2 md:py-2.5 rounded-xl shadow-md transition flex items-center gap-2 font-medium text-xs md:text-sm flex-shrink-0">
+                <!-- ปุ่มกำลังจัดทำ PDF... -->
+                <button id="btn-export" onclick="exportToPDF()" class="bg-teal-600 hover:bg-teal-700 text-white px-4 md:px-5 py-2 md:py-2.5 rounded-xl shadow-md transition flex items-center gap-2 font-medium text-xs md:text-sm flex-shrink-0">
                     <i class="ph ph-file-pdf text-lg"></i> <span class="hidden sm:inline">Export PDF</span><span class="sm:hidden">PDF</span>
                 </button>
             </div>
@@ -100,9 +111,8 @@
         <!-- ตารางข้อมูล -->
         <div class="card overflow-hidden">
             <div class="table-wrapper">
-                <table class="table-minimal">
+                <table class="table-minimal" id="equipment-table">
                     <thead>
-                        <!-- 🌟 จัดระเบียบหัวตารางใหม่ให้ตรงกับข้อมูล -->
                         <tr>
                             <th width="10%" class="text-center">วันที่อัปเดต</th>
                             <th width="12%" class="text-center">รหัสพัสดุ / ครุภัณฑ์</th>
@@ -141,7 +151,7 @@
                 const csvText = await response.text();
                 
                 if (csvText.trim().toLowerCase().startsWith('<!doctype html>') || csvText.includes('<html')) {
-                    throw new Error("ลิงก์ที่ใส่ไม่ใช่ไฟล์ CSV (น่าจะเป็นลิงก์หน้าเว็บ กรุณากดเผยแพร่ให้เป็นค่าที่คั่นด้วยจุลภาค)");
+                    throw new Error("ลิงก์ที่ใส่ไม่ใช่ไฟล์ CSV");
                 }
 
                 const data = csvToJSON(csvText);
@@ -226,7 +236,6 @@
                 const model = row['รุ่น'] || '-';
                 const brand = row['ยี่ห้อ'] || '-';
                 
-                // 🌟 จัดเรียงข้อมูลให้ตรงกับหัวตาราง
                 html += `
                 <tr class="search-row">
                     <td class="text-center text-gray-500">${row['วันที่อัปเดต'] || '-'}</td>
@@ -271,22 +280,52 @@
 
         function exportToPDF() {
             const element = document.getElementById('report-content');
+            const btn = document.getElementById('btn-export');
+            const originalBtnHtml = btn.innerHTML;
+            
+            // เปลี่ยนปุ่มเป็นสถานะกำลังดาวน์โหลด
+            btn.innerHTML = '<i class="ph ph-spinner animate-spin text-lg"></i> <span class="hidden sm:inline">กำลังสร้าง PDF...</span>';
+            btn.disabled = true;
+
             const today = new Date();
             document.getElementById('print-date').innerText = `ข้อมูล ณ วันที่: ${today.toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}`;
             
+            // เลื่อนหน้าจอขึ้นบนสุดก่อนแคปภาพ ป้องกันการตกหล่น
+            window.scrollTo(0, 0);
+            
+            // เปิดโหมดจำลองหน้าจอความกว้าง 1400px
             element.classList.add('pdf-mode');
             
+            // 🌟 ตั้งค่า PDF ใหม่ให้ฉลาดขึ้น
             const opt = { 
-                margin: 0.3, 
+                margin: [0.4, 0.2, 0.4, 0.2], // บน, ซ้าย, ล่าง, ขวา (นิ้ว)
                 filename: `Equipment_Report_${today.getTime()}.pdf`, 
-                image: { type: 'jpeg', quality: 0.98 }, 
-                html2canvas: { scale: 2, useCORS: true }, 
-                jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' } 
+                image: { type: 'jpeg', quality: 1 }, 
+                html2canvas: { 
+                    scale: 2, 
+                    useCORS: true,
+                    scrollY: 0,
+                    windowWidth: 1400 // ให้ตรงกับความกว้างใน CSS .pdf-mode
+                }, 
+                jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' },
+                // 🌟 หัวใจสำคัญ: ป้องกันไม่ให้ตารางโดนหั่นครึ่งบรรทัดเวลาขึ้นหน้าใหม่
+                pagebreak: { mode: 'css', avoid: 'tr' } 
             };
             
-            html2pdf().set(opt).from(element).save().then(() => {
-                element.classList.remove('pdf-mode');
-            });
+            // ให้เวลาบราวเซอร์จัด Layout ใหม่ก่อนพิมพ์นิดนึง (0.5 วิ)
+            setTimeout(() => {
+                html2pdf().set(opt).from(element).save().then(() => {
+                    element.classList.remove('pdf-mode');
+                    btn.innerHTML = originalBtnHtml;
+                    btn.disabled = false;
+                }).catch(err => {
+                    console.error('PDF Error:', err);
+                    element.classList.remove('pdf-mode');
+                    btn.innerHTML = originalBtnHtml;
+                    btn.disabled = false;
+                    alert('เกิดข้อผิดพลาดในการสร้าง PDF ลองใหม่อีกครั้งนะครับ');
+                });
+            }, 500);
         }
 
         window.onload = fetchEquipmentData;
