@@ -35,22 +35,51 @@
         .badge-danger { background-color: #fee2e2; color: #991b1b; }
         .badge-warning { background-color: #fef9c3; color: #854d0e; }
         
-        /* 🌟 ปรับปรุงระบบแสดงผลสำหรับ PDF เพื่อแก้ปัญหาตารางแหว่ง */
+        /* 🌟 ระบบแสดงผลสำหรับ PDF โดยเฉพาะ (แก้ตารางล้น และตัวหนังสือทับกัน) */
         .pdf-header { display: none; text-align: center; margin-bottom: 20px; }
         .pdf-mode .pdf-header { display: block; }
         .pdf-mode .no-print { display: none !important; }
         
         .pdf-mode { 
             background: white !important; 
-            padding: 0 !important; 
-            width: 1400px !important; /* บังคับความกว้างให้ครอบคลุมตาราง */
+            padding: 15px !important; 
+            width: 1122px !important; /* ขนาดความกว้าง A4 แนวนอนพอดีเป๊ะ */
             max-width: none !important;
-            margin: 0 !important;
+            margin: 0 auto !important;
         }
-        .pdf-mode .card { box-shadow: none !important; border: none !important; }
-        .pdf-mode .table-wrapper { overflow: visible !important; width: auto !important; } /* ปลดล็อก scroll */
-        .pdf-mode .table-minimal th { padding: 0.75rem 1rem !important; } /* ลด padding ตอนปริ้น */
-        .pdf-mode .table-minimal td { padding: 0.75rem 1rem !important; }
+        .pdf-mode .card { box-shadow: none !important; border: none !important; border-radius: 0 !important; }
+        .pdf-mode .table-wrapper { overflow: hidden !important; width: 100% !important; } 
+        
+        /* 🌟 บังคับให้ตารางยืดหดพอดี A4 และกำหนดตารางให้ตายตัวมากขึ้น */
+        .pdf-mode .table-minimal { 
+            min-width: 100% !important; 
+            width: 100% !important; 
+            table-layout: fixed !important; /* สำคัญมาก: ป้องกันไม่ให้คอลัมน์ขยายตามความยาวตัวหนังสือ */
+            border-collapse: collapse !important; /* เปลี่ยนเป็น collapse เพื่อลบช่องว่างระหว่างเซลล์ออกนิดหน่อย */
+        }
+        
+        .pdf-mode .table-minimal th, 
+        .pdf-mode .table-minimal td { 
+            padding: 8px 4px !important; /* ลด padding เพื่อเพิ่มพื้นที่ */
+            font-size: 11px !important; 
+            white-space: normal !important; 
+            word-wrap: break-word !important; /* บังคับให้คำยาวๆ ตัดขึ้นบรรทัดใหม่ */
+            overflow-wrap: break-word !important;
+            border-bottom: 1px solid #f1f5f9 !important;
+        } 
+        
+        /* 🌟 กำหนดความกว้างเป๊ะๆ ให้แต่ละคอลัมน์ในโหมด PDF */
+        .pdf-mode .table-minimal th:nth-child(1) { width: 9% !important; } /* วันที่ */
+        .pdf-mode .table-minimal th:nth-child(2) { width: 13% !important; } /* รหัส */
+        .pdf-mode .table-minimal th:nth-child(3) { width: 20% !important; } /* ชื่ออุปกรณ์ */
+        .pdf-mode .table-minimal th:nth-child(4) { width: 9% !important; } /* ยี่ห้อ */
+        .pdf-mode .table-minimal th:nth-child(5) { width: 10% !important; } /* รุ่น */
+        .pdf-mode .table-minimal th:nth-child(6) { width: 7% !important; } /* ปี */
+        .pdf-mode .table-minimal th:nth-child(7) { width: 9% !important; } /* ประกัน */
+        .pdf-mode .table-minimal th:nth-child(8) { width: 8% !important; } /* สถานะ */
+        .pdf-mode .table-minimal th:nth-child(9) { width: 15% !important; } /* หมายเหตุ */
+
+        .pdf-mode .badge { padding: 4px 6px !important; font-size: 10px !important; }
     </style>
 </head>
 <body class="min-h-screen p-4 md:p-8">
@@ -81,7 +110,6 @@
                     <i class="ph ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
                     <input type="text" id="searchInput" placeholder="ค้นหารหัส ชื่อ ยี่ห้อ..." class="w-full pl-9 pr-3 py-2 md:py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 text-xs md:text-sm transition" onkeyup="filterData()">
                 </div>
-                <!-- ปุ่มกำลังจัดทำ PDF... -->
                 <button id="btn-export" onclick="exportToPDF()" class="bg-teal-600 hover:bg-teal-700 text-white px-4 md:px-5 py-2 md:py-2.5 rounded-xl shadow-md transition flex items-center gap-2 font-medium text-xs md:text-sm flex-shrink-0">
                     <i class="ph ph-file-pdf text-lg"></i> <span class="hidden sm:inline">Export PDF</span><span class="sm:hidden">PDF</span>
                 </button>
@@ -116,13 +144,13 @@
                         <tr>
                             <th width="10%" class="text-center">วันที่อัปเดต</th>
                             <th width="12%" class="text-center">รหัสพัสดุ / ครุภัณฑ์</th>
-                            <th width="15%" class="text-left">ชื่ออุปกรณ์</th>
+                            <th width="16%" class="text-left">ชื่ออุปกรณ์</th>
                             <th width="10%" class="text-center">ยี่ห้อ</th>
-                            <th width="12%" class="text-center">รุ่น</th>
-                            <th width="8%" class="text-center">ปีที่จัดซื้อ</th>
+                            <th width="10%" class="text-center">รุ่น</th>
+                            <th width="7%" class="text-center">ปีที่จัดซื้อ</th>
                             <th width="10%" class="text-center">การรับประกัน</th>
                             <th width="10%" class="text-center">สถานะ</th>
-                            <th width="13%" class="text-left">หมายเหตุ / การซ่อม</th>
+                            <th width="15%" class="text-left">หมายเหตุ / การซ่อม</th>
                         </tr>
                     </thead>
                     <tbody id="equipmentTableBody">
@@ -136,25 +164,16 @@
 
     <script>
         // =========================================================================
-        // ⚠️ ขั้นตอนที่ 1: นำลิงก์ CSV จาก Google Sheets แผ่นงาน Equipment มาใส่ตรงนี้ ⚠️
+        // ลิงก์ CSV จริงของคุณครู
         // =========================================================================
         const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRZZibUzzgdZ-lCiuC2r9LdaYrjHZKnbUdOYCxJLDaIF4qUmxw8LuKX1FlXr2ADxHPNknSsiWTkncqJ/pub?gid=850126798&single=true&output=csv"; 
 
         async function fetchEquipmentData() {
-            if (!CSV_URL || CSV_URL.includes('ใส่_ลิงก์_CSV')) {
-                document.getElementById('equipmentTableBody').innerHTML = `<tr><td colspan="9" class="text-center py-10 text-red-500 text-sm bg-red-50">กรุณาตั้งค่าลิงก์ CSV ของ Equipment ในโค้ดก่อนครับ</td></tr>`;
-                return;
-            }
-
             try {
                 const response = await fetch(CSV_URL);
                 const csvText = await response.text();
                 
-                if (csvText.trim().toLowerCase().startsWith('<!doctype html>') || csvText.includes('<html')) {
-                    throw new Error("ลิงก์ที่ใส่ไม่ใช่ไฟล์ CSV");
-                }
-
-                const data = csvToJSON(csvText);
+                const data = parseRobustCSV(csvText);
                 renderTable(data);
                 updateDashboardCounts(data);
             } catch (err) {
@@ -163,32 +182,51 @@
             }
         }
 
-        function csvToJSON(csv) {
-            const lines = csv.split('\n');
+        // 🌟 อัปเกรดตัวอ่าน CSV ให้ป้องกันการกด Alt+Enter ใน Google Sheets
+        function parseRobustCSV(csv) {
             const result = [];
-            if(lines.length <= 1) return result;
-            
-            const headers = lines[0].split(',').map(h => h.replace(/^"|"$/g, '').trim().replace(/\r$/, ''));
-            
-            for (let i = 1; i < lines.length; i++) {
-                if(!lines[i].trim() || lines[i].trim() === '\r') continue; 
-                
-                const obj = {};
-                let rowStr = lines[i];
-                let inQuotes = false; let currentVal = ""; let cols = [];
-                for(let char of rowStr) {
-                    if(char === '"') inQuotes = !inQuotes;
-                    else if(char === ',' && !inQuotes) { cols.push(currentVal.trim()); currentVal = ""; }
-                    else currentVal += char;
-                }
-                cols.push(currentVal.trim().replace(/\r$/, ''));
-                
-                if (cols.every(val => !val || val === '')) continue;
+            let rows = [];
+            let curRow = [];
+            let curVal = '';
+            let inQuotes = false;
 
+            // วนอ่านทีละตัวอักษรเพื่อป้องกันการตัดบรรทัดผิดพลาด
+            for (let i = 0; i < csv.length; i++) {
+                let char = csv[i];
+                let nextChar = csv[i + 1];
+
+                if (char === '"') {
+                    if (inQuotes && nextChar === '"') {
+                        curVal += '"'; i++; // ข้าม quote ซ้อน
+                    } else {
+                        inQuotes = !inQuotes;
+                    }
+                } else if (char === ',' && !inQuotes) {
+                    curRow.push(curVal.trim());
+                    curVal = '';
+                } else if ((char === '\n' || (char === '\r' && nextChar === '\n')) && !inQuotes) {
+                    curRow.push(curVal.trim());
+                    rows.push(curRow);
+                    curRow = [];
+                    curVal = '';
+                    if (char === '\r') i++;
+                } else {
+                    if (char !== '\r') curVal += char;
+                }
+            }
+            if (curVal || curRow.length > 0) {
+                curRow.push(curVal.trim());
+                rows.push(curRow);
+            }
+
+            if (rows.length <= 1) return result;
+            const headers = rows[0].map(h => h.replace(/\s+/g, ' ').trim());
+            
+            for (let i = 1; i < rows.length; i++) {
+                if (rows[i].length === 1 && !rows[i][0]) continue; // ข้ามบรรทัดว่าง
+                let obj = {};
                 headers.forEach((header, index) => {
-                    let val = cols[index] ? cols[index].replace(/^"|"$/g, '') : "";
-                    const cleanHeader = header.replace(/\s+/g, ' ').trim(); 
-                    obj[cleanHeader] = val;
+                    obj[header] = rows[i][index] || "";
                 });
                 result.push(obj);
             }
@@ -205,13 +243,9 @@
                 let icon = 'ph-clock';
                 
                 if (status.includes('ใช้งานได้')) {
-                    badgeClass = 'badge-success';
-                    icon = 'ph-check-circle';
+                    badgeClass = 'badge-success'; icon = 'ph-check-circle';
                 } else if (status.includes('ชำรุด') || status.includes('ใช้งานไม่ได้')) {
-                    if (!status.includes('ซ่อม')) {
-                        badgeClass = 'badge-danger';
-                        icon = 'ph-warning-circle';
-                    }
+                    if (!status.includes('ซ่อม')) { badgeClass = 'badge-danger'; icon = 'ph-warning-circle'; }
                 }
                 const badgeHtml = `<span class="badge ${badgeClass}"><i class="ph ${icon}"></i> ${status}</span>`;
                 
@@ -225,28 +259,28 @@
                 }
 
                 const warrantyStatus = row['สถานะการรับประกัน'] || '-';
-                let warrantyHtml = `<span class="text-gray-600 text-sm">${warrantyStatus}</span>`;
-                
+                let warrantyHtml = `<span class="text-gray-600">${warrantyStatus}</span>`;
                 if(warrantyStatus.includes('หมดประกัน') || warrantyStatus.includes('ไม่มี')) {
-                    warrantyHtml = `<span class="text-red-500 text-sm font-medium"><i class="ph ph-shield-warning"></i> หมดประกัน</span>`;
+                    warrantyHtml = `<span class="text-red-500 font-medium"><i class="ph ph-shield-warning"></i> หมดประกัน</span>`;
                 } else if(warrantyStatus.includes('ในประกัน') || warrantyStatus.includes('มีประกัน') || warrantyStatus.includes('ปี')) {
-                    warrantyHtml = `<span class="text-green-600 text-sm font-medium"><i class="ph ph-shield-check"></i> ในประกัน</span>`;
+                    warrantyHtml = `<span class="text-green-600 font-medium"><i class="ph ph-shield-check"></i> ในประกัน</span>`;
                 }
 
-                const model = row['รุ่น'] || '-';
-                const brand = row['ยี่ห้อ'] || '-';
-                
+                // ป้องกันปัญหาการตัดคำด้วยการแทนที่เว้นวรรค
+                const noteText = (row['รายละเอียดการซ่อม / หมายเหตุ'] || row['รายละเอียดการซ่อม/หมายเหตุ'] || row['หมายเหตุ'] || '-').replace(/\n/g, '<br>');
+                const nameText = (row['ชื่ออุปกรณ์'] || '-').replace(/\n/g, ' ');
+
                 html += `
                 <tr class="search-row">
                     <td class="text-center text-gray-500">${row['วันที่อัปเดต'] || '-'}</td>
                     <td class="text-center font-bold text-teal-900 font-mono">${row['เลขพัสดุ / รหัสครุภัณฑ์'] || row['เลขพัสดุ/รหัสครุภัณฑ์'] || '-'}</td>
-                    <td class="text-left font-medium text-gray-800">${row['ชื่ออุปกรณ์'] || '-'}</td>
-                    <td class="text-center text-gray-600">${brand}</td>
-                    <td class="text-center text-gray-600">${model}</td>
+                    <td class="text-left font-medium text-gray-800">${nameText}</td>
+                    <td class="text-center text-gray-600">${row['ยี่ห้อ'] || '-'}</td>
+                    <td class="text-center text-gray-600">${row['รุ่น'] || '-'}</td>
                     <td class="text-center text-gray-600 font-medium">${yearPurchased}</td>
                     <td class="text-center">${warrantyHtml}</td>
                     <td class="text-center">${badgeHtml}</td>
-                    <td class="text-left text-gray-500 text-sm">${row['รายละเอียดการซ่อม / หมายเหตุ'] || row['รายละเอียดการซ่อม/หมายเหตุ'] || row['หมายเหตุ'] || '-'}</td>
+                    <td class="text-left text-gray-500">${noteText}</td>
                 </tr>`;
             });
             
@@ -255,16 +289,13 @@
 
         function updateDashboardCounts(data) {
             let total = 0, good = 0, broken = 0, repair = 0;
-            
             data.forEach(row => {
                 total++;
                 const status = row['สถานะปัจจุบัน'] || row['สถานะ'] || '';
-                
                 if (status.includes('ใช้งานได้')) good++;
                 else if (status.includes('ซ่อม')) repair++;
                 else if (status.includes('ชำรุด') || status.includes('ใช้งานไม่ได้')) broken++;
             });
-            
             document.getElementById('count-total').innerText = total;
             document.getElementById('count-good').innerText = good;
             document.getElementById('count-broken').innerText = broken;
@@ -283,36 +314,30 @@
             const btn = document.getElementById('btn-export');
             const originalBtnHtml = btn.innerHTML;
             
-            // เปลี่ยนปุ่มเป็นสถานะกำลังดาวน์โหลด
             btn.innerHTML = '<i class="ph ph-spinner animate-spin text-lg"></i> <span class="hidden sm:inline">กำลังสร้าง PDF...</span>';
             btn.disabled = true;
 
             const today = new Date();
             document.getElementById('print-date').innerText = `ข้อมูล ณ วันที่: ${today.toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}`;
             
-            // เลื่อนหน้าจอขึ้นบนสุดก่อนแคปภาพ ป้องกันการตกหล่น
             window.scrollTo(0, 0);
-            
-            // เปิดโหมดจำลองหน้าจอความกว้าง 1400px
             element.classList.add('pdf-mode');
             
-            // 🌟 ตั้งค่า PDF ใหม่ให้ฉลาดขึ้น
+            // 🌟 ตั้งค่าความกว้าง A4 แนวนอนพอดีเป๊ะ (1122px)
             const opt = { 
-                margin: [0.4, 0.2, 0.4, 0.2], // บน, ซ้าย, ล่าง, ขวา (นิ้ว)
+                margin: [0.3, 0.2, 0.3, 0.2], 
                 filename: `Equipment_Report_${today.getTime()}.pdf`, 
                 image: { type: 'jpeg', quality: 1 }, 
                 html2canvas: { 
                     scale: 2, 
                     useCORS: true,
                     scrollY: 0,
-                    windowWidth: 1400 // ให้ตรงกับความกว้างใน CSS .pdf-mode
+                    windowWidth: 1122 // A4 Landscape width
                 }, 
                 jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' },
-                // 🌟 หัวใจสำคัญ: ป้องกันไม่ให้ตารางโดนหั่นครึ่งบรรทัดเวลาขึ้นหน้าใหม่
-                pagebreak: { mode: 'css', avoid: 'tr' } 
+                pagebreak: { mode: 'css', avoid: 'tr' } // ห้ามตัดครึ่งบรรทัดตาราง
             };
             
-            // ให้เวลาบราวเซอร์จัด Layout ใหม่ก่อนพิมพ์นิดนึง (0.5 วิ)
             setTimeout(() => {
                 html2pdf().set(opt).from(element).save().then(() => {
                     element.classList.remove('pdf-mode');
@@ -323,7 +348,6 @@
                     element.classList.remove('pdf-mode');
                     btn.innerHTML = originalBtnHtml;
                     btn.disabled = false;
-                    alert('เกิดข้อผิดพลาดในการสร้าง PDF ลองใหม่อีกครั้งนะครับ');
                 });
             }, 500);
         }
