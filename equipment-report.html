@@ -40,10 +40,6 @@
            🌟 ระบบ Print PDF (กระดาษแนวนอน + ลบข้อมูลกวนใจ)
            ======================================================= */
         @media print {
-            /* 1. ตั้งค่ากระดาษเป็นแนวนอน (Landscape) 
-               และคงขอบกระดาษด้านบนไว้ 15.5mm เพื่อไม่ให้หน้า 2 ชิดขอบบนเกินไป
-               รูปแบบ margin: [บน] [ขวา] [ล่าง] [ซ้าย]
-            */
             @page {
                 size: A4 landscape;
                 margin: 15.5mm 10mm 12mm 10mm; 
@@ -60,7 +56,6 @@
             .pdf-header { display: block !important; margin-bottom: 20px; text-align: center; }
             
             .card { box-shadow: none !important; border: none !important; padding: 0 !important; }
-            /* จัดตารางให้อยู่กึ่งกลาง */
             .table-wrapper { overflow: visible !important; width: 100% !important; margin: 0 auto !important; }
             
             .table-minimal { 
@@ -116,7 +111,6 @@
                     <i class="ph ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
                     <input type="text" id="searchInput" placeholder="ค้นหารหัส ชื่อ ยี่ห้อ..." class="w-full pl-9 pr-3 py-2 md:py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 text-xs md:text-sm transition" onkeyup="filterData()">
                 </div>
-                <!-- ปุ่มสร้าง PDF -->
                 <button onclick="exportToPDF()" class="bg-teal-600 hover:bg-teal-700 text-white px-4 md:px-5 py-2 md:py-2.5 rounded-xl shadow-md transition flex items-center gap-2 font-medium text-xs md:text-sm flex-shrink-0">
                     <i class="ph ph-printer text-lg"></i> <span class="hidden sm:inline">Export PDF</span><span class="sm:hidden">PDF</span>
                 </button>
@@ -170,9 +164,6 @@
     </div>
 
     <script>
-        // =========================================================================
-        // ลิงก์ CSV จริงของคุณครู
-        // =========================================================================
         const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRZZibUzzgdZ-lCiuC2r9LdaYrjHZKnbUdOYCxJLDaIF4qUmxw8LuKX1FlXr2ADxHPNknSsiWTkncqJ/pub?gid=850126798&single=true&output=csv"; 
 
         async function fetchEquipmentData() {
@@ -243,14 +234,27 @@
             let html = '';
             
             data.forEach(row => {
-                const status = row['สถานะปัจจุบัน'] || row['สถานะ'] || '-';
+                let status = (row['สถานะปัจจุบัน'] || row['สถานะ'] || '-').trim();
+                let warrantyStatus = (row['สถานะการรับประกัน'] || row['การรับประกัน'] || '-').trim();
+
+                // 🌟 ระบบ AI Auto-Correct (อัปเดต) สลับให้ถ้าข้อมูลอยู่ผิดช่อง
+                if ((status.includes('ปี') || status.includes('ประกัน') || status.includes('ไม่มี')) &&
+                    (warrantyStatus.includes('ใช้งาน') || warrantyStatus.includes('ชำรุด') || warrantyStatus.includes('ซ่อม'))) {
+                    let temp = status;
+                    status = warrantyStatus;
+                    warrantyStatus = temp;
+                }
+
                 let badgeClass = 'badge-warning'; 
                 let icon = 'ph-clock';
                 
-                if (status.includes('ใช้งานได้')) {
+                // ตรวจสอบสถานะให้แม่นยำขึ้น
+                if (status.includes('ใช้งานได้') || status === 'ปกติ') {
                     badgeClass = 'badge-success'; icon = 'ph-check-circle';
-                } else if (status.includes('ชำรุด') || status.includes('ใช้งานไม่ได้')) {
-                    if (!status.includes('ซ่อม')) { badgeClass = 'badge-danger'; icon = 'ph-warning-circle'; }
+                } else if (status.includes('ซ่อม')) {
+                    badgeClass = 'badge-warning'; icon = 'ph-wrench';
+                } else if (status.includes('ชำรุด') || status.includes('ใช้งานไม่ได้') || status.includes('เสีย')) {
+                    badgeClass = 'badge-danger'; icon = 'ph-warning-circle';
                 }
                 const badgeHtml = `<span class="badge ${badgeClass}"><i class="ph ${icon}"></i> ${status}</span>`;
                 
@@ -263,7 +267,6 @@
                     }
                 }
 
-                const warrantyStatus = row['สถานะการรับประกัน'] || '-';
                 let warrantyHtml = `<span class="text-gray-600">${warrantyStatus}</span>`;
                 if(warrantyStatus.includes('หมดประกัน') || warrantyStatus.includes('ไม่มี')) {
                     warrantyHtml = `<span class="text-red-500 font-medium"><i class="ph ph-shield-warning"></i> หมดประกัน</span>`;
@@ -293,13 +296,30 @@
 
         function updateDashboardCounts(data) {
             let total = 0, good = 0, broken = 0, repair = 0;
+            
             data.forEach(row => {
+                // นับยอดพัสดุทุกรายการที่ไม่ได้ว่างเปล่าทั้งหมด
                 total++;
-                const status = row['สถานะปัจจุบัน'] || row['สถานะ'] || '';
-                if (status.includes('ใช้งานได้')) good++;
-                else if (status.includes('ซ่อม')) repair++;
-                else if (status.includes('ชำรุด') || status.includes('ใช้งานไม่ได้')) broken++;
+
+                let status = (row['สถานะปัจจุบัน'] || row['สถานะ'] || '').trim();
+                let warrantyStatus = (row['สถานะการรับประกัน'] || row['การรับประกัน'] || '').trim();
+
+                // 🌟 ระบบ AI Auto-Correct (อัปเดต) สำหรับการนับยอด
+                if ((status.includes('ปี') || status.includes('ประกัน') || status.includes('ไม่มี')) &&
+                    (warrantyStatus.includes('ใช้งาน') || warrantyStatus.includes('ชำรุด') || warrantyStatus.includes('ซ่อม'))) {
+                    status = warrantyStatus;
+                }
+
+                // 🌟 ปรับเงื่อนไขการนับให้รัดกุมขึ้น ครอบคลุมหลายคีย์เวิร์ด
+                if (status.includes('ใช้งานได้') || status === 'ปกติ') {
+                    good++;
+                } else if (status.includes('ซ่อม')) { // ดัก "ซ่อม", "อยู่ระหว่างดำเนินการซ่อม"
+                    repair++;
+                } else if (status.includes('ชำรุด') || status.includes('ใช้งานไม่ได้') || status.includes('เสีย')) {
+                    broken++;
+                }
             });
+            
             document.getElementById('count-total').innerText = total;
             document.getElementById('count-good').innerText = good;
             document.getElementById('count-broken').innerText = broken;
@@ -317,14 +337,12 @@
             const today = new Date();
             document.getElementById('print-date').innerText = `ข้อมูล ณ วันที่: ${today.toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}`;
             
-            // เปลี่ยน Title ให้ว่างเปล่าเพื่อไม่ให้แสดงในส่วนหัวของ PDF
             const originalTitle = document.title;
-            document.title = " "; 
+            // 🌟 แก้ไขตรงนี้: กำหนดชื่อให้เบราว์เซอร์เอาไปแสดงตรงกลางด้านบนของกระดาษ (แทนลิงก์เว็บ)
+            document.title = "รายงานสถานะอุปกรณ์ - ศูนย์ดิจิทัลชุมชนโรงเรียนหนองโกวิชาประสิทธิ์ฯ"; 
             
-            // เปิดหน้าต่างพิมพ์
             window.print();
             
-            // คืนค่า Title กลับ
             document.title = originalTitle; 
         }
 
