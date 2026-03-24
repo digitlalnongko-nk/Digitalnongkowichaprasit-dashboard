@@ -37,28 +37,30 @@
         .pdf-header { display: none; text-align: center; margin-bottom: 20px; }
 
         /* =======================================================
-           🌟 ระบบ Print PDF (กระดาษแนวนอน + ซ่อนส่วนหัวเว็บ 100%)
+           🌟 ระบบ Print PDF (กระดาษแนวตั้ง + ลบข้อมูลกวนใจ)
            ======================================================= */
         @media print {
-            /* 1. ตั้งขอบกระดาษเป็น 0 เพื่อบังคับฆ่าลิงก์/วันที่อัตโนมัติของ Browser */
+            /* 1. ตั้งค่ากระดาษเป็นแนวตั้ง (Portrait) 
+               และเพิ่มขอบกระดาษด้านบนเป็น 15.5mm (จากเดิม 12mm) เพื่อไม่ให้หน้า 2 ชิดขอบบนเกินไป
+               รูปแบบ margin: [บน] [ขวา] [ล่าง] [ซ้าย]
+            */
             @page {
-                size: A4 landscape;
-                margin: 0mm; 
+                size: A4 portrait;
+                margin: 15.5mm 10mm 12mm 10mm; 
             }
             
-            /* 2. ดันเนื้อหาลงมาด้วย Padding แทน เพื่อให้ไม่ชิดขอบกระดาษ (เว้นขอบ 15 มม.) */
             body { 
                 background-color: white !important; 
                 -webkit-print-color-adjust: exact !important; 
                 print-color-adjust: exact !important; 
-                padding: 15mm !important; 
-                box-sizing: border-box !important;
+                padding: 0 !important; 
             }
 
             .no-print { display: none !important; }
             .pdf-header { display: block !important; margin-bottom: 20px; text-align: center; }
             
             .card { box-shadow: none !important; border: none !important; padding: 0 !important; }
+            /* จัดตารางให้อยู่กึ่งกลาง */
             .table-wrapper { overflow: visible !important; width: 100% !important; margin: 0 auto !important; }
             
             .table-minimal { 
@@ -72,17 +74,17 @@
             .table-minimal thead { display: table-header-group !important; }
             .table-minimal tr { page-break-inside: avoid !important; }
             
-            /* ปรับตัวอักษรให้อ่านง่ายสำหรับแนวนอน */
+            /* ย่อตัวอักษรลง เพื่อให้บรรจุ 9 คอลัมน์ลงในแนวกระดาษตั้งได้ และไม่ทับกัน */
             .table-minimal th, 
             .table-minimal td { 
-                padding: 8px 6px !important; 
-                font-size: 11px !important; 
+                padding: 6px 4px !important; 
+                font-size: 9.5px !important; 
                 white-space: normal !important; 
                 word-wrap: break-word !important; 
                 border-bottom: 1px solid #e2e8f0 !important;
                 vertical-align: top !important; 
             } 
-            .badge { padding: 4px 6px !important; font-size: 10px !important; border: 1px solid #e2e8f0; }
+            .badge { padding: 3px 5px !important; font-size: 8px !important; border: 1px solid #e2e8f0; }
         }
     </style>
 </head>
