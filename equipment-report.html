@@ -37,15 +37,15 @@
         .pdf-header { display: none; text-align: center; margin-bottom: 20px; }
 
         /* =======================================================
-           🌟 ระบบ Print PDF (กระดาษแนวตั้ง + ลบข้อมูลกวนใจ)
+           🌟 ระบบ Print PDF (กระดาษแนวนอน + ลบข้อมูลกวนใจ)
            ======================================================= */
         @media print {
-            /* 1. ตั้งค่ากระดาษเป็นแนวตั้ง (Portrait) 
-               และเพิ่มขอบกระดาษด้านบนเป็น 15.5mm (จากเดิม 12mm) เพื่อไม่ให้หน้า 2 ชิดขอบบนเกินไป
+            /* 1. ตั้งค่ากระดาษเป็นแนวนอน (Landscape) 
+               และคงขอบกระดาษด้านบนไว้ 15.5mm เพื่อไม่ให้หน้า 2 ชิดขอบบนเกินไป
                รูปแบบ margin: [บน] [ขวา] [ล่าง] [ซ้าย]
             */
             @page {
-                size: A4 portrait;
+                size: A4 landscape;
                 margin: 15.5mm 10mm 12mm 10mm; 
             }
             
@@ -74,17 +74,17 @@
             .table-minimal thead { display: table-header-group !important; }
             .table-minimal tr { page-break-inside: avoid !important; }
             
-            /* ย่อตัวอักษรลง เพื่อให้บรรจุ 9 คอลัมน์ลงในแนวกระดาษตั้งได้ และไม่ทับกัน */
+            /* ขยายตัวอักษรขึ้นนิดหน่อยให้พอดีกับแนวนอน */
             .table-minimal th, 
             .table-minimal td { 
-                padding: 6px 4px !important; 
-                font-size: 9.5px !important; 
+                padding: 8px 6px !important; 
+                font-size: 11px !important; 
                 white-space: normal !important; 
                 word-wrap: break-word !important; 
                 border-bottom: 1px solid #e2e8f0 !important;
                 vertical-align: top !important; 
             } 
-            .badge { padding: 3px 5px !important; font-size: 8px !important; border: 1px solid #e2e8f0; }
+            .badge { padding: 4px 6px !important; font-size: 10px !important; border: 1px solid #e2e8f0; }
         }
     </style>
 </head>
