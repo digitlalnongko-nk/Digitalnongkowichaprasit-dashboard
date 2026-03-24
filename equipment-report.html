@@ -7,7 +7,6 @@
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
     
     <style>
@@ -31,62 +30,64 @@
         .table-minimal tbody tr:hover { background-color: #f8fafc; }
         
         .badge { padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
-        .badge-success { background-color: #dcfce7; color: #166534; }
-        .badge-danger { background-color: #fee2e2; color: #991b1b; }
-        .badge-warning { background-color: #fef9c3; color: #854d0e; }
+        .badge-success { background-color: #dcfce7 !important; color: #166534 !important; }
+        .badge-danger { background-color: #fee2e2 !important; color: #991b1b !important; }
+        .badge-warning { background-color: #fef9c3 !important; color: #854d0e !important; }
         
-        /* =======================================================
-           🌟 ระบบหน้าจอสำหรับ PDF แนวนอน (A4 Landscape)
-           ======================================================= */
         .pdf-header { display: none; text-align: center; margin-bottom: 20px; }
-        .pdf-mode .pdf-header { display: block; }
-        .pdf-mode .no-print { display: none !important; }
-        
-        .pdf-mode { 
-            background: white !important; 
-            padding: 15px 20px !important; 
-            width: 1122px !important; /* ล็อคความกว้าง A4 แนวนอน (96 DPI) */
-            max-width: 1122px !important;
-            margin: 0 !important;
-            box-sizing: border-box !important;
-        }
-        
-        /* 1. ยกเลิกกล่องครอบและ Scrollbar ทั้งหมด เพื่อให้กล้องแคปได้เต็มๆ */
-        .pdf-mode .card { box-shadow: none !important; border: none !important; border-radius: 0 !important; padding: 0 !important; overflow: visible !important; }
-        .pdf-mode .table-wrapper { overflow: visible !important; width: 1082px !important; /* 1122 - padding ซ้ายขวา */ margin: 0 !important;} 
-        
-        /* 2. ล็อคโครงสร้างตารางไม่ให้ดิ้น */
-        .pdf-mode .table-minimal { 
-            min-width: 100% !important; 
-            width: 100% !important; 
-            table-layout: fixed !important; 
-            border-collapse: collapse !important; 
-        }
-        
-        /* 3. จัดการข้อความยาวๆ ให้ตัดขึ้นบรรทัดใหม่ ไม่ทับกัน */
-        .pdf-mode .table-minimal th, 
-        .pdf-mode .table-minimal td { 
-            padding: 8px 4px !important; 
-            font-size: 11px !important; 
-            white-space: normal !important; 
-            word-wrap: break-word !important; 
-            overflow-wrap: break-word !important;
-            border-bottom: 1px solid #e2e8f0 !important;
-            vertical-align: top !important; 
-        } 
 
-        /* 4. แบ่งสัดส่วน 9 คอลัมน์ให้รวมกันได้ 100% พอดีเป๊ะ */
-        .pdf-mode .table-minimal th:nth-child(1), .pdf-mode .table-minimal td:nth-child(1) { width: 9%; }   /* วันที่ */
-        .pdf-mode .table-minimal th:nth-child(2), .pdf-mode .table-minimal td:nth-child(2) { width: 13%; }  /* รหัส */
-        .pdf-mode .table-minimal th:nth-child(3), .pdf-mode .table-minimal td:nth-child(3) { width: 18%; }  /* ชื่ออุปกรณ์ */
-        .pdf-mode .table-minimal th:nth-child(4), .pdf-mode .table-minimal td:nth-child(4) { width: 9%; }   /* ยี่ห้อ */
-        .pdf-mode .table-minimal th:nth-child(5), .pdf-mode .table-minimal td:nth-child(5) { width: 10%; }  /* รุ่น */
-        .pdf-mode .table-minimal th:nth-child(6), .pdf-mode .table-minimal td:nth-child(6) { width: 6%; }   /* ปี */
-        .pdf-mode .table-minimal th:nth-child(7), .pdf-mode .table-minimal td:nth-child(7) { width: 9%; }   /* ประกัน */
-        .pdf-mode .table-minimal th:nth-child(8), .pdf-mode .table-minimal td:nth-child(8) { width: 11%; }  /* สถานะ */
-        .pdf-mode .table-minimal th:nth-child(9), .pdf-mode .table-minimal td:nth-child(9) { width: 15%; }  /* หมายเหตุ */
+        /* =======================================================
+           🌟 ท่าไม้ตาย: ใช้ระบบ Print ของเบราว์เซอร์แก้ปัญหาภาษาไทย 100%
+           ======================================================= */
+        @media print {
+            /* ตั้งค่ากระดาษ A4 แนวนอน */
+            @page {
+                size: A4 landscape;
+                margin: 10mm;
+            }
+            
+            /* บังคับให้แสดงสีพื้นหลังและปรับฟอนต์ให้ชัดเจน */
+            body { 
+                background-color: white !important; 
+                -webkit-print-color-adjust: exact !important; 
+                print-color-adjust: exact !important; 
+                padding: 0 !important;
+            }
 
-        .pdf-mode .badge { padding: 4px 6px !important; font-size: 10px !important; }
+            /* ซ่อนส่วนที่ไม่ต้องการให้เห็นใน PDF */
+            .no-print { display: none !important; }
+            
+            /* แสดง Header รายงาน */
+            .pdf-header { display: block !important; margin-bottom: 20px; }
+            
+            /* ปลดล็อคกล่องตารางให้กางเต็มกระดาษ */
+            .card { box-shadow: none !important; border: none !important; padding: 0 !important; }
+            .table-wrapper { overflow: visible !important; width: 100% !important; margin: 0 !important; }
+            
+            /* จัดการโครงสร้างตาราง */
+            .table-minimal { 
+                min-width: 100% !important; 
+                width: 100% !important; 
+                table-layout: auto !important; 
+                border-collapse: collapse !important; 
+            }
+            
+            /* 🌟 ให้หัวตารางติดไปในทุกๆ หน้ากระดาษใหม่ */
+            .table-minimal thead { display: table-header-group !important; }
+            /* ป้องกันไม่ให้บรรทัดถูกหั่นครึ่ง */
+            .table-minimal tr { page-break-inside: avoid !important; }
+            
+            .table-minimal th, 
+            .table-minimal td { 
+                padding: 8px 6px !important; 
+                font-size: 11px !important; 
+                white-space: normal !important; 
+                word-wrap: break-word !important; 
+                border-bottom: 1px solid #e2e8f0 !important;
+                vertical-align: top !important; 
+            } 
+            .badge { padding: 4px 6px !important; font-size: 10px !important; border: 1px solid #e2e8f0; }
+        }
     </style>
 </head>
 <body class="min-h-screen p-4 md:p-8">
@@ -117,8 +118,9 @@
                     <i class="ph ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
                     <input type="text" id="searchInput" placeholder="ค้นหารหัส ชื่อ ยี่ห้อ..." class="w-full pl-9 pr-3 py-2 md:py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 text-xs md:text-sm transition" onkeyup="filterData()">
                 </div>
-                <button id="btn-export" onclick="exportToPDF()" class="bg-teal-600 hover:bg-teal-700 text-white px-4 md:px-5 py-2 md:py-2.5 rounded-xl shadow-md transition flex items-center gap-2 font-medium text-xs md:text-sm flex-shrink-0">
-                    <i class="ph ph-file-pdf text-lg"></i> <span class="hidden sm:inline">Export PDF</span><span class="sm:hidden">PDF</span>
+                <!-- ปุ่มสร้าง PDF -->
+                <button onclick="exportToPDF()" class="bg-teal-600 hover:bg-teal-700 text-white px-4 md:px-5 py-2 md:py-2.5 rounded-xl shadow-md transition flex items-center gap-2 font-medium text-xs md:text-sm flex-shrink-0">
+                    <i class="ph ph-printer text-lg"></i> <span class="hidden sm:inline">Export PDF</span><span class="sm:hidden">PDF</span>
                 </button>
             </div>
         </div>
@@ -145,20 +147,19 @@
 
         <!-- ตารางข้อมูล -->
         <div class="card overflow-hidden">
-            <div class="table-wrapper" id="print-table-wrapper">
+            <div class="table-wrapper">
                 <table class="table-minimal" id="equipment-table">
                     <thead>
                         <tr>
-                            <th class="text-center">วันที่อัปเดต</th>
-                            <th class="text-center">รหัสพัสดุ / ครุภัณฑ์</th>
-                            <th class="text-left">ชื่ออุปกรณ์</th>
-                            <th class="text-center">ยี่ห้อ</th>
-                            <th class="text-center">รุ่น</th>
-                            <th class="text-center">ปีที่จัดซื้อ</th>
-                            <th class="text-center">การรับประกัน</th>
-                            <th class="text-center">สถานะ</th>
-                            <!-- 🌟 แก้ไขชื่อคอลัมน์เป็น "หมายเหตุ" -->
-                            <th class="text-left">หมายเหตุ</th>
+                            <th width="9%" class="text-center">วันที่อัปเดต</th>
+                            <th width="14%" class="text-center">รหัสพัสดุ / ครุภัณฑ์</th>
+                            <th width="16%" class="text-left">ชื่ออุปกรณ์</th>
+                            <th width="10%" class="text-center">ยี่ห้อ</th>
+                            <th width="10%" class="text-center">รุ่น</th>
+                            <th width="8%" class="text-center">ปีที่จัดซื้อ</th>
+                            <th width="10%" class="text-center">การรับประกัน</th>
+                            <th width="10%" class="text-center">สถานะ</th>
+                            <th width="13%" class="text-left">หมายเหตุ</th>
                         </tr>
                     </thead>
                     <tbody id="equipmentTableBody">
@@ -314,58 +315,13 @@
             });
         }
 
+        // 🌟 ท่าไม้ตายใหม่: สั่งปริ้นต์เป็น PDF ผ่าน Browser Native
         function exportToPDF() {
-            const element = document.getElementById('report-content');
-            const btn = document.getElementById('btn-export');
-            const originalBtnHtml = btn.innerHTML;
-            
-            btn.innerHTML = '<i class="ph ph-spinner animate-spin text-lg"></i> <span class="hidden sm:inline">กำลังสร้าง PDF...</span>';
-            btn.disabled = true;
-
             const today = new Date();
             document.getElementById('print-date').innerText = `ข้อมูล ณ วันที่: ${today.toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}`;
             
-            // 🌟 แก้ปัญหาคอลัมน์หาย: บังคับเคลียร์ระยะ Scroll ให้เป็น 0
-            const tableWrapper = document.getElementById('print-table-wrapper');
-            if (tableWrapper) {
-                tableWrapper.style.scrollBehavior = 'auto'; // ปิด smooth scroll ชั่วคราว
-                tableWrapper.scrollLeft = 0; 
-            }
-            window.scrollTo(0, 0);
-
-            // ใส่โหมด PDF
-            element.classList.add('pdf-mode');
-            
-            const opt = { 
-                margin: [0.3, 0.2, 0.3, 0.2], 
-                filename: `Equipment_Report_${today.getTime()}.pdf`, 
-                image: { type: 'jpeg', quality: 1 }, 
-                html2canvas: { 
-                    scale: 2, 
-                    useCORS: true,
-                    x: 0, // บังคับเริ่มแคปเจอร์ที่จุดซ้ายสุด
-                    y: 0,
-                    scrollX: 0,
-                    scrollY: 0,
-                    windowWidth: 1122 
-                }, 
-                jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' },
-                pagebreak: { mode: 'css', avoid: 'tr' } 
-            };
-            
-            // 🌟 หน่วงเวลาเพิ่มขึ้นเป็น 600ms ให้เบราว์เซอร์ล้างค่า Scroll และเคลียร์หน้าจอก่อนถ่ายภาพ
-            setTimeout(() => {
-                html2pdf().set(opt).from(element).save().then(() => {
-                    element.classList.remove('pdf-mode');
-                    btn.innerHTML = originalBtnHtml;
-                    btn.disabled = false;
-                }).catch(err => {
-                    console.error('PDF Error:', err);
-                    element.classList.remove('pdf-mode');
-                    btn.innerHTML = originalBtnHtml;
-                    btn.disabled = false;
-                });
-            }, 600);
+            // เปิดหน้าต่างพิมพ์ของเบราว์เซอร์
+            window.print();
         }
 
         window.onload = fetchEquipmentData;
