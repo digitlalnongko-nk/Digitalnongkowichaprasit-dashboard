@@ -37,21 +37,21 @@
         .pdf-header { display: none; text-align: center; margin-bottom: 20px; }
 
         /* =======================================================
-           🌟 ท่าไม้ตาย: ระบบ Print ลบ Header/Footer อัตโนมัติของเว็บทิ้ง
+           🌟 ระบบ Print PDF 
            ======================================================= */
         @media print {
-            /* 1. ตั้งค่าขอบเป็น 0 เพื่อบังคับซ่อนชื่อเว็บ วันที่ และลิงก์ด้านล่าง */
+            /* 1. ตั้งค่าขอบกระดาษให้สวยงาม (บน-ล่าง 12mm, ซ้าย-ขวา 15mm) */
             @page {
                 size: A4 landscape;
-                margin: 0; 
+                margin: 12mm 15mm; 
             }
             
-            /* 2. ดันเนื้อหาทั้งหมดลงมาด้วย padding แทน เพื่อให้มีขอบกระดาษสวยงาม */
+            /* 2. คืนค่า padding เป็น 0 เพราะเราเว้นขอบกระดาษแล้ว */
             body { 
                 background-color: white !important; 
                 -webkit-print-color-adjust: exact !important; 
                 print-color-adjust: exact !important; 
-                padding: 15mm !important; 
+                padding: 0 !important; 
             }
 
             .no-print { display: none !important; }
@@ -312,15 +312,12 @@
             const today = new Date();
             document.getElementById('print-date').innerText = `ข้อมูล ณ วันที่: ${today.toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}`;
             
-            // ลบ Title เว็บเพจชั่วคราว เพื่อความมั่นใจว่าไม่ติดไปกับ PDF
             const originalTitle = document.title;
-            document.title = " ";
+            document.title = " "; // ลบ Title ชั่วคราว
             
-            // เปิดหน้าต่างพิมพ์
             window.print();
             
-            // คืนค่า Title
-            document.title = originalTitle;
+            document.title = originalTitle; // คืนค่า Title
         }
 
         window.onload = fetchEquipmentData;
