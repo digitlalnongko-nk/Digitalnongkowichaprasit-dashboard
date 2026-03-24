@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>รายงานสถานะพัสดุ - ศูนย์ดิจิทัลชุมชนโรงเรียนหนองโกวิชาประสิทธิ์พิทยาคม</title>
+    <title>รายงานสถานะอุปกรณ์ - ศูนย์ดิจิทัลชุมชน</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
@@ -25,7 +25,8 @@
         .table-wrapper::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         .table-wrapper::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
-        .table-minimal { min-width: 950px; width: 100%; border-collapse: separate; border-spacing: 0; }
+        /* ขยายตารางเป็น 1200px เพื่อรองรับ 9 คอลัมน์ ไม่ให้บีบอัดเกินไป */
+        .table-minimal { min-width: 1200px; width: 100%; border-collapse: separate; border-spacing: 0; }
         .table-minimal th { background-color: #f8fafc; color: #0f766e; font-weight: 600; padding: 1rem 1.5rem; font-size: 0.85rem; border-bottom: 2px solid #e2e8f0; white-space: nowrap; text-align: left;}
         .table-minimal td { padding: 1.25rem 1.5rem; color: #4b5563; font-size: 0.875rem; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
         .table-minimal tbody tr:hover { background-color: #f8fafc; }
@@ -44,7 +45,7 @@
 </head>
 <body class="min-h-screen p-4 md:p-8">
 
-    <div class="max-w-7xl mx-auto" id="report-content">
+    <div class="max-w-[1400px] mx-auto" id="report-content">
         
         <!-- Header สำหรับการปรินต์ PDF -->
         <div class="pdf-header">
@@ -68,7 +69,7 @@
             <div class="flex flex-row items-center gap-2 md:gap-3 w-full md:w-auto mt-2 md:mt-0">
                 <div class="relative flex-1 md:w-64">
                     <i class="ph ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
-                    <input type="text" id="searchInput" placeholder="ค้นหารหัส หรือ ชื่อ..." class="w-full pl-9 pr-3 py-2 md:py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 text-xs md:text-sm transition" onkeyup="filterData()">
+                    <input type="text" id="searchInput" placeholder="ค้นหารหัส ชื่อ ยี่ห้อ..." class="w-full pl-9 pr-3 py-2 md:py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 text-xs md:text-sm transition" onkeyup="filterData()">
                 </div>
                 <button onclick="exportToPDF()" class="bg-teal-600 hover:bg-teal-700 text-white px-4 md:px-5 py-2 md:py-2.5 rounded-xl shadow-md transition flex items-center gap-2 font-medium text-xs md:text-sm flex-shrink-0">
                     <i class="ph ph-file-pdf text-lg"></i> <span class="hidden sm:inline">Export PDF</span><span class="sm:hidden">PDF</span>
@@ -102,17 +103,19 @@
                 <table class="table-minimal">
                     <thead>
                         <tr>
-                            <th width="12%">วันที่อัปเดต</th>
-                            <th width="15%">รหัสพัสดุ / ครุภัณฑ์</th>
-                            <th width="20%">ชื่ออุปกรณ์</th>
-                            <th width="10%" class="text-center">ปีที่จัดซื้อ</th>
-                            <th width="13%" class="text-center">การรับประกัน</th>
-                            <th width="15%" class="text-center">สถานะ</th>
-                            <th width="15%">หมายเหตุ / การซ่อม</th>
+                            <th width="10%">วันที่อัปเดต</th>
+                            <th width="12%">รหัสพัสดุ / ครุภัณฑ์</th>
+                            <th width="15%">ชื่ออุปกรณ์</th>
+                            <th width="10%">รุ่น</th>
+                            <th width="10%">ยี่ห้อ</th>
+                            <th width="8%" class="text-center">ปีที่จัดซื้อ</th>
+                            <th width="10%" class="text-center">การรับประกัน</th>
+                            <th width="12%" class="text-center">สถานะ</th>
+                            <th width="13%">หมายเหตุ / การซ่อม</th>
                         </tr>
                     </thead>
                     <tbody id="equipmentTableBody">
-                        <tr><td colspan="7" class="text-center py-10 text-gray-400 text-sm"><div class="animate-pulse">กำลังโหลดข้อมูล...</div></td></tr>
+                        <tr><td colspan="9" class="text-center py-10 text-gray-400 text-sm"><div class="animate-pulse">กำลังโหลดข้อมูล...</div></td></tr>
                     </tbody>
                 </table>
             </div>
@@ -124,11 +127,11 @@
         // =========================================================================
         // ⚠️ ขั้นตอนที่ 1: นำลิงก์ CSV จาก Google Sheets แผ่นงาน Equipment มาใส่ตรงนี้ ⚠️
         // =========================================================================
-        const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRZZibUzzgdZ-lCiuC2r9LdaYrjHZKnbUdOYCxJLDaIF4qUmxw8LuKX1FlXr2ADxHPNknSsiWTkncqJ/pub?gid=850126798&single=true&output=csv"; 
+        const CSV_URL = "ใส่_ลิงก์_CSV_ของแผ่นงาน_Equipment_ตรงนี้"; 
 
         async function fetchEquipmentData() {
             if (!CSV_URL || CSV_URL.includes('ใส่_ลิงก์_CSV')) {
-                document.getElementById('equipmentTableBody').innerHTML = `<tr><td colspan="7" class="text-center py-10 text-red-500 text-sm bg-red-50">กรุณาตั้งค่าลิงก์ CSV ของ Equipment ในโค้ดก่อนครับ</td></tr>`;
+                document.getElementById('equipmentTableBody').innerHTML = `<tr><td colspan="9" class="text-center py-10 text-red-500 text-sm bg-red-50">กรุณาตั้งค่าลิงก์ CSV ของ Equipment ในโค้ดก่อนครับ</td></tr>`;
                 return;
             }
 
@@ -141,7 +144,7 @@
                 updateDashboardCounts(data);
             } catch (err) {
                 console.error("Error:", err);
-                document.getElementById('equipmentTableBody').innerHTML = `<tr><td colspan="7" class="text-center py-10 text-red-500 text-sm">ไม่สามารถดึงข้อมูลได้ กรุณาตรวจสอบลิงก์ CSV</td></tr>`;
+                document.getElementById('equipmentTableBody').innerHTML = `<tr><td colspan="9" class="text-center py-10 text-red-500 text-sm">ไม่สามารถดึงข้อมูลได้ กรุณาตรวจสอบลิงก์ CSV</td></tr>`;
             }
         }
 
@@ -198,7 +201,6 @@
                     let yearMatch = yearPurchased.toString().match(/\b(19\d{2}|20\d{2}|24\d{2}|25\d{2})\b/);
                     if (yearMatch) {
                         let yNum = parseInt(yearMatch[0]);
-                        // ถ้าคนกรอกมาเป็น ค.ศ. (น้อยกว่า 2400) จะบวก 543 ให้
                         yearPurchased = yNum < 2400 ? (yNum + 543).toString() : yNum.toString();
                     }
                 }
@@ -212,13 +214,19 @@
                 } else if(warrantyStatus.includes('ในประกัน') || warrantyStatus.includes('มีประกัน')) {
                     warrantyHtml = `<span class="text-green-600 text-sm font-medium"><i class="ph ph-shield-check"></i> ในประกัน</span>`;
                 }
+
+                // 4. ดึงข้อมูล รุ่น และ ยี่ห้อ
+                const model = row['รุ่น'] || '-';
+                const brand = row['ยี่ห้อ'] || '-';
                 
-                // 4. สร้างแถวข้อมูลตาราง
+                // 5. สร้างแถวข้อมูลตาราง 9 คอลัมน์
                 html += `
                 <tr class="search-row">
                     <td class="text-gray-500">${row['วันที่อัปเดต'] || row['วันที่'] || '-'}</td>
                     <td class="font-bold text-teal-900 font-mono">${row['เลขพัสดุ / รหัสครุภัณฑ์'] || row['รหัสพัสดุ'] || '-'}</td>
                     <td class="font-medium text-gray-800">${row['ชื่ออุปกรณ์'] || '-'}</td>
+                    <td class="text-gray-600">${model}</td>
+                    <td class="text-gray-600">${brand}</td>
                     <td class="text-center text-gray-600 font-medium">${yearPurchased}</td>
                     <td class="text-center">${warrantyHtml}</td>
                     <td class="text-center">${badgeHtml}</td>
@@ -226,7 +234,7 @@
                 </tr>`;
             });
             
-            tbody.innerHTML = data.length ? html : `<tr><td colspan="7" class="text-center py-10 text-gray-400 text-sm italic">ยังไม่มีข้อมูลอุปกรณ์ในระบบ</td></tr>`;
+            tbody.innerHTML = data.length ? html : `<tr><td colspan="9" class="text-center py-10 text-gray-400 text-sm italic">ยังไม่มีข้อมูลอุปกรณ์ในระบบ</td></tr>`;
         }
 
         function updateDashboardCounts(data) {
