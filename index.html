@@ -32,6 +32,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- สามารถเอา html2pdf ออกได้แล้ว แต่คงไว้เผื่อจำเป็น -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
     
@@ -81,6 +82,83 @@
             #sidebar { position: fixed; transform: translateX(-100%); z-index: 50; transition: transform 0.3s ease; height: 100%; }
             #sidebar.active { transform: translateX(0); }
         }
+
+        /* หัวข้อสำหรับ PDF ซ่อนไว้ในโหมดปกติ */
+        .pdf-header { display: none; text-align: center; margin-bottom: 20px; }
+
+        /* =======================================================
+           🌟 ระบบ Print PDF (กระดาษแนวนอน + ลบข้อมูลกวนใจ) สำหรับ Dashboard
+           ======================================================= */
+        @media print {
+            /* 1. ตั้งค่ากระดาษเป็นแนวนอน (Landscape) 
+               และคงขอบกระดาษด้านบนไว้ 15.5mm เพื่อไม่ให้หน้า 2 ชิดขอบบนเกินไป
+            */
+            @page {
+                size: A4 landscape;
+                margin: 15.5mm 10mm 12mm 10mm; 
+            }
+            
+            body { 
+                background-color: white !important; 
+                -webkit-print-color-adjust: exact !important; 
+                print-color-adjust: exact !important; 
+                padding: 0 !important; 
+            }
+
+            /* ซ่อนเมนู, ปุ่ม, ช่องค้นหา และส่วนที่ไม่เกี่ยวข้อง */
+            #sidebar, #sidebarOverlay, header, .no-print { display: none !important; }
+            
+            main { 
+                padding: 0 !important; 
+                margin: 0 !important; 
+                width: 100% !important; 
+                overflow: visible !important; 
+            }
+            
+            .pdf-header { display: block !important; margin-bottom: 20px; text-align: center; }
+            
+            /* จัดการการ์ดให้เรียบง่ายเวลาพิมพ์ */
+            .card-cute { box-shadow: none !important; border: 1px solid #e2e8f0 !important; padding: 15px !important; break-inside: avoid; }
+            
+            /* บังคับการจัดเรียง 2 คอลัมน์สำหรับกราฟ */
+            #page-usage > .grid, #page-electric > .grid {
+                display: grid !important;
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: 20px !important;
+            }
+            
+            /* บังคับการจัดเรียง 3 คอลัมน์สำหรับคลังภาพ */
+            #activityContainer {
+                display: grid !important;
+                grid-template-columns: repeat(3, 1fr) !important;
+                gap: 15px !important;
+            }
+            
+            .table-wrapper { overflow: visible !important; width: 100% !important; margin: 0 auto !important; }
+            
+            .table-minimal { 
+                min-width: 100% !important; 
+                width: 100% !important; 
+                table-layout: auto !important; 
+                border-collapse: collapse !important; 
+                margin: 0 auto !important;
+            }
+            
+            .table-minimal thead { display: table-header-group !important; }
+            .table-minimal tr { page-break-inside: avoid !important; }
+            
+            /* ปรับตัวอักษรให้พอดีแนวนอน */
+            .table-minimal th, 
+            .table-minimal td { 
+                padding: 8px 6px !important; 
+                font-size: 11px !important; 
+                white-space: normal !important; 
+                word-wrap: break-word !important; 
+                border-bottom: 1px solid #e2e8f0 !important;
+                vertical-align: top !important; 
+            } 
+            .badge { padding: 4px 6px !important; font-size: 10px !important; border: 1px solid #e2e8f0; }
+        }
     </style>
 </head>
 <body class="text-sm w-full max-w-[100vw] h-screen overflow-hidden">
@@ -120,7 +198,7 @@
 
     <!-- 🌟 ส่วนที่ 2: Dashboard (ซ่อนไว้ตอนแรก) -->
     <div id="dashboard-view" class="hidden flex-col lg:flex-row h-full w-full relative">
-        <header class="lg:hidden flex items-center justify-between p-4 bg-white border-b border-yellow-50 z-20 shadow-sm w-full">
+        <header class="lg:hidden flex items-center justify-between p-4 bg-white border-b border-yellow-50 z-20 shadow-sm w-full no-print">
             <div class="flex items-center gap-2">
                 <img src="https://lh3.googleusercontent.com/d/1kKyIkEA88lsbUcHPsxeWB_KJwHFNaySD" class="h-8 w-auto" referrerpolicy="no-referrer">
                 <span class="font-bold text-green-900 text-xs">ศูนย์ดิจิทัลชุมชน รร.หนองโกฯ</span>
@@ -130,9 +208,9 @@
             </button>
         </header>
 
-        <div id="sidebarOverlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 lg:hidden"></div>
+        <div id="sidebarOverlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 lg:hidden no-print"></div>
 
-        <aside id="sidebar" class="w-72 bg-white border-r border-yellow-50 flex flex-col h-full p-6 shadow-sm flex-shrink-0">
+        <aside id="sidebar" class="w-72 bg-white border-r border-yellow-50 flex flex-col h-full p-6 shadow-sm flex-shrink-0 no-print">
             <div class="mb-10 text-center">
                 <div class="flex justify-center items-center mb-4">
                     <img src="https://lh3.googleusercontent.com/d/1kKyIkEA88lsbUcHPsxeWB_KJwHFNaySD" alt="Hub Logo" class="h-16 w-auto object-contain drop-shadow-sm" referrerpolicy="no-referrer">
@@ -187,12 +265,20 @@
 
         <main class="flex-1 h-full overflow-y-auto overflow-x-hidden p-4 lg:p-10 xl:p-14 relative bg-[#FFFCEB] w-full">
             
-            <div id="mainLoader" class="absolute inset-0 bg-white/80 backdrop-blur-sm z-50 flex flex-col items-center justify-center hidden">
+            <div id="mainLoader" class="absolute inset-0 bg-white/80 backdrop-blur-sm z-50 flex flex-col items-center justify-center hidden no-print">
                 <div class="w-12 h-12 border-4 border-green-100 border-t-green-500 rounded-full animate-spin mb-4"></div>
                 <p class="text-green-700 text-xs font-medium animate-pulse">ระบบกำลังประมวลผล...</p>
             </div>
 
-            <div class="flex flex-col lg:flex-row justify-between items-start mb-8 gap-4 w-full">
+            <!-- Header สำหรับการปรินต์ PDF (แสดงเฉพาะตอน Print) -->
+            <div class="pdf-header">
+                <h1 class="text-2xl font-bold text-gray-900 mb-1" id="print-doc-title">รายงานสรุปผล</h1>
+                <p class="text-gray-600">ศูนย์ดิจิทัลชุมชน โรงเรียนหนองโกวิชาประสิทธิ์พิทยาคม</p>
+                <p class="text-sm text-gray-400 mt-2" id="print-date"></p>
+            </div>
+
+            <!-- ส่วน UI ควบคุมของหน้าเว็บ (ซ่อนตอนพิมพ์) -->
+            <div class="flex flex-col lg:flex-row justify-between items-start mb-8 gap-4 w-full no-print">
                 <div>
                     <h2 id="pageTitle" class="text-2xl lg:text-4xl font-bold text-green-900 tracking-tight mb-2">สรุปผลใช้งาน</h2>
                     <div class="flex items-center gap-2 text-green-700/60 font-light italic text-xs lg:text-sm">
@@ -203,13 +289,15 @@
                     <button onclick="fetchAllData()" class="bg-white border border-yellow-200 hover:bg-green-50 text-green-600 w-10 h-10 lg:w-12 lg:h-12 rounded-2xl flex items-center justify-center transition shadow-sm flex-shrink-0">
                         <i class="ph ph-arrows-clockwise text-xl lg:text-2xl"></i>
                     </button>
+                    <!-- ปุ่มสร้าง PDF แบบใหม่ -->
                     <button onclick="exportToPDF()" class="flex-1 lg:flex-none bg-green-600 hover:bg-green-700 text-white px-6 h-10 lg:h-12 rounded-2xl shadow-md transition flex items-center justify-center gap-2 font-medium text-xs lg:text-sm whitespace-nowrap">
-                        <i class="ph ph-file-pdf text-xl"></i> PDF
+                        <i class="ph ph-printer text-xl"></i> Print PDF
                     </button>
                 </div>
             </div>
 
-            <div class="mb-8 w-full">
+            <!-- ช่องค้นหา (ซ่อนตอนพิมพ์) -->
+            <div class="mb-8 w-full no-print">
                 <div class="relative w-full">
                     <i class="ph ph-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-lg"></i>
                     <input type="text" id="globalSearch" placeholder="ค้นหาข้อมูล..." class="w-full pl-12 pr-6 py-3 lg:py-4 bg-white rounded-2xl border-none shadow-sm focus:ring-2 focus:ring-green-300 outline-none transition text-gray-600" onkeyup="filterTables()">
@@ -298,7 +386,7 @@
             'Staff': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRZZibUzzgdZ-lCiuC2r9LdaYrjHZKnbUdOYCxJLDaIF4qUmxw8LuKX1FlXr2ADxHPNknSsiWTkncqJ/pub?gid=552763500&single=true&output=csv'
         };
 
-        // --- ระบบดึงข้อมูลใหม่แบบ Fetch API (ใช้แทน google.script.run) ---
+        // --- ระบบดึงข้อมูลใหม่แบบ Fetch API ---
         async function fetchSheetData(sheetName) {
             const url = CSV_URLS[sheetName];
             if (!url || url.includes('ใส่_ลิงก์_CSV')) return [];
@@ -312,7 +400,7 @@
             }
         }
 
-        // แปลงข้อมูล CSV จาก Google Sheets ให้เป็น JSON รูปแบบเดียวกับที่ใช้ใน GAS
+        // แปลงข้อมูล CSV จาก Google Sheets ให้เป็น JSON
         function csvToJSON(csv) {
             const lines = csv.split('\n');
             const result = [];
@@ -324,7 +412,6 @@
                 const obj = {};
                 let rowStr = lines[i];
                 let inQuotes = false; let currentVal = ""; let cols = [];
-                // ตัวแยกคอลัมน์ที่รองรับเครื่องหมายลูกน้ำในข้อความ (Comma inside quotes)
                 for(let char of rowStr) {
                     if(char === '"') inQuotes = !inQuotes;
                     else if(char === ',' && !inQuotes) { cols.push(currentVal.trim()); currentVal = ""; }
@@ -343,14 +430,12 @@
         async function fetchAllData() {
             document.getElementById('mainLoader').classList.remove('hidden');
             try {
-                // โหลดทุกแผ่นงานพร้อมกันเพื่อความรวดเร็ว
                 const [usage, borrow, electric, activity, staff] = await Promise.all([
                     fetchSheetData('Usage'), fetchSheetData('Borrow'), fetchSheetData('Electric'), fetchSheetData('Activity'), fetchSheetData('Staff')
                 ]);
                 
                 let data = { usage, borrow, electric, activity, staff };
                 
-                // ประมวลผลข้อมูลต่างๆ เหมือนที่ทำใน GAS
                 data.electric = processElectricData(data.electric);
                 globalDataStore = data;
                 
@@ -373,7 +458,7 @@
             document.getElementById('landing-view').classList.remove('flex');
             document.getElementById('dashboard-view').classList.remove('hidden');
             document.getElementById('dashboard-view').classList.add('flex');
-            fetchAllData(); // โหลดข้อมูลอัตโนมัติเมื่อเข้าหน้า Dashboard
+            fetchAllData(); 
         }
 
         function enterLanding() {
@@ -383,7 +468,6 @@
             document.getElementById('landing-view').classList.add('flex');
         }
 
-        /* --- ฟังก์ชันสำหรับเปิด/ปิดเมนูในมือถือ --- */
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('sidebarOverlay');
@@ -391,10 +475,9 @@
             overlay.classList.toggle('active');
         }
 
-        /* --- ฟังก์ชันเดิมทั้งหมด คงไว้เหมือนเดิม --- */
         const titles = { 'usage': 'รายงานสรุปผลการเข้าใช้งาน', 'borrow': 'รายงานสรุปผลสถานะการยืม-คืนอุปกรณ์', 'electric': 'รายงานสรุปผลการใช้งานไฟฟ้า', 'activity': 'รายงานสรุปผลคลังรูปภาพกิจกรรม', 'staff': 'รายงานสรุปผลการปฏิบัติงาน' };
         const RATE = 5.5; 
-        const WEB_APP_LINK = "gallery.html"; // ⚠️ อัปเดตลิงก์ตรงนี้ให้วิ่งไปหน้า gallery ใหม่
+        const WEB_APP_LINK = "gallery.html"; 
         let usageChart, electricChart;
         let globalDataStore = {};
 
@@ -414,7 +497,6 @@
             document.getElementById('pageTitle').innerText = titles[pageId];
             document.getElementById('globalSearch').value = '';
             
-            // ปรับตัวเลขตรงนี้เป็น 1024 ให้สอดคล้องกับจุดตัดหน้าจอ iPad ใหม่
             if(window.innerWidth < 1024) toggleSidebar();
             
             filterTables();
@@ -560,12 +642,32 @@
             });
         }
 
+        // 🌟 เปลี่ยนมาใช้ระบบ Print ของ Browser สำหรับ Export PDF (ภาษาไทยไม่แตก กราฟสวยเป๊ะ)
         function exportToPDF() {
-            const activePage = document.querySelector('.page-section.active');
-            const pageId = activePage.id.replace('page-', '');
-            const opt = { margin: 0.2, filename: `Report_${pageId}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true }, jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' } };
-            document.getElementById('mainLoader').classList.remove('hidden');
-            html2pdf().set(opt).from(activePage).save().then(() => { document.getElementById('mainLoader').classList.add('hidden'); });
+            const today = new Date();
+            
+            // 1. อัปเดตวันที่ใน Header ของ PDF
+            const dateEl = document.getElementById('print-date');
+            if (dateEl) {
+                dateEl.innerText = `ข้อมูล ณ วันที่: ${today.toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}`;
+            }
+
+            // 2. ดึงชื่อหน้าปัจจุบันมาตั้งเป็นชื่อเรื่องในเอกสาร PDF
+            const activePageTitle = document.getElementById('pageTitle').innerText;
+            const titleEl = document.getElementById('print-doc-title');
+            if (titleEl) {
+                titleEl.innerText = activePageTitle;
+            }
+            
+            // 3. ซ่อนชื่อเว็บตรงขอบกระดาษ (ลบ Title ชั่วคราว)
+            const originalTitle = document.title;
+            document.title = " "; 
+            
+            // 4. สั่งปริ้นต์ (ให้ผู้ใช้เลือก Save as PDF)
+            window.print();
+            
+            // 5. คืนค่า Title เว็บกลับมาเหมือนเดิม
+            document.title = originalTitle; 
         }
 
         function emptyRow(cols) { return `<tr><td colspan="${cols}" class="text-center text-green-100 py-24 italic font-light tracking-widest text-xs uppercase">No Record Found</td></tr>`; }
