@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>ระบบสำหรับเจ้าหน้าที่ (Admin) - ศูนย์ดิจิทัลชุมชน</title>
+    <title>ระบบหลังบ้าน (Admin) - ศูนย์ดิจิทัลชุมชน</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
@@ -51,34 +51,26 @@
     </div>
 
     <!-- 📝 โซนกรอกข้อมูลหลัก -->
-            <!-- 🌟 ฟอร์ม 7: อุปกรณ์/พัสดุ (อัปเดต 9 คอลัมน์) -->
+            <!-- 🌟 ฟอร์ม 7: อุปกรณ์/พัสดุ (อัปเดต 9 คอลัมน์ สลับ ยี่ห้อ/รุ่น) -->
             <div id="form-equipment" class="form-section">
                 <h2 class="text-lg font-bold text-gray-800 mb-4 border-b border-gray-100 pb-3 flex items-center gap-2">
                     <i class="ph ph-desktop text-teal-600 text-xl"></i> อัปเดตสถานะอุปกรณ์ (Equipment)
                 </h2>
-                <!-- ⚠️ แก้ไข Array การส่งข้อมูลให้รับ 9 ค่า ตรงตามคอลัมน์ A ถึง I -->
-                <form onsubmit="submitData(event, 'Equipment', ['eq_date', 'eq_id', 'eq_name', 'eq_model', 'eq_brand', 'eq_year', 'eq_warranty', 'eq_status', 'eq_note'], 'btn-equipment')">
+                <!-- ⚠️ สลับ eq_brand ขึ้นก่อน eq_model ให้ตรงกับ Google Sheets -->
+                <form onsubmit="submitData(event, 'Equipment', ['eq_date', 'eq_id', 'eq_name', 'eq_brand', 'eq_model', 'eq_year', 'eq_status', 'eq_warranty', 'eq_note'], 'btn-equipment')">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
                         <div><label class="block text-sm font-medium text-gray-700 mb-1">วันที่อัปเดต *</label><input type="text" id="eq_date" required placeholder="เช่น 15 ม.ค. 69" class="input-field"></div>
                         <div><label class="block text-sm font-medium text-gray-700 mb-1">เลขพัสดุ / รหัสครุภัณฑ์ *</label><input type="text" id="eq_id" required placeholder="เช่น 1234-567-89" class="input-field font-semibold text-teal-900"></div>
                         
                         <div class="md:col-span-2"><label class="block text-sm font-medium text-gray-700 mb-1">ชื่ออุปกรณ์ *</label><input type="text" id="eq_name" required placeholder="เช่น คอมพิวเตอร์ตั้งโต๊ะ เครื่องที่ 1" class="input-field"></div>
                         
-                        <!-- 🌟 เพิ่มช่องกรอก รุ่น และ ยี่ห้อ -->
-                        <div><label class="block text-sm font-medium text-gray-700 mb-1">รุ่น *</label><input type="text" id="eq_model" required placeholder="เช่น Aspire 3" class="input-field"></div>
+                        <!-- 🌟 สลับช่องกรอก ยี่ห้อ และ รุ่น -->
                         <div><label class="block text-sm font-medium text-gray-700 mb-1">ยี่ห้อ *</label><input type="text" id="eq_brand" required placeholder="เช่น Acer, HP" class="input-field"></div>
+                        <div><label class="block text-sm font-medium text-gray-700 mb-1">รุ่น *</label><input type="text" id="eq_model" required placeholder="เช่น Aspire 3" class="input-field"></div>
 
-                        <div><label class="block text-sm font-medium text-gray-700 mb-1">ปีที่จัดซื้อ (พ.ศ.) *</label><input type="text" id="eq_year" required placeholder="เช่น 2567" class="input-field"></div>
+                        <div class="md:col-span-2"><label class="block text-sm font-medium text-gray-700 mb-1">ปีที่จัดซื้อ (พ.ศ.) *</label><input type="text" id="eq_year" required placeholder="เช่น 2567" class="input-field"></div>
+                        
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">สถานะการรับประกัน *</label>
-                            <select id="eq_warranty" required class="input-field">
-                                <option value="อยู่ในประกัน">✅ อยู่ในประกัน</option>
-                                <option value="หมดประกัน">❌ หมดประกันแล้ว</option>
-                                <option value="ไม่ระบุ/ไม่ทราบ">❓ ไม่ระบุ/ไม่ทราบ</option>
-                            </select>
-                        </div>
-
-                        <div class="md:col-span-2">
                             <label class="block text-sm font-medium text-gray-700 mb-1">สถานะปัจจุบัน *</label>
                             <select id="eq_status" required class="input-field">
                                 <option value="ใช้งานได้">✅ ใช้งานได้ (ปกติ)</option>
@@ -86,6 +78,17 @@
                                 <option value="อยู่ระหว่างดำเนินการซ่อม">⏳ ใช้งานไม่ได้ (อยู่ระหว่างดำเนินการซ่อม)</option>
                             </select>
                         </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">สถานะการรับประกัน *</label>
+                            <select id="eq_warranty" required class="input-field">
+                                <option value="3 ปี">3 ปี (มีประกัน)</option>
+                                <option value="อยู่ในประกัน">✅ อยู่ในประกัน (อื่นๆ)</option>
+                                <option value="หมดประกัน">❌ หมดประกันแล้ว</option>
+                                <option value="ไม่ระบุ/ไม่ทราบ">❓ ไม่ระบุ/ไม่ทราบ</option>
+                            </select>
+                        </div>
+
                         <div class="md:col-span-2"><label class="block text-sm font-medium text-gray-700 mb-1">รายละเอียดการซ่อม / หมายเหตุ</label><input type="text" id="eq_note" placeholder="ระบุอาการเสีย หรือข้อมูลเพิ่มเติม" class="input-field"></div>
                     </div>
                     <button type="submit" id="btn-equipment" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-medium py-3.5 rounded-xl transition flex items-center justify-center shadow-lg hover:shadow-teal-600/30 text-lg"><i class="ph ph-paper-plane-right mr-2"></i> บันทึกข้อมูลสถานะ</button>
