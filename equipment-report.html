@@ -26,7 +26,8 @@
         .table-wrapper::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
         .table-minimal { min-width: 1200px; width: 100%; border-collapse: separate; border-spacing: 0; }
-        .table-minimal th { background-color: #f8fafc; color: #0f766e; font-weight: 600; padding: 1rem 1.5rem; font-size: 0.85rem; border-bottom: 2px solid #e2e8f0; white-space: nowrap; text-align: left;}
+        /* 🌟 เอา text-align: left ออก เพื่อให้จัดกลางได้ตามคลาสของ Tailwind */
+        .table-minimal th { background-color: #f8fafc; color: #0f766e; font-weight: 600; padding: 1rem 1.5rem; font-size: 0.85rem; border-bottom: 2px solid #e2e8f0; white-space: nowrap; }
         .table-minimal td { padding: 1.25rem 1.5rem; color: #4b5563; font-size: 0.875rem; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
         .table-minimal tbody tr:hover { background-color: #f8fafc; }
         
@@ -101,16 +102,17 @@
             <div class="table-wrapper">
                 <table class="table-minimal">
                     <thead>
+                        <!-- 🌟 จัดระเบียบหัวตารางใหม่ให้ตรงกับข้อมูล -->
                         <tr>
-                            <th width="10%">วันที่อัปเดต</th>
-                            <th width="12%">รหัสพัสดุ / ครุภัณฑ์</th>
-                            <th width="15%">ชื่ออุปกรณ์</th>
-                            <th width="10%">ยี่ห้อ</th>
-                            <th width="10%">รุ่น</th>
+                            <th width="10%" class="text-center">วันที่อัปเดต</th>
+                            <th width="12%" class="text-center">รหัสพัสดุ / ครุภัณฑ์</th>
+                            <th width="15%" class="text-left">ชื่ออุปกรณ์</th>
+                            <th width="10%" class="text-center">ยี่ห้อ</th>
+                            <th width="12%" class="text-center">รุ่น</th>
                             <th width="8%" class="text-center">ปีที่จัดซื้อ</th>
                             <th width="10%" class="text-center">การรับประกัน</th>
-                            <th width="12%" class="text-center">สถานะ</th>
-                            <th width="13%">หมายเหตุ / การซ่อม</th>
+                            <th width="10%" class="text-center">สถานะ</th>
+                            <th width="13%" class="text-left">หมายเหตุ / การซ่อม</th>
                         </tr>
                     </thead>
                     <tbody id="equipmentTableBody">
@@ -138,7 +140,6 @@
                 const response = await fetch(CSV_URL);
                 const csvText = await response.text();
                 
-                // ตรวจสอบเบื้องต้นว่าเป็นไฟล์ HTML หรือเปล่า (กรณีเผลอก๊อปลิงก์ผิด)
                 if (csvText.trim().toLowerCase().startsWith('<!doctype html>') || csvText.includes('<html')) {
                     throw new Error("ลิงก์ที่ใส่ไม่ใช่ไฟล์ CSV (น่าจะเป็นลิงก์หน้าเว็บ กรุณากดเผยแพร่ให้เป็นค่าที่คั่นด้วยจุลภาค)");
                 }
@@ -157,11 +158,10 @@
             const result = [];
             if(lines.length <= 1) return result;
             
-            // ลบ \r ออกเผื่อมี
             const headers = lines[0].split(',').map(h => h.replace(/^"|"$/g, '').trim().replace(/\r$/, ''));
             
             for (let i = 1; i < lines.length; i++) {
-                if(!lines[i].trim() || lines[i].trim() === '\r') continue; // ข้ามบรรทัดว่าง
+                if(!lines[i].trim() || lines[i].trim() === '\r') continue; 
                 
                 const obj = {};
                 let rowStr = lines[i];
@@ -173,12 +173,10 @@
                 }
                 cols.push(currentVal.trim().replace(/\r$/, ''));
                 
-                // ถ้ารายการว่างเปล่าหมดเลย ให้ข้าม
                 if (cols.every(val => !val || val === '')) continue;
 
                 headers.forEach((header, index) => {
                     let val = cols[index] ? cols[index].replace(/^"|"$/g, '') : "";
-                    // จัดการชื่อคอลัมน์ที่มีเว้นวรรคให้ตรงเป๊ะ
                     const cleanHeader = header.replace(/\s+/g, ' ').trim(); 
                     obj[cleanHeader] = val;
                 });
@@ -191,8 +189,7 @@
             const tbody = document.getElementById('equipmentTableBody');
             let html = '';
             
-            data.slice().reverse().forEach(row => {
-                // 1. สถานะการใช้งาน (อ่านจากคอลัมน์ สถานะปัจจุบัน)
+            data.forEach(row => {
                 const status = row['สถานะปัจจุบัน'] || row['สถานะ'] || '-';
                 let badgeClass = 'badge-warning'; 
                 let icon = 'ph-clock';
@@ -208,7 +205,6 @@
                 }
                 const badgeHtml = `<span class="badge ${badgeClass}"><i class="ph ${icon}"></i> ${status}</span>`;
                 
-                // 2. ปีที่จัดซื้อ (แปลง ค.ศ. เป็น พ.ศ. อัตโนมัติ)
                 let yearPurchased = row['ปีที่จัดซื้อ'] || '-'; 
                 if (yearPurchased !== '-') {
                     let yearMatch = yearPurchased.toString().match(/\b(19\d{2}|20\d{2}|24\d{2}|25\d{2})\b/);
@@ -218,7 +214,6 @@
                     }
                 }
 
-                // 3. สถานะการรับประกัน (อ่านจากคอลัมน์ สถานะการรับประกัน)
                 const warrantyStatus = row['สถานะการรับประกัน'] || '-';
                 let warrantyHtml = `<span class="text-gray-600 text-sm">${warrantyStatus}</span>`;
                 
@@ -231,18 +226,18 @@
                 const model = row['รุ่น'] || '-';
                 const brand = row['ยี่ห้อ'] || '-';
                 
-                // สร้างแถวข้อมูลตาราง 9 คอลัมน์ (สลับ ยี่ห้อ ขึ้นก่อน รุ่น)
+                // 🌟 จัดเรียงข้อมูลให้ตรงกับหัวตาราง
                 html += `
                 <tr class="search-row">
-                    <td class="text-gray-500">${row['วันที่อัปเดต'] || '-'}</td>
-                    <td class="font-bold text-teal-900 font-mono">${row['เลขพัสดุ / รหัสครุภัณฑ์'] || row['เลขพัสดุ/รหัสครุภัณฑ์'] || '-'}</td>
-                    <td class="font-medium text-gray-800">${row['ชื่ออุปกรณ์'] || '-'}</td>
-                    <td class="text-gray-600">${brand}</td>
-                    <td class="text-gray-600">${model}</td>
+                    <td class="text-center text-gray-500">${row['วันที่อัปเดต'] || '-'}</td>
+                    <td class="text-center font-bold text-teal-900 font-mono">${row['เลขพัสดุ / รหัสครุภัณฑ์'] || row['เลขพัสดุ/รหัสครุภัณฑ์'] || '-'}</td>
+                    <td class="text-left font-medium text-gray-800">${row['ชื่ออุปกรณ์'] || '-'}</td>
+                    <td class="text-center text-gray-600">${brand}</td>
+                    <td class="text-center text-gray-600">${model}</td>
                     <td class="text-center text-gray-600 font-medium">${yearPurchased}</td>
                     <td class="text-center">${warrantyHtml}</td>
                     <td class="text-center">${badgeHtml}</td>
-                    <td class="text-gray-500 text-sm">${row['รายละเอียดการซ่อม / หมายเหตุ'] || row['รายละเอียดการซ่อม/หมายเหตุ'] || row['หมายเหตุ'] || '-'}</td>
+                    <td class="text-left text-gray-500 text-sm">${row['รายละเอียดการซ่อม / หมายเหตุ'] || row['รายละเอียดการซ่อม/หมายเหตุ'] || row['หมายเหตุ'] || '-'}</td>
                 </tr>`;
             });
             
