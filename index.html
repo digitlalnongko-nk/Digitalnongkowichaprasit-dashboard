@@ -232,18 +232,20 @@
                 <div class="nav-item px-5 py-3.5 flex items-center gap-4 text-sm text-gray-500" onclick="showPage('activity', this)">
                     <i class="ph ph-images-square text-2xl"></i> ระบบประมวลผลรูปภาพ
                 </div>
-                <div class="nav-item px-5 py-3.5 flex items-center gap-4 text-sm text-gray-500" onclick="showPage('staff', this)">
+                
+                <!-- 🌟 เรียกฟังก์ชันเปิด Popup รหัสผ่าน สำหรับเจ้าหน้าที่ -->
+                <div class="nav-item px-5 py-3.5 flex items-center gap-4 text-sm text-gray-500" onclick="openPwdModalForPage('staff', this)">
                     <i class="ph ph-user-circle-gear text-2xl"></i> ระบบการปฏิบัติงานของเจ้าหน้าที่
                 </div>
                 
-                <!-- 🌟 เพิ่มปุ่มเข้าระบบสถานะพัสดุ ตรงนี้ (แก้ไขเพิ่มระบบรหัสผ่าน) -->
+                <!-- 🌟 เรียกฟังก์ชันเปิด Popup รหัสผ่าน สำหรับสถานะพัสดุ -->
                 <div class="mt-2">
-                    <a href="#" onclick="openPwdModal('equipment-report.html')" class="nav-item px-5 py-3.5 flex items-center gap-4 text-sm text-teal-600 hover:!bg-teal-50 font-medium block w-full no-underline transition">
+                    <a href="#" onclick="openPwdModalForUrl('equipment-report.html')" class="nav-item px-5 py-3.5 flex items-center gap-4 text-sm text-teal-600 hover:!bg-teal-50 font-medium block w-full no-underline transition">
                         <i class="ph ph-desktop text-2xl"></i> ระบบรายงานสถานะพัสดุ
                     </a>
                 </div>
 
-                <!-- 🌟 เพิ่มปุ่มเข้าสู่ระบบ Admin ตรงนี้ -->
+                <!-- 🌟 ปุ่มเข้าสู่ระบบ Admin -->
                 <div class="mt-2">
                     <a href="admin.html" class="nav-item px-5 py-3.5 flex items-center gap-4 text-sm text-green-600 hover:!bg-green-50 font-medium block w-full no-underline">
                         <i class="ph ph-lock-key text-2xl"></i> ระบบฐานข้อมูลของเจ้าหน้าที่
@@ -376,14 +378,14 @@
         </main>
     </div>
 
-    <!-- 🌟 Modal สำหรับใส่รหัสผ่าน หน้าสถานะพัสดุ -->
+    <!-- 🌟 Modal สำหรับใส่รหัสผ่าน (ใช้ร่วมกันได้หลายปุ่ม) -->
     <div id="pwdModal" class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 no-print">
         <div class="bg-white rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden transform transition-all animate-[fadeIn_0.3s_ease-out] p-6 text-center">
             <div class="w-16 h-16 bg-teal-100 text-teal-600 rounded-full flex items-center justify-center mx-auto mb-4">
                 <i class="ph ph-lock-key text-3xl"></i>
             </div>
             <h3 class="font-bold text-gray-900 text-lg mb-1">กรุณายืนยันรหัสผ่าน</h3>
-            <p class="text-xs text-gray-500 mb-6">เพื่อเข้าสู่ระบบรายงานสถานะพัสดุ</p>
+            <p class="text-xs text-gray-500 mb-6" id="pwdModalDesc">เพื่อเข้าสู่ระบบ</p>
             
             <input type="password" id="eqPassword" placeholder="ระบุรหัสผ่าน" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200 text-center tracking-widest mb-2 transition">
             <p id="eqError" class="text-red-500 text-xs mb-4 hidden font-medium"><i class="ph ph-warning-circle"></i> รหัสผ่านไม่ถูกต้อง!</p>
@@ -517,7 +519,11 @@
             document.querySelectorAll('.page-section').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
             document.getElementById('page-' + pageId).classList.add('active');
-            element.classList.add('active');
+            
+            if (element) {
+                element.classList.add('active');
+            }
+            
             document.getElementById('pageTitle').innerText = titles[pageId];
             document.getElementById('globalSearch').value = '';
             
@@ -698,12 +704,29 @@
         function emptyRow(cols) { return `<tr><td colspan="${cols}" class="text-center text-green-100 py-24 italic font-light tracking-widest text-xs uppercase">No Record Found</td></tr>`; }
 
         /* =========================================================================
-           🌟 ระบบล็อกรหัสผ่าน หน้าพัสดุ
+           🌟 ระบบล็อกรหัสผ่าน
            ========================================================================= */
+        let pwdMode = ''; // 'url' หรือ 'page'
         let targetEqUrl = '';
+        let targetPageId = '';
+        let targetPageElement = null;
         
-        function openPwdModal(url) {
+        function openPwdModalForUrl(url) {
+            pwdMode = 'url';
             targetEqUrl = url;
+            document.getElementById('pwdModalDesc').innerText = 'เพื่อเข้าสู่ระบบรายงานสถานะพัสดุ';
+            showModalUI();
+        }
+
+        function openPwdModalForPage(pageId, element) {
+            pwdMode = 'page';
+            targetPageId = pageId;
+            targetPageElement = element;
+            document.getElementById('pwdModalDesc').innerText = 'เพื่อเข้าสู่ระบบการปฏิบัติงานของเจ้าหน้าที่';
+            showModalUI();
+        }
+
+        function showModalUI() {
             document.getElementById('pwdModal').classList.remove('hidden');
             document.getElementById('eqPassword').value = '';
             document.getElementById('eqError').classList.add('hidden');
@@ -719,7 +742,12 @@
             const pwd = document.getElementById('eqPassword').value;
             // 🔑 ตั้งรหัสผ่านที่ต้องการตรงนี้ (ปัจจุบันตั้งเป็น 66440763 เหมือนแอดมิน)
             if (pwd === '66440763') { 
-                window.location.href = targetEqUrl;
+                closePwdModal();
+                if (pwdMode === 'url') {
+                    window.location.href = targetEqUrl;
+                } else if (pwdMode === 'page') {
+                    showPage(targetPageId, targetPageElement);
+                }
             } else {
                 document.getElementById('eqError').classList.remove('hidden');
             }
