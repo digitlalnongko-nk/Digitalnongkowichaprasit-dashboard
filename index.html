@@ -236,9 +236,9 @@
                     <i class="ph ph-user-circle-gear text-2xl"></i> ระบบการปฏิบัติงานของเจ้าหน้าที่
                 </div>
                 
-                <!-- 🌟 เพิ่มปุ่มเข้าระบบสถานะพัสดุ ตรงนี้ -->
+                <!-- 🌟 เพิ่มปุ่มเข้าระบบสถานะพัสดุ ตรงนี้ (แก้ไขเพิ่มระบบรหัสผ่าน) -->
                 <div class="mt-2">
-                    <a href="equipment-report.html" class="nav-item px-5 py-3.5 flex items-center gap-4 text-sm text-teal-600 hover:!bg-teal-50 font-medium block w-full no-underline">
+                    <a href="#" onclick="openPwdModal('equipment-report.html')" class="nav-item px-5 py-3.5 flex items-center gap-4 text-sm text-teal-600 hover:!bg-teal-50 font-medium block w-full no-underline transition">
                         <i class="ph ph-desktop text-2xl"></i> ระบบรายงานสถานะพัสดุ
                     </a>
                 </div>
@@ -376,6 +376,25 @@
         </main>
     </div>
 
+    <!-- 🌟 Modal สำหรับใส่รหัสผ่าน หน้าสถานะพัสดุ -->
+    <div id="pwdModal" class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 no-print">
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden transform transition-all animate-[fadeIn_0.3s_ease-out] p-6 text-center">
+            <div class="w-16 h-16 bg-teal-100 text-teal-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="ph ph-lock-key text-3xl"></i>
+            </div>
+            <h3 class="font-bold text-gray-900 text-lg mb-1">กรุณายืนยันรหัสผ่าน</h3>
+            <p class="text-xs text-gray-500 mb-6">เพื่อเข้าสู่ระบบรายงานสถานะพัสดุ</p>
+            
+            <input type="password" id="eqPassword" placeholder="ระบุรหัสผ่าน" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200 text-center tracking-widest mb-2 transition">
+            <p id="eqError" class="text-red-500 text-xs mb-4 hidden font-medium"><i class="ph ph-warning-circle"></i> รหัสผ่านไม่ถูกต้อง!</p>
+            
+            <div class="flex gap-3 mt-4">
+                <button onclick="closePwdModal()" class="flex-1 py-3 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 transition font-medium text-sm">ยกเลิก</button>
+                <button onclick="verifyEqPwd()" class="flex-1 py-3 rounded-xl bg-teal-600 text-white font-medium hover:bg-teal-700 shadow-md transition text-sm">เข้าสู่ระบบ</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // ⚠️⚠️⚠️ [ส่วนที่ต้องแก้ไขสำหรับ Vercel] นำลิงก์ CSV จาก Google Sheets มาใส่ในเครื่องหมายคำพูดด้านล่างนี้ ⚠️⚠️⚠️
         const CSV_URLS = {
@@ -386,7 +405,7 @@
             'Staff': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRZZibUzzgdZ-lCiuC2r9LdaYrjHZKnbUdOYCxJLDaIF4qUmxw8LuKX1FlXr2ADxHPNknSsiWTkncqJ/pub?gid=552763500&single=true&output=csv'
         };
 
-        // --- ระบบดึงข้อมูลใหม่แบบ Fetch API ---
+        // --- ระบบดึงข้อมูลใหม่แบบ Fetch API (ใช้แทน google.script.run) ---
         async function fetchSheetData(sheetName) {
             const url = CSV_URLS[sheetName];
             if (!url || url.includes('ใส่_ลิงก์_CSV')) return [];
@@ -400,7 +419,7 @@
             }
         }
 
-        // แปลงข้อมูล CSV จาก Google Sheets ให้เป็น JSON
+        // แปลงข้อมูล CSV จาก Google Sheets ให้เป็น JSON รูปแบบเดียวกับที่ใช้ใน GAS
         function csvToJSON(csv) {
             const lines = csv.split('\n');
             const result = [];
@@ -412,6 +431,7 @@
                 const obj = {};
                 let rowStr = lines[i];
                 let inQuotes = false; let currentVal = ""; let cols = [];
+                // ตัวแยกคอลัมน์ที่รองรับเครื่องหมายลูกน้ำในข้อความ (Comma inside quotes)
                 for(let char of rowStr) {
                     if(char === '"') inQuotes = !inQuotes;
                     else if(char === ',' && !inQuotes) { cols.push(currentVal.trim()); currentVal = ""; }
@@ -430,12 +450,14 @@
         async function fetchAllData() {
             document.getElementById('mainLoader').classList.remove('hidden');
             try {
+                // โหลดทุกแผ่นงานพร้อมกันเพื่อความรวดเร็ว
                 const [usage, borrow, electric, activity, staff] = await Promise.all([
                     fetchSheetData('Usage'), fetchSheetData('Borrow'), fetchSheetData('Electric'), fetchSheetData('Activity'), fetchSheetData('Staff')
                 ]);
                 
                 let data = { usage, borrow, electric, activity, staff };
                 
+                // ประมวลผลข้อมูลต่างๆ เหมือนที่ทำใน GAS
                 data.electric = processElectricData(data.electric);
                 globalDataStore = data;
                 
@@ -458,7 +480,7 @@
             document.getElementById('landing-view').classList.remove('flex');
             document.getElementById('dashboard-view').classList.remove('hidden');
             document.getElementById('dashboard-view').classList.add('flex');
-            fetchAllData(); 
+            fetchAllData(); // โหลดข้อมูลอัตโนมัติเมื่อเข้าหน้า Dashboard
         }
 
         function enterLanding() {
@@ -468,6 +490,7 @@
             document.getElementById('landing-view').classList.add('flex');
         }
 
+        /* --- ฟังก์ชันสำหรับเปิด/ปิดเมนูในมือถือ --- */
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('sidebarOverlay');
@@ -475,9 +498,10 @@
             overlay.classList.toggle('active');
         }
 
+        /* --- ฟังก์ชันเดิมทั้งหมด คงไว้เหมือนเดิม --- */
         const titles = { 'usage': 'รายงานสรุปผลการเข้าใช้งาน', 'borrow': 'รายงานสรุปผลสถานะการยืม-คืนอุปกรณ์', 'electric': 'รายงานสรุปผลการใช้งานไฟฟ้า', 'activity': 'รายงานสรุปผลคลังรูปภาพกิจกรรม', 'staff': 'รายงานสรุปผลการปฏิบัติงาน' };
         const RATE = 5.5; 
-        const WEB_APP_LINK = "gallery.html"; 
+        const WEB_APP_LINK = "gallery.html"; // ⚠️ อัปเดตลิงก์ตรงนี้ให้วิ่งไปหน้า gallery ใหม่
         let usageChart, electricChart;
         let globalDataStore = {};
 
@@ -497,6 +521,7 @@
             document.getElementById('pageTitle').innerText = titles[pageId];
             document.getElementById('globalSearch').value = '';
             
+            // ปรับตัวเลขตรงนี้เป็น 1024 ให้สอดคล้องกับจุดตัดหน้าจอ iPad ใหม่
             if(window.innerWidth < 1024) toggleSidebar();
             
             filterTables();
@@ -671,6 +696,39 @@
         }
 
         function emptyRow(cols) { return `<tr><td colspan="${cols}" class="text-center text-green-100 py-24 italic font-light tracking-widest text-xs uppercase">No Record Found</td></tr>`; }
+
+        /* =========================================================================
+           🌟 ระบบล็อกรหัสผ่าน หน้าพัสดุ
+           ========================================================================= */
+        let targetEqUrl = '';
+        
+        function openPwdModal(url) {
+            targetEqUrl = url;
+            document.getElementById('pwdModal').classList.remove('hidden');
+            document.getElementById('eqPassword').value = '';
+            document.getElementById('eqError').classList.add('hidden');
+            // เลือกให้เคอร์เซอร์กระพริบที่ช่องใส่รหัสผ่านอัตโนมัติ
+            setTimeout(() => document.getElementById('eqPassword').focus(), 100);
+        }
+
+        function closePwdModal() {
+            document.getElementById('pwdModal').classList.add('hidden');
+        }
+
+        function verifyEqPwd() {
+            const pwd = document.getElementById('eqPassword').value;
+            // 🔑 ตั้งรหัสผ่านที่ต้องการตรงนี้ (ปัจจุบันตั้งเป็น 66440763 เหมือนแอดมิน)
+            if (pwd === '66440763') { 
+                window.location.href = targetEqUrl;
+            } else {
+                document.getElementById('eqError').classList.remove('hidden');
+            }
+        }
+
+        // กด Enter เพื่อยืนยันรหัสผ่านได้เลย
+        document.getElementById('eqPassword').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') verifyEqPwd();
+        });
 
     </script>
 </body>
