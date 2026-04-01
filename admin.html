@@ -178,7 +178,7 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
                         <div><label class="block text-sm font-medium text-gray-700 mb-1">ประจำเดือน *</label><input type="text" id="e_date" required placeholder="เช่น มกราคม 2569" class="input-field"></div>
                         <div><label class="block text-sm font-medium text-gray-700 mb-1">เลขมิเตอร์ *</label><input type="number" step="0.01" id="e_meter" required placeholder="เช่น 12345" class="input-field"></div>
-                        <div><label class="block text-sm font-medium text-gray-700 mb-1">หน่วยที่ใช้ (เว้นว่างได้)</label><input type="number" step="0.01" id="e_unit" placeholder="คำนวณอัตโนมัติ" class="input-field"></div>
+                        <div><label class="block text-sm font-medium text-gray-700 mb-1">หน่วยที่ใช้ (เว้นว่างได้)</label><input type="number" step="0.01" id="e_unit" placeholder="ระบุตัวเลขเพื่อคำนวณอัตโนมัติ" class="input-field"></div>
                         <div><label class="block text-sm font-medium text-gray-700 mb-1">ค่าไฟรวม (บาท) (เว้นว่างได้)</label><input type="number" step="0.01" id="e_total" placeholder="คำนวณอัตโนมัติ" class="input-field"></div>
                         <div class="md:col-span-2"><label class="block text-sm font-medium text-gray-700 mb-1">หมายเหตุ</label><input type="text" id="e_note" placeholder="รายละเอียดเพิ่มเติม" class="input-field"></div>
                     </div>
@@ -663,6 +663,39 @@
             
             document.title = originalTitle; 
         }
+
+        // =========================================================================
+        // 🌟 ระบบคำนวณค่าไฟฟ้าอัตโนมัติ (เพิ่มใหม่ อ้างอิง PEA ประเภท 2.1)
+        // =========================================================================
+        document.getElementById('e_unit').addEventListener('input', function() {
+            const units = parseFloat(this.value);
+            const totalInput = document.getElementById('e_total');
+            
+            // ตรวจสอบว่าใส่ตัวเลขถูกต้องหรือไม่
+            if (isNaN(units) || units <= 0) {
+                totalInput.value = '';
+                return;
+            }
+
+            // ⚡ อัตราค่าไฟฟ้า การไฟฟ้าส่วนภูมิภาค (PEA)
+            // อ้างอิงจากรูปภาพ: ประเภท 2.1 กิจการขนาดเล็ก (แรงดัน 22-33 กิโลโวลต์)
+            const energyRate = 3.9086;     // ค่าพลังงานไฟฟ้า (บาท/หน่วย)
+            const serviceCharge = 312.24;  // ค่าบริการรายเดือน (บาท)
+            const ftRate = 0.0972;         // ค่า Ft (บาท/หน่วย) -> อ้างอิงตัวเลข 9.72 สตางค์ตามในภาพของคุณเป๊ะๆ
+            
+            // 💡 สูตรการคำนวณ
+            const baseEnergy = units * energyRate;         // ส่วนที่ 1: ค่าพลังงานไฟฟ้า
+            const totalBase = baseEnergy + serviceCharge;  // ส่วนที่ 1 (ต่อ): รวมค่าไฟฟ้าฐาน
+            const totalFt = units * ftRate;                // ส่วนที่ 2: ค่าไฟฟ้าผันแปร (Ft)
+            
+            const beforeVat = totalBase + totalFt;
+            const vat = beforeVat * 0.07;                  // ส่วนที่ 3: ภาษีมูลค่าเพิ่ม 7%
+            
+            const grandTotal = beforeVat + vat;            // รวมเงินค่าไฟฟ้าสุทธิ
+            
+            // แสดงผลลัพธ์ลงในช่อง (ทศนิยม 2 ตำแหน่ง)
+            totalInput.value = grandTotal.toFixed(2);
+        });
     </script>
 </body>
 </html>
