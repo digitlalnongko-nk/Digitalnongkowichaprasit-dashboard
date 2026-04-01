@@ -91,7 +91,7 @@
            ======================================================= */
         @media print {
             /* 1. ตั้งค่ากระดาษเป็นแนวนอน (Landscape) 
-               และคงขอบกระดาษด้านบนไว้ 15.5mm เพื่อไม่ให้หน้า 2 ชิดขอบบนเกินไป
+                และคงขอบกระดาษด้านบนไว้ 15.5mm เพื่อไม่ให้หน้า 2 ชิดขอบบนเกินไป
             */
             @page {
                 size: A4 landscape;
@@ -547,7 +547,25 @@
                     }
                 }
                 pRow._calcUnits = !isNaN(units) ? units : null;
-                if (isNaN(total) && pRow._calcUnits !== null) total = pRow._calcUnits * RATE;
+                
+                // ⚡ อัปเดต: คำนวณค่าไฟฟ้าตามสูตร กฟภ. (PEA) ประเภท 2.1 ในกรณีที่ไม่มีค่ายอดรวม
+                if (isNaN(total) && pRow._calcUnits !== null && pRow._calcUnits > 0) {
+                    const energyRate = 3.9086;     // ค่าพลังงานไฟฟ้า (บาท/หน่วย)
+                    const serviceCharge = 312.24;  // ค่าบริการรายเดือน (บาท)
+                    const ftRate = 0.0972;         // ค่า Ft (บาท/หน่วย)
+                    
+                    const baseEnergy = pRow._calcUnits * energyRate;
+                    const totalBase = baseEnergy + serviceCharge;
+                    const totalFt = pRow._calcUnits * ftRate;
+                    
+                    const beforeVat = totalBase + totalFt;
+                    const vat = beforeVat * 0.07;
+                    
+                    total = beforeVat + vat;
+                } else if (isNaN(total)) {
+                    total = 0;
+                }
+
                 pRow._calcTotal = !isNaN(total) ? total : null;
                 if(pRow._calcUnits !== null) pRow['หน่วยที่ใช้'] = pRow._calcUnits.toFixed(2);
                 if(pRow._calcTotal !== null) pRow['ค่าไฟรวม'] = pRow._calcTotal.toLocaleString(undefined, {minimumFractionDigits: 2});
