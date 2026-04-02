@@ -7,6 +7,8 @@
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <!-- 🤖 เพิ่ม Library สำหรับ AI สแกนข้อความจากรูปภาพ (OCR) -->
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
     
     <style>
@@ -15,13 +17,9 @@
             background-color: #f3f4f6; 
             color: #1f2937; 
             /* Anti-Select Text ป้องกันการคลุมดำก๊อปปี้ข้อมูลในหน้าเว็บ */
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
+            -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;
         }
 
-        /* อนุญาตให้พิมพ์ในช่อง Input ได้ */
         input, textarea, select { user-select: auto; -webkit-user-select: auto; }
 
         .card { background-color: #ffffff; border-radius: 24px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05); border: 1px solid #fef3c7; }
@@ -34,7 +32,6 @@
         .custom-scrollbar::-webkit-scrollbar { height: 8px; width: 8px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 10px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
         
         .tab-btn { white-space: nowrap; padding: 10px 16px; border-radius: 12px; font-size: 14px; font-weight: 500; transition: all 0.3s; color: #6b7280; background: #ffffff; border: 1px solid #e5e7eb; }
         .tab-btn.active { background: #166534; color: #ffffff; border-color: #166534; box-shadow: 0 4px 10px rgba(22, 101, 52, 0.2); }
@@ -45,15 +42,15 @@
         .spinner { border: 3px solid rgba(255,255,255,0.3); border-radius: 50%; border-top: 3px solid #fff; width: 20px; height: 20px; animation: spin 1s linear infinite; display: inline-block; vertical-align: middle; margin-right: 8px;}
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* =======================================================
-           🌟 ระบบ Print PDF เฉพาะหน้า Admin
-           ======================================================= */
+        .ai-scanner-box { border: 2px dashed #c084fc; background-color: #faf5ff; transition: all 0.3s ease; }
+        .ai-scanner-box:hover { background-color: #f3e8ff; border-color: #a855f7; }
+
         .print-header { display: none; text-align: center; margin-bottom: 20px; }
 
         @media print {
             @page { size: A4 landscape; margin: 15.5mm 10mm 12mm 10mm; }
             body { background-color: white !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; padding: 0 !important; }
-            .no-print, #loginZone, .tab-btn, .hide-scrollbar, .input-field, button, select, textarea, label { display: none !important; }
+            .no-print, #loginZone, .tab-btn, .hide-scrollbar, .input-field, button, select, textarea, label, .ai-scanner-box { display: none !important; }
             #adminZone > div:first-child, h1.text-green-900, p.text-gray-500 { display: none !important; }
             .print-header { display: block !important; }
             .print-header h1 { display: block !important; font-size: 22px !important; font-weight: bold !important; color: #111827 !important; margin-bottom: 4px !important; }
@@ -99,7 +96,6 @@
             </button>
         </div>
 
-        <!-- 🌟 แถบเมนู 7 หัวข้อ -->
         <div class="flex overflow-x-auto gap-2 pb-2 mb-4 hide-scrollbar">
             <button class="tab-btn active flex items-center" onclick="switchTab('usage', this)"><i class="ph ph-users mr-1.5"></i> ผู้เข้าใช้งาน</button>
             <button class="tab-btn flex items-center" onclick="switchTab('borrow', this)"><i class="ph ph-archive mr-1.5"></i> ยืม-คืน</button>
@@ -145,37 +141,86 @@
                 </form>
             </div>
 
-            <!-- 🌟 ฟอร์ม 3: ไฟฟ้า (เพิ่มการกรอกข้อมูลจากบิล กฟภ. แบบละเอียด) -->
+            <!-- 🌟 ฟอร์ม 3: ไฟฟ้า (เพิ่ม AI สแกนบิล และ Dropdown เดือน/ปี) -->
             <div id="form-electric" class="form-section">
-                <h2 class="text-lg font-bold text-gray-800 mb-4 border-b border-gray-100 pb-3 flex items-center gap-2"><i class="ph ph-plug text-blue-600 text-xl"></i> เพิ่มข้อมูลการใช้ไฟฟ้า (Electric)</h2>
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-4 border-b border-gray-100 pb-3 gap-2">
+                    <h2 class="text-lg font-bold text-gray-800 flex items-center gap-2"><i class="ph ph-plug text-blue-600 text-xl"></i> เพิ่มข้อมูลการใช้ไฟฟ้า (Electric)</h2>
+                </div>
                 
-                <div class="bg-blue-50 border border-blue-100 p-4 rounded-xl mb-6">
-                    <p class="text-xs text-blue-800 font-medium mb-1"><i class="ph ph-info"></i> ระบบเก็บข้อมูลเอกสารบิล (แบบใหม่):</p>
-                    <p class="text-xs text-blue-600">กรอกข้อมูล <strong>หมายเลขผู้ใช้ไฟฟ้า, เลขที่ใบแจ้ง, และวันที่จดหน่วย</strong> เพื่อความถูกต้องของเอกสาร (ข้อมูลบิลที่อัปโหลดจะถูกเก็บเป็นความลับ ไม่แสดงบนหน้า Dashboard)</p>
+                <!-- 🤖 กล่องอัปโหลดเพื่อใช้ AI สแกนข้อความ -->
+                <div class="ai-scanner-box p-6 rounded-2xl flex flex-col items-center justify-center text-center mb-6 cursor-pointer" onclick="document.getElementById('ai_scan_file').click()">
+                    <div class="w-14 h-14 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center mb-3 shadow-inner">
+                        <i class="ph ph-scan text-3xl"></i>
+                    </div>
+                    <h3 class="text-base font-bold text-purple-900 mb-1">🤖 สแกนข้อมูลจากบิลอัตโนมัติ (AI Auto-Fill)</h3>
+                    <p class="text-xs text-purple-700 mb-4 max-w-md">อัปโหลดรูปภาพใบแจ้งค่าไฟฟ้า หรือแคปหน้าจอบิล เพื่อให้ระบบดึงข้อมูลลงฟอร์มให้คุณอัตโนมัติ (ช่วยลดเวลาการพิมพ์)</p>
+                    
+                    <input type="file" id="ai_scan_file" accept="image/*" class="hidden" onchange="processAIBillScan(this, event)">
+                    <button type="button" class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2.5 rounded-xl text-sm font-medium transition shadow-md flex items-center gap-2 pointer-events-none">
+                        <i class="ph ph-upload-simple text-lg"></i> อัปโหลดรูปภาพบิล
+                    </button>
+                    
+                    <div id="ai_scan_status" class="mt-4 text-xs font-bold text-purple-800 hidden flex items-center justify-center gap-2 bg-white px-4 py-2 rounded-lg shadow-sm border border-purple-100 w-full max-w-md"></div>
                 </div>
 
-                <!-- ⚠️ ต้องเปลี่ยนอาร์เรย์ของ ID ให้ตรงกับคอลัมน์ใน Google Sheets -->
+                <div class="bg-blue-50 border border-blue-100 p-4 rounded-xl mb-6">
+                    <p class="text-xs text-blue-800 font-medium mb-1"><i class="ph ph-info"></i> คำแนะนำ:</p>
+                    <p class="text-xs text-blue-600">ตรวจสอบความถูกต้องของตัวเลขหลังจากการสแกนเสมอ และอย่าลืมกรอก <strong>เลขมิเตอร์ปัจจุบันของห้อง</strong> ด้วยตนเอง</p>
+                </div>
+
                 <form onsubmit="submitData(event, 'Electric', ['e_date', 'e_pea_no', 'e_invoice_no', 'e_read_date', 'e_school_bill', 'e_school_unit', 'e_room_meter', 'e_bill_img', 'e_note'], 'btn-electric')">
+                    
+                    <!-- ฟิลด์ที่ซ่อนไว้เพื่อส่งค่า ประจำเดือน + ปี -->
+                    <input type="hidden" id="e_date" value="">
+
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
-                        <div><label class="block text-sm font-medium text-gray-700 mb-1">ประจำเดือน *</label><input type="text" id="e_date" required placeholder="เช่น มีนาคม 2569" class="input-field"></div>
                         
-                        <!-- ข้อมูลบิลใหม่ 3 ช่อง -->
-                        <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4 bg-white p-4 rounded-xl border border-gray-200">
-                            <div class="md:col-span-3 text-sm font-bold text-gray-800 pb-2 border-b border-gray-100"><i class="ph ph-receipt text-gray-500"></i> ข้อมูลอ้างอิงเอกสาร กฟภ.</div>
-                            <div><label class="block text-xs font-medium text-gray-700 mb-1">หมายเลขผู้ใช้ไฟฟ้า *</label><input type="text" id="e_pea_no" required placeholder="เช่น 020011624364" class="input-field bg-gray-50"></div>
-                            <div><label class="block text-xs font-medium text-gray-700 mb-1">เลขที่ใบแจ้งค่าไฟฟ้า *</label><input type="text" id="e_invoice_no" required placeholder="เช่น 11024364032569" class="input-field bg-gray-50"></div>
-                            <div><label class="block text-xs font-medium text-gray-700 mb-1">วันที่อ่านหน่วย (ในบิล) *</label><input type="text" id="e_read_date" required placeholder="เช่น 15/03/69" class="input-field bg-gray-50"></div>
+                        <!-- 📅 Dropdown เลือกเดือน และ ปี -->
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">ประจำเดือน (รอบบิล) *</label>
+                            <div class="flex gap-3">
+                                <select id="e_month" class="input-field flex-1 border-blue-200 focus:border-blue-500" onchange="updateEDate()">
+                                    <option value="" disabled selected>-- เลือกเดือน --</option>
+                                    <option value="มกราคม">มกราคม</option><option value="กุมภาพันธ์">กุมภาพันธ์</option>
+                                    <option value="มีนาคม">มีนาคม</option><option value="เมษายน">เมษายน</option>
+                                    <option value="พฤษภาคม">พฤษภาคม</option><option value="มิถุนายน">มิถุนายน</option>
+                                    <option value="กรกฎาคม">กรกฎาคม</option><option value="สิงหาคม">สิงหาคม</option>
+                                    <option value="กันยายน">กันยายน</option><option value="ตุลาคม">ตุลาคม</option>
+                                    <option value="พฤศจิกายน">พฤศจิกายน</option><option value="ธันวาคม">ธันวาคม</option>
+                                </select>
+                                <select id="e_year" class="input-field flex-1 border-blue-200 focus:border-blue-500" onchange="updateEDate()">
+                                    <option value="2568">2568</option>
+                                    <option value="2569" selected>2569</option>
+                                    <option value="2570">2570</option>
+                                    <option value="2571">2571</option>
+                                </select>
+                            </div>
                         </div>
                         
+                        <!-- ข้อมูลอ้างอิงบิล -->
+                        <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4 bg-white p-4 rounded-xl border border-gray-200">
+                            <div class="md:col-span-3 text-sm font-bold text-gray-800 pb-2 border-b border-gray-100 flex items-center justify-between">
+                                <span><i class="ph ph-receipt text-gray-500"></i> ข้อมูลอ้างอิงเอกสาร กฟภ.</span>
+                                <span class="text-[10px] bg-purple-100 text-purple-700 px-2 py-0.5 rounded-md">AI Auto-Fill รองรับ</span>
+                            </div>
+                            <div><label class="block text-xs font-medium text-gray-700 mb-1">หมายเลขผู้ใช้ไฟฟ้า *</label><input type="text" id="e_pea_no" required placeholder="เช่น 020011624364" class="input-field bg-gray-50 focus:bg-white transition-colors duration-300"></div>
+                            <div><label class="block text-xs font-medium text-gray-700 mb-1">เลขที่ใบแจ้งค่าไฟฟ้า *</label><input type="text" id="e_invoice_no" required placeholder="เช่น 11024364032569" class="input-field bg-gray-50 focus:bg-white transition-colors duration-300"></div>
+                            <div><label class="block text-xs font-medium text-gray-700 mb-1">วันที่อ่านหน่วย (ในบิล) *</label><input type="text" id="e_read_date" required placeholder="เช่น 15/03/69" class="input-field bg-gray-50 focus:bg-white transition-colors duration-300"></div>
+                        </div>
+                        
+                        <!-- ข้อมูลคำนวณเงิน -->
                         <div class="bg-gray-50 p-4 rounded-xl border border-gray-200 md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
-                            <div class="md:col-span-2 text-sm font-bold text-gray-800 pb-2 border-b border-gray-200"><i class="ph ph-calculator text-gray-500"></i> ข้อมูลการใช้พลังงาน (เพื่อคำนวณเรต)</div>
+                            <div class="md:col-span-2 text-sm font-bold text-gray-800 pb-2 border-b border-gray-200 flex items-center justify-between">
+                                <span><i class="ph ph-calculator text-gray-500"></i> ข้อมูลการใช้พลังงาน (เพื่อคำนวณเรต)</span>
+                                <span class="text-[10px] bg-purple-100 text-purple-700 px-2 py-0.5 rounded-md">AI Auto-Fill รองรับ</span>
+                            </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">ยอดเงินสุทธิรวมโรงเรียน (บาท) *</label>
-                                <input type="number" step="0.01" id="e_school_bill" required placeholder="เช่น 10016.62" class="input-field calc-trigger border-yellow-300 focus:border-yellow-500">
+                                <input type="number" step="0.01" id="e_school_bill" required placeholder="เช่น 10016.62" class="input-field calc-trigger border-yellow-300 focus:border-yellow-500 focus:bg-white transition-colors duration-300">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Consumption Unit ของโรงเรียน *</label>
-                                <input type="number" step="0.01" id="e_school_unit" required placeholder="เช่น 2259" class="input-field calc-trigger border-yellow-300 focus:border-yellow-500">
+                                <input type="number" step="0.01" id="e_school_unit" required placeholder="เช่น 2259" class="input-field calc-trigger border-yellow-300 focus:border-yellow-500 focus:bg-white transition-colors duration-300">
                             </div>
                             <div class="md:col-span-2 text-right">
                                 <span class="text-xs text-gray-500">เรตค่าไฟเฉลี่ยเดือนนี้: </span>
@@ -183,10 +228,12 @@
                             </div>
                         </div>
 
-                        <div><label class="block text-sm font-medium text-gray-700 mb-1">เลขมิเตอร์ปัจจุบันของห้อง (หน่วย) *</label><input type="number" step="0.01" id="e_room_meter" required placeholder="เช่น 6184" class="input-field border-green-300 focus:border-green-500"></div>
+                        <!-- มิเตอร์ห้อง -->
+                        <div><label class="block text-sm font-medium text-gray-700 mb-1">เลขมิเตอร์ปัจจุบันของห้อง (หน่วย) *</label><input type="number" step="0.01" id="e_room_meter" required placeholder="พิมพ์ตัวเลขบนมิเตอร์ห้อง" class="input-field border-green-400 focus:border-green-600 ring-2 ring-transparent focus:ring-green-100"></div>
                         
+                        <!-- แนบไฟล์หลักฐาน (ซ่อนลิงก์เมื่อสแกนแล้ว) -->
                         <div class="md:col-span-2 mt-2">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">อัปโหลดไฟล์บิลเก็บไว้ในระบบ (จะไม่แสดงในหน้า Dashboard ทั่วไป)</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">หลักฐานบิลค่าไฟ (ระบบผูกรูปจากที่สแกนให้แล้ว หรืออัปโหลดใหม่ได้)</label>
                             <div class="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
                                 <input type="file" id="e_file" accept=".pdf, image/png, image/jpeg, image/jpg" class="hidden" onchange="updateFileName(this)">
                                 <button type="button" onclick="document.getElementById('e_file').click()" class="bg-white hover:bg-teal-50 text-gray-700 hover:text-teal-700 px-5 py-3 rounded-xl border-2 border-gray-200 hover:border-teal-300 transition text-sm flex items-center justify-center whitespace-nowrap shadow-sm font-medium w-full sm:w-auto">
@@ -201,7 +248,7 @@
                             </div>
                         </div>
                         
-                        <div class="md:col-span-2"><label class="block text-sm font-medium text-gray-700 mb-1">หมายเหตุ</label><input type="text" id="e_note" placeholder="รายละเอียดเพิ่มเติม" class="input-field"></div>
+                        <div class="md:col-span-2"><label class="block text-sm font-medium text-gray-700 mb-1">หมายเหตุ</label><input type="text" id="e_note" placeholder="รายละเอียดเพิ่มเติม (ถ้ามี)" class="input-field"></div>
                     </div>
                     <button type="submit" id="btn-electric" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3.5 rounded-xl transition flex items-center justify-center shadow-lg hover:shadow-green-600/30 text-lg mt-2"><i class="ph ph-paper-plane-right mr-2"></i> บันทึกข้อมูลและอัปโหลด</button>
                 </form>
@@ -379,12 +426,12 @@
         // บล็อกการคลิกขวา (Right Click)
         document.addEventListener('contextmenu', event => event.preventDefault());
         
-        // บล็อกคีย์ลัดสำหรับ Developer Tools (F12, Ctrl+Shift+I, Ctrl+U)
+        // บล็อกคีย์ลัดสำหรับ Developer Tools
         document.onkeydown = function(e) {
-            if(e.keyCode == 123) return false; // ป้องกัน F12
-            if(e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) return false; // ป้องกัน Ctrl+Shift+I
-            if(e.ctrlKey && e.shiftKey && e.keyCode == 'J'.charCodeAt(0)) return false; // ป้องกัน Ctrl+Shift+J
-            if(e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) return false; // ป้องกัน Ctrl+U (View Source)
+            if(e.keyCode == 123) return false; // F12
+            if(e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) return false; // Ctrl+Shift+I
+            if(e.ctrlKey && e.shiftKey && e.keyCode == 'J'.charCodeAt(0)) return false; // Ctrl+Shift+J
+            if(e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) return false; // Ctrl+U
         }
         // =========================================================================
 
@@ -396,7 +443,7 @@
         function login() {
             const u = document.getElementById('username').value;
             const p = document.getElementById('password').value;
-            // ใช้ Base64 ตรวจสอบรหัส 66440763 เพื่อหลบเลี่ยงการถูกอ่านตรงๆ ในโค้ด
+            // ใช้ Base64 ตรวจสอบรหัสเพื่อหลบเลี่ยงการถูกอ่านตรงๆ ในโค้ด
             if(u === 'Admin' && btoa(p) === 'NjY0NDA3NjM=') {
                 document.getElementById('loginZone').style.display = 'none';
                 document.getElementById('adminZone').style.display = 'block';
@@ -424,6 +471,9 @@
             document.getElementById('form-' + tabId).classList.add('active');
             btnElement.classList.add('active');
 
+            if (tabId === 'electric') {
+                updateEDate(); // อัปเดตค่าเดือน/ปีตอนเข้าแท็บ
+            }
             if (tabId === 'equipment') {
                 loadAdminEquipment();
             }
@@ -444,7 +494,127 @@
         }
 
         // =========================================================================
-        // 🌟 ระบบจัดการไฟล์อัปโหลด
+        // 📅 จัดการ Dropdown เดือนและปี
+        // =========================================================================
+        function updateEDate() {
+            const m = document.getElementById('e_month').value;
+            const y = document.getElementById('e_year').value;
+            if (m && y) {
+                document.getElementById('e_date').value = m + " " + y;
+            }
+        }
+
+        // =========================================================================
+        // 🤖 ระบบ AI สแกนบิลด้วย Tesseract.js (ดึงข้อมูลอัตโนมัติ)
+        // =========================================================================
+        async function processAIBillScan(input, event) {
+            if (!input.files || input.files.length === 0) return;
+            event.stopPropagation(); // ป้องกันบั๊กคลิกซ้อน
+            
+            const file = input.files[0];
+            const statusEl = document.getElementById('ai_scan_status');
+            
+            // แสดงสถานะโหลด
+            statusEl.innerHTML = '<div class="spinner border-t-purple-600"></div> กำลังให้ AI อ่านข้อมูลจากภาพ... (อาจใช้เวลา 10-30 วินาที)';
+            statusEl.classList.remove('hidden', 'text-green-700', 'text-red-700');
+            statusEl.classList.add('text-purple-800');
+
+            // ไฮไลต์กล่อง
+            const box = input.closest('.ai-scanner-box');
+            box.style.borderColor = '#9333ea';
+            box.style.backgroundColor = '#f3e8ff';
+
+            try {
+                // สร้าง Tesseract Worker (รองรับไทย+อังกฤษ เพราะบิล PEA มีทั้งสองภาษาผสมกัน)
+                const worker = await Tesseract.createWorker('tha+eng');
+                const ret = await worker.recognize(file);
+                const text = ret.data.text;
+                await worker.terminate();
+
+                console.log("📄 AI Scanned Text: ", text);
+
+                // 🔍 1. หาหมายเลขผู้ใช้ไฟฟ้า (มักขึ้นต้นด้วย 0200 และมี 12 หลัก)
+                const peaNoMatch = text.match(/0200\d{8}/);
+                if (peaNoMatch) {
+                    const inputEl = document.getElementById('e_pea_no');
+                    inputEl.value = peaNoMatch[0];
+                    highlightInput(inputEl);
+                }
+
+                // 🔍 2. หาเลขที่ใบแจ้ง (มักมี 12-14 หลัก และไม่ใช่หมายเลขผู้ใช้ไฟฟ้า)
+                const numbers = text.match(/\b\d{12,14}\b/g);
+                if (numbers) {
+                    const invoiceNo = numbers.find(n => !n.startsWith('0200')); // เอาเลขที่ไม่ใช่ 0200...
+                    if (invoiceNo) {
+                        const inputEl = document.getElementById('e_invoice_no');
+                        inputEl.value = invoiceNo;
+                        highlightInput(inputEl);
+                    }
+                }
+
+                // 🔍 3. หาวันที่อ่านหน่วย (รูปแบบ วว/ดด/ปป)
+                const dateMatch = text.match(/\d{2}\/\d{2}\/\d{2,4}/);
+                if (dateMatch) {
+                    const inputEl = document.getElementById('e_read_date');
+                    inputEl.value = dateMatch[0];
+                    highlightInput(inputEl);
+                }
+
+                // 🔍 4. หายอดเงินสุทธิรวม
+                const decimalNumbers = text.match(/\d{1,3}(?:,\d{3})*\.\d{2}/g);
+                if (decimalNumbers && decimalNumbers.length > 0) {
+                    const totalStr = decimalNumbers[decimalNumbers.length - 1].replace(/,/g, '');
+                    const inputEl = document.getElementById('e_school_bill');
+                    inputEl.value = totalStr;
+                    highlightInput(inputEl);
+                    inputEl.dispatchEvent(new Event('input'));
+                }
+
+                // 🔍 5. หา Consumption Unit (จำนวนที่ใช้)
+                if (decimalNumbers && decimalNumbers.length > 1) {
+                    const unitStr = decimalNumbers.find(n => n.endsWith('.00'));
+                    if (unitStr) {
+                        const inputEl = document.getElementById('e_school_unit');
+                        inputEl.value = unitStr.replace(/,/g, '').replace('.00', '');
+                        highlightInput(inputEl);
+                        inputEl.dispatchEvent(new Event('input'));
+                    }
+                }
+
+                // แสดงข้อความสำเร็จ
+                statusEl.innerHTML = '<i class="ph ph-check-circle text-green-600 text-lg"></i> AI ดึงข้อมูลสำเร็จ! <b>กรุณาตรวจสอบตัวเลขในฟอร์มอีกครั้ง</b>';
+                statusEl.classList.remove('text-purple-800');
+                statusEl.classList.add('text-green-700');
+
+                // 🌟 โยนไฟล์ภาพที่สแกนไปไว้ในช่องอัปโหลดไฟล์หลักให้ด้วย จะได้ไม่ต้องกดอัปโหลดใหม่
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(file);
+                const mainFileInput = document.getElementById('e_file');
+                mainFileInput.files = dataTransfer.files;
+                updateFileName(mainFileInput);
+
+            } catch (err) {
+                console.error("AI Error:", err);
+                statusEl.innerHTML = '<i class="ph ph-warning-circle text-red-600 text-lg"></i> AI ไม่สามารถอ่านภาพได้ชัดเจน กรุณากรอกด้วยตนเอง';
+                statusEl.classList.remove('text-purple-800');
+                statusEl.classList.add('text-red-700');
+            } finally {
+                // คืนค่าสีกล่อง
+                setTimeout(() => {
+                    box.style.borderColor = ''; box.style.backgroundColor = '';
+                }, 1000);
+            }
+        }
+
+        function highlightInput(element) {
+            element.classList.add('bg-purple-100', 'border-purple-400');
+            setTimeout(() => {
+                element.classList.remove('bg-purple-100', 'border-purple-400');
+            }, 3000);
+        }
+
+        // =========================================================================
+        // 🌟 ระบบจัดการไฟล์อัปโหลดแบบปกติ
         // =========================================================================
         function updateFileName(input) {
             const display = document.getElementById('file_name_display');
@@ -460,7 +630,7 @@
                 
                 linkInput.value = '';
                 linkInput.disabled = true;
-                linkInput.placeholder = 'ระบบจะอัปโหลดไฟล์อัตโนมัติ...';
+                linkInput.placeholder = 'ระบบจะแนบไฟล์นี้เข้าสู่อัตโนมัติ...';
                 linkInput.classList.add('bg-gray-100', 'cursor-not-allowed');
             } else {
                 clearFileSelection();
@@ -469,12 +639,16 @@
 
         function clearFileSelection() {
             document.getElementById('e_file').value = '';
+            document.getElementById('ai_scan_file').value = ''; // เคลียร์ไฟล์ AI ด้วย
             document.getElementById('file_name_display').classList.add('hidden');
             
             const linkInput = document.getElementById('e_bill_img');
             linkInput.disabled = false;
             linkInput.placeholder = 'วางลิงก์ที่นี่ (กรณีไม่อัปโหลด)...';
             linkInput.classList.remove('bg-gray-100', 'cursor-not-allowed');
+            
+            const statusEl = document.getElementById('ai_scan_status');
+            statusEl.classList.add('hidden');
         }
 
         function getBase64(file) {
@@ -486,26 +660,36 @@
             });
         }
 
+        // =========================================================================
+        // ส่งข้อมูลเข้า GAS
+        // =========================================================================
         async function submitData(e, sheetName, inputIds, btnId) {
             e.preventDefault(); 
             const btn = document.getElementById(btnId);
             const originalContent = btn.innerHTML;
+            
+            if (sheetName === 'Electric') updateEDate();
+            
             const rowData = inputIds.map(id => document.getElementById(id).value);
 
             let payload = { sheetName: sheetName, rowData: rowData };
 
             if(sheetName === 'Electric') {
+                if (!document.getElementById('e_month').value) {
+                    showToast('กรุณาเลือกประจำเดือน', 'error'); return;
+                }
+                
                 const fileInput = document.getElementById('e_file');
                 if(fileInput && fileInput.files.length > 0) {
                     const file = fileInput.files[0];
                     if(file.size > 3 * 1024 * 1024) {
-                        showToast('ไฟล์มีขนาดใหญ่เกินไป (กรุณาใช้ไฟล์ไม่เกิน 3MB)', 'error');
+                        showToast('ไฟล์มีขนาดใหญ่เกินไป (จำกัด 3MB)', 'error');
                         return;
                     }
 
                     btn.disabled = true;
                     btn.classList.add('opacity-70');
-                    btn.innerHTML = '<div class="spinner"></div> กำลังอัปโหลดไฟล์...';
+                    btn.innerHTML = '<div class="spinner"></div> กำลังอัปโหลด...';
                     
                     try {
                         const base64String = await getBase64(file);
@@ -514,23 +698,16 @@
                             mimeType: file.type,
                             base64: base64String.split(',')[1] 
                         };
-                        // ⚠️ Index ที่ 7 คือคอลัมน์ "ลิงก์รูปบิล" ตามอาร์เรย์ใน inputIds ของฟอร์มไฟฟ้านี้
-                        payload.fileColIndex = 7;
+                        payload.fileColIndex = 7; // Index ของลิงก์รูปบิล
                     } catch(err) {
-                        showToast('เกิดข้อผิดพลาดในการแปลงไฟล์', 'error');
-                        btn.disabled = false;
-                        btn.innerHTML = originalContent;
-                        return;
+                        showToast('เกิดข้อผิดพลาดในการเตรียมไฟล์', 'error');
+                        btn.disabled = false; btn.innerHTML = originalContent; return;
                     }
                 } else {
-                    btn.disabled = true;
-                    btn.classList.add('opacity-70');
-                    btn.innerHTML = '<div class="spinner"></div> กำลังบันทึก...';
+                    btn.disabled = true; btn.classList.add('opacity-70'); btn.innerHTML = '<div class="spinner"></div> กำลังบันทึก...';
                 }
             } else {
-                btn.disabled = true;
-                btn.classList.add('opacity-70');
-                btn.innerHTML = '<div class="spinner"></div> กำลังบันทึก...';
+                btn.disabled = true; btn.classList.add('opacity-70'); btn.innerHTML = '<div class="spinner"></div> กำลังบันทึก...';
             }
 
             try {
@@ -538,21 +715,21 @@
                 const result = await response.json();
                 
                 if(result.status === 'success') {
-                    showToast('บันทึกข้อมูลหน้า [' + sheetName + '] สำเร็จ!', 'success');
+                    showToast('บันทึกข้อมูลสำเร็จ!', 'success');
                     e.target.reset(); 
                     if(sheetName === 'Gallery') document.getElementById('g_theme_picker').value = '#FFD1E4'; 
                     if(sheetName === 'Electric') {
                         document.getElementById('e_preview_rate').innerText = '- บาท/หน่วย';
                         clearFileSelection(); 
+                        document.getElementById('e_month').value = ""; // รีเซ็ต Dropdown
                     }
                 } else {
                     showToast('Error: ' + result.message, 'error');
                 }
             } catch (error) {
                 console.error("Error:", error);
-                showToast('บันทึกข้อมูลและไฟล์สำเร็จ! (รอ Google Sheets อัปเดต)', 'success');
+                showToast('ส่งข้อมูลสำเร็จ! (รอชีตอัปเดต)', 'success');
                 e.target.reset();
-                if(sheetName === 'Gallery') document.getElementById('g_theme_picker').value = '#FFD1E4';
                 if(sheetName === 'Electric') {
                     document.getElementById('e_preview_rate').innerText = '- บาท/หน่วย';
                     clearFileSelection();
@@ -564,9 +741,7 @@
             }
         }
 
-        // =========================================================================
-        // 🌟 Preview เรตค่าไฟอัตโนมัติ (หน้า Admin)
-        // =========================================================================
+        // Preview เรตค่าไฟ
         document.querySelectorAll('.calc-trigger').forEach(input => {
             input.addEventListener('input', function() {
                 const bill = parseFloat(document.getElementById('e_school_bill').value);
@@ -585,18 +760,15 @@
         // =========================================================================
         // โค้ดสำหรับตาราง Admin (พัสดุ) คงเดิม
         // =========================================================================
-        
         async function loadAdminEquipment() {
             const tbody = document.getElementById('adminEqTableBody');
             tbody.innerHTML = '<tr><td colspan="5" class="text-center py-10 text-gray-400 text-sm"><div class="spinner border-t-teal-500"></div> กำลังโหลดข้อมูลตารางพัสดุ...</td></tr>';
-            
             try {
                 const response = await fetch(EQ_CSV_URL);
                 const csvText = await response.text();
                 adminEqData = parseCSVData(csvText);
                 renderAdminEqTable(adminEqData);
             } catch (err) {
-                console.error(err);
                 tbody.innerHTML = `<tr><td colspan="5" class="text-center py-6 text-red-500 text-sm bg-red-50">เกิดข้อผิดพลาดในการโหลดข้อมูล</td></tr>`;
             }
         }
@@ -606,7 +778,6 @@
             const result = [];
             if(lines.length <= 1) return result;
             const headers = lines[0].split(',').map(h => h.replace(/^"|"$/g, '').trim().replace(/\r$/, ''));
-            
             for (let i = 1; i < lines.length; i++) {
                 if(!lines[i].trim() || lines[i].trim() === '\r') continue; 
                 const obj = {};
@@ -632,21 +803,16 @@
         function renderAdminEqTable(data) {
             const tbody = document.getElementById('adminEqTableBody');
             let html = '';
-            
             data.forEach((row, index) => {
                 const eqId = row['เลขพัสดุ / รหัสครุภัณฑ์'] || row['เลขพัสดุ/รหัสครุภัณฑ์'] || '-';
                 const eqName = row['ชื่ออุปกรณ์'] || '-';
-                
                 let status = (row['สถานะปัจจุบัน'] || row['สถานะ'] || '-').trim();
                 let warrantyStatus = (row['สถานะการรับประกัน'] || row['การรับประกัน'] || '-').trim();
-
                 if ((status.includes('ปี') || status.includes('ประกัน') || status.includes('ไม่มี')) &&
                     (warrantyStatus.includes('ใช้งาน') || warrantyStatus.includes('ชำรุด') || warrantyStatus.includes('ซ่อม'))) {
                     let temp = status; status = warrantyStatus; warrantyStatus = temp;
                 }
-
                 const updDate = row['วันที่อัปเดต'] || '-';
-                
                 let badgeClass = 'bg-yellow-100 text-yellow-700';
                 if (status.includes('ใช้งานได้') || status === 'ปกติ') badgeClass = 'bg-green-100 text-green-700';
                 else if (status.includes('ชำรุด') || status.includes('ใช้งานไม่ได้') || status.includes('เสีย')) badgeClass = 'bg-red-100 text-red-700';
@@ -664,54 +830,39 @@
                     </td>
                 </tr>`;
             });
-            
             tbody.innerHTML = data.length ? html : `<tr><td colspan="5" class="text-center py-12 text-gray-400 text-sm">ยังไม่มีข้อมูลในระบบ</td></tr>`;
         }
 
         function filterEqTable() {
             const q = document.getElementById('eqSearch').value.toLowerCase();
-            document.querySelectorAll('.search-eq-row').forEach(row => {
-                row.style.display = row.innerText.toLowerCase().includes(q) ? '' : 'none';
-            });
+            document.querySelectorAll('.search-eq-row').forEach(row => { row.style.display = row.innerText.toLowerCase().includes(q) ? '' : 'none'; });
         }
 
         function openEqModal(index) {
             const row = adminEqData[index];
-            
             const today = new Date();
-            const dd = String(today.getDate()).padStart(2, '0');
-            const mm = String(today.getMonth() + 1).padStart(2, '0');
-            const year = today.getFullYear(); 
+            const dd = String(today.getDate()).padStart(2, '0'); const mm = String(today.getMonth() + 1).padStart(2, '0'); const year = today.getFullYear(); 
             document.getElementById('upd_date').value = `${dd}/${mm}/${year}`;
-
             document.getElementById('upd_id').value = row['เลขพัสดุ / รหัสครุภัณฑ์'] || row['เลขพัสดุ/รหัสครุภัณฑ์'] || '';
             document.getElementById('disp_id').innerText = row['เลขพัสดุ / รหัสครุภัณฑ์'] || row['เลขพัสดุ/รหัสครุภัณฑ์'] || '';
-            
             document.getElementById('upd_name').value = row['ชื่ออุปกรณ์'] || '';
             document.getElementById('disp_name').innerText = row['ชื่ออุปกรณ์'] || '';
-            
             document.getElementById('upd_brand').value = row['ยี่ห้อ'] || '';
             document.getElementById('upd_model').value = row['รุ่น'] || '';
             document.getElementById('upd_year').value = row['ปีที่จัดซื้อ'] || '';
-
             let currStatus = (row['สถานะปัจจุบัน'] || row['สถานะ'] || '').trim();
             let warrantyStatus = (row['สถานะการรับประกัน'] || row['การรับประกัน'] || '').trim();
-
             if ((currStatus.includes('ปี') || currStatus.includes('ประกัน') || currStatus.includes('ไม่มี')) &&
                 (warrantyStatus.includes('ใช้งาน') || warrantyStatus.includes('ชำรุด') || warrantyStatus.includes('ซ่อม'))) {
                 let temp = currStatus; currStatus = warrantyStatus; warrantyStatus = temp;
             }
-
             document.getElementById('upd_warranty').value = warrantyStatus;
-
             const statusSelect = document.getElementById('upd_status');
             if (currStatus.includes('ใช้งานได้') || currStatus === 'ปกติ') statusSelect.value = 'ใช้งานได้';
             else if (currStatus.includes('ซ่อม')) statusSelect.value = 'อยู่ระหว่างดำเนินการซ่อม';
             else if (currStatus.includes('ชำรุด') || currStatus.includes('เสีย')) statusSelect.value = 'ชำรุด';
             else statusSelect.value = 'ใช้งานได้'; 
-            
             document.getElementById('upd_note').value = row['รายละเอียดการซ่อม / หมายเหตุ'] || row['รายละเอียดการซ่อม/หมายเหตุ'] || row['หมายเหตุ'] || '';
-
             document.getElementById('eqUpdateModal').classList.remove('hidden');
         }
 
@@ -719,43 +870,28 @@
 
         async function submitEqUpdate(e) {
             e.preventDefault();
-            const btn = document.getElementById('btn-update-eq');
-            const origText = btn.innerHTML;
-            btn.disabled = true;
-            btn.innerHTML = '<div class="spinner"></div> กำลังบันทึก...';
-
+            const btn = document.getElementById('btn-update-eq'); const origText = btn.innerHTML;
+            btn.disabled = true; btn.innerHTML = '<div class="spinner"></div> กำลังบันทึก...';
             const rowData = [
-                document.getElementById('upd_date').value, document.getElementById('upd_id').value,
-                document.getElementById('upd_name').value, document.getElementById('upd_brand').value,
-                document.getElementById('upd_model').value, document.getElementById('upd_year').value,
-                document.getElementById('upd_status').value, document.getElementById('upd_warranty').value,
-                document.getElementById('upd_note').value
+                document.getElementById('upd_date').value, document.getElementById('upd_id').value, document.getElementById('upd_name').value, document.getElementById('upd_brand').value,
+                document.getElementById('upd_model').value, document.getElementById('upd_year').value, document.getElementById('upd_status').value, document.getElementById('upd_warranty').value, document.getElementById('upd_note').value
             ];
-
             const payload = { sheetName: 'Equipment', rowData: rowData };
-
             try {
                 const response = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
                 const result = await response.json();
-                
-                if(result.status === 'success') {
-                    showToast('อัปเดตสถานะอุปกรณ์สำเร็จ!', 'success');
-                    closeEqModal(); loadAdminEquipment(); 
-                } else { showToast('Error: ' + result.message, 'error'); }
+                if(result.status === 'success') { showToast('อัปเดตสถานะอุปกรณ์สำเร็จ!', 'success'); closeEqModal(); loadAdminEquipment(); } 
+                else { showToast('Error: ' + result.message, 'error'); }
             } catch (error) {
-                console.error("Error:", error);
-                showToast('อัปเดตสำเร็จ (กำลังเชื่อมต่อ Google Sheets)', 'success');
-                closeEqModal(); loadAdminEquipment();
+                showToast('อัปเดตสำเร็จ (กำลังเชื่อมต่อ Google Sheets)', 'success'); closeEqModal(); loadAdminEquipment();
             } finally { btn.disabled = false; btn.innerHTML = origText; }
         }
 
         function exportAdminPDF() {
             const today = new Date();
             document.getElementById('admin-print-date').innerText = `ข้อมูล ณ วันที่: ${today.toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}`;
-            const originalTitle = document.title;
-            document.title = "ทะเบียนคุมทรัพย์สินและอุปกรณ์ - ศูนย์ดิจิทัลชุมชน"; 
-            window.print();
-            document.title = originalTitle; 
+            const originalTitle = document.title; document.title = "ทะเบียนคุมทรัพย์สินและอุปกรณ์ - ศูนย์ดิจิทัลชุมชน"; 
+            window.print(); document.title = originalTitle; 
         }
     </script>
 </body>
