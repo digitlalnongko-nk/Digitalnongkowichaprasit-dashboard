@@ -249,7 +249,7 @@
                 </div>
             </section>
 
-            <!-- 🌟 หน้าแสดงผลค่าไฟฟ้า -->
+            <!-- 🌟 หน้าแสดงผลค่าไฟฟ้า (อัปเดตระบบคำนวณจาก มิเตอร์ก่อนหน้า - มิเตอร์หลังจด) -->
             <section id="page-electric" class="page-section w-full">
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8 w-full">
                     <div class="card-cute p-6 w-full">
@@ -270,7 +270,7 @@
                                 <tr>
                                     <th class="w-1/5">รอบบิล / วันที่อ่านหน่วย</th>
                                     <th class="w-[30%]">ข้อมูลอ้างอิง กฟภ.</th>
-                                    <th class="w-[30%] pl-4 border-l border-gray-100">สัดส่วนการใช้ไฟ</th>
+                                    <th class="w-[30%] pl-4 border-l border-gray-100">สัดส่วนการใช้ไฟห้อง</th>
                                     <th class="text-right text-yellow-600 w-1/5">ค่าไฟห้อง (บาท)</th>
                                 </tr>
                             </thead>
@@ -463,7 +463,7 @@
         }
 
         // =========================================================================
-        // 🌟 ระบบคำนวณข้อมูลไฟฟ้า (อัปเดตแบบละเอียด ไม่ปัดเศษ)
+        // 🌟 ระบบคำนวณข้อมูลไฟฟ้า (อัปเดตแบบละเอียด คำนวณแบบแถวต่อแถว 100%)
         // =========================================================================
         function processElectricData(rawElectric) {
             let processed = [];
@@ -472,14 +472,25 @@
                 
                 let schoolBill = parseFloat(String(pRow['ยอดบิลรวมโรงเรียน'] || pRow['ยอดบิลรวม'] || pRow['ค่าไฟรวม'] || 0).replace(/,/g, ''));
                 let schoolUnit = parseFloat(String(pRow['หน่วยไฟรวมโรงเรียน'] || pRow['หน่วยไฟรวม'] || pRow['Consumption Unit'] || 0).replace(/,/g, ''));
-                let roomMeter = parseFloat(String(pRow['เลขมิเตอร์ห้อง'] || pRow['เลขมิเตอร์ปัจจุบันของห้อง'] || pRow['เลขมิเตอร์'] || 0).replace(/,/g, ''));
+                
+                // 🌟 โครงสร้างใหม่: ดึงเลขมิเตอร์ครั้งก่อน และ ครั้งหลัง
+                let roomMeterPrev = parseFloat(String(pRow['เลขมิเตอร์ก่อนหน้า'] || pRow['เลขมิเตอร์ครั้งก่อน'] || '').replace(/,/g, ''));
+                let roomMeterCurr = parseFloat(String(pRow['เลขมิเตอร์หลังจด'] || pRow['เลขมิเตอร์ห้อง'] || pRow['เลขมิเตอร์ปัจจุบันของห้อง'] || pRow['เลขมิเตอร์'] || '').replace(/,/g, ''));
                 
                 let avgRate = schoolUnit > 0 ? (schoolBill / schoolUnit) : 0;
+                
                 let roomUnits = 0;
-                if (i > 0) {
-                    let prevMeter = parseFloat(String(rawElectric[i-1]['เลขมิเตอร์ห้อง'] || rawElectric[i-1]['เลขมิเตอร์ปัจจุบันของห้อง'] || rawElectric[i-1]['เลขมิเตอร์'] || 0).replace(/,/g, ''));
-                    if(roomMeter >= prevMeter) roomUnits = roomMeter - prevMeter;
-                } else {
+                // ถ้ามีข้อมูลมิเตอร์ทั้ง 2 ช่องให้เอามาลบกันเลย (วิธีที่ถูกต้องที่สุด)
+                if (!isNaN(roomMeterPrev) && !isNaN(roomMeterCurr)) {
+                    if(roomMeterCurr >= roomMeterPrev) roomUnits = roomMeterCurr - roomMeterPrev;
+                } 
+                // หากไม่มีช่องมิเตอร์ก่อนหน้า ให้เช็กข้อมูลแถวที่แล้ว (วิธีสำรองกรณีไม่ได้อัปเดตหัวตาราง)
+                else if (i > 0) {
+                    let oldPrevMeter = parseFloat(String(rawElectric[i-1]['เลขมิเตอร์หลังจด'] || rawElectric[i-1]['เลขมิเตอร์ห้อง'] || rawElectric[i-1]['เลขมิเตอร์ปัจจุบันของห้อง'] || rawElectric[i-1]['เลขมิเตอร์'] || 0).replace(/,/g, ''));
+                    if(roomMeterCurr >= oldPrevMeter) roomUnits = roomMeterCurr - oldPrevMeter;
+                } 
+                // กรณีจนปัญญาจริงๆ ให้ดึงจากช่องหน่วยที่ใช้ที่อาจจะพิมพ์มาตรงๆ
+                else {
                     roomUnits = parseFloat(String(pRow['หน่วยที่ใช้'] || 0));
                 }
 
@@ -491,7 +502,8 @@
                 pRow._schoolBill = schoolBill;
                 pRow._schoolUnit = schoolUnit;
                 pRow._avgRate = avgRate;
-                pRow._roomMeter = roomMeter;
+                pRow._roomMeterPrev = isNaN(roomMeterPrev) ? '-' : roomMeterPrev;
+                pRow._roomMeterCurr = isNaN(roomMeterCurr) ? '-' : roomMeterCurr;
                 pRow._roomUnits = roomUnits;
                 pRow._roomCost = roomCost;
 
@@ -577,7 +589,7 @@
         }
 
         // =========================================================================
-        // 🌟 แสดงผลตารางไฟฟ้าอัจฉริยะ (แบบแสดงข้อมูลเอกสาร)
+        // 🌟 แสดงผลตารางไฟฟ้าอัจฉริยะ (อัปเดตให้โชว์การลบมิเตอร์)
         // =========================================================================
         function renderElectric(dataArray) {
             const tbody = document.getElementById('electricTableBody'); 
@@ -598,12 +610,15 @@
                     <td class="align-top">
                         <div class="text-[11px] text-gray-500 mb-1">ผู้ใช้ไฟฟ้า: <span class="font-mono text-gray-800 font-bold">${row._peaNo}</span></div>
                         <div class="text-[11px] text-gray-500 mb-1">ใบแจ้งเลขที่: <span class="font-mono text-gray-800 font-medium">${row._invoiceNo}</span></div>
+                        <div class="text-[11px] text-gray-500 mb-1">รร. ใช้ไฟ: <span class="font-bold text-gray-800">${row._schoolUnit.toLocaleString()} หน่วย</span></div>
+                        <div class="text-[10px] font-bold text-indigo-700 bg-indigo-50 inline-block px-2 py-0.5 rounded shadow-sm border border-indigo-100 mt-1">เรตเฉลี่ย: ${rateText} บ./หน่วย</div>
                     </td>
                     
                     <td class="align-top border-l border-gray-100 pl-4">
-                        <div class="text-[11px] text-gray-500 mb-1">รร. ใช้ไฟ (Consumption Unit): <span class="font-bold text-gray-800">${row._schoolUnit.toLocaleString()} หน่วย</span></div>
-                        <div class="text-[11px] text-gray-500 mb-2">ห้องใช้ไฟ: <span class="font-bold text-teal-600">${row._roomUnits} หน่วย</span> <span class="text-[9px] text-gray-400">(มิเตอร์ ${row._roomMeter})</span></div>
-                        <div class="text-[10px] font-bold text-indigo-700 bg-indigo-50 inline-block px-2 py-0.5 rounded shadow-sm border border-indigo-100">เรตเฉลี่ย: ${rateText} บ./หน่วย</div>
+                        <div class="text-[11px] text-gray-500 mb-1">
+                            มิเตอร์: <span class="font-mono text-gray-400">${row._roomMeterPrev}</span> <i class="ph ph-arrow-right text-[9px]"></i> <span class="font-mono text-gray-800 font-bold">${row._roomMeterCurr}</span>
+                        </div>
+                        <div class="text-xs font-bold text-teal-600 mb-2">ใช้ไฟ: <span class="text-sm">${row._roomUnits}</span> หน่วย</div>
                     </td>
                     
                     <td class="text-right align-middle">
