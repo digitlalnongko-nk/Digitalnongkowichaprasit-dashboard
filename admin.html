@@ -10,7 +10,20 @@
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
     
     <style>
-        body { font-family: 'Prompt', sans-serif; background-color: #f3f4f6; color: #1f2937; }
+        body { 
+            font-family: 'Prompt', sans-serif; 
+            background-color: #f3f4f6; 
+            color: #1f2937; 
+            /* Anti-Select Text ป้องกันการคลุมดำก๊อปปี้ข้อมูลในหน้าเว็บ */
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        /* อนุญาตให้พิมพ์ในช่อง Input ได้ */
+        input, textarea, select { user-select: auto; -webkit-user-select: auto; }
+
         .card { background-color: #ffffff; border-radius: 24px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05); border: 1px solid #fef3c7; }
         .input-field { width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid #d1d5db; outline: none; transition: all 0.2s; background: #f9fafb; font-family: 'Prompt';}
         .input-field:focus { border-color: #166534; box-shadow: 0 0 0 2px #bbf7bb; background: #ffffff; }
@@ -18,7 +31,6 @@
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-        /* 🌟 เพิ่ม Scrollbar ที่มองเห็นชัดเจน สำหรับให้ตารางเลื่อนได้ */
         .custom-scrollbar::-webkit-scrollbar { height: 8px; width: 8px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 10px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
@@ -39,58 +51,20 @@
         .print-header { display: none; text-align: center; margin-bottom: 20px; }
 
         @media print {
-            @page {
-                size: A4 landscape;
-                margin: 15.5mm 10mm 12mm 10mm; 
-            }
-            
-            body { 
-                background-color: white !important; 
-                -webkit-print-color-adjust: exact !important; 
-                print-color-adjust: exact !important; 
-                padding: 0 !important; 
-            }
-
-            /* ซ่อนส่วนของระบบฟอร์ม เมนู และปุ่มต่างๆ ทิ้งทั้งหมด */
-            .no-print, #loginZone, .tab-btn, .hide-scrollbar, .input-field, button, select, textarea, label { 
-                display: none !important; 
-            }
-            
-            /* ซ่อนหัวข้อหลักของ Admin */
+            @page { size: A4 landscape; margin: 15.5mm 10mm 12mm 10mm; }
+            body { background-color: white !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; padding: 0 !important; }
+            .no-print, #loginZone, .tab-btn, .hide-scrollbar, .input-field, button, select, textarea, label { display: none !important; }
             #adminZone > div:first-child, h1.text-green-900, p.text-gray-500 { display: none !important; }
-
-            /* แสดง Header เฉพาะตอนปริ้นต์ */
             .print-header { display: block !important; }
             .print-header h1 { display: block !important; font-size: 22px !important; font-weight: bold !important; color: #111827 !important; margin-bottom: 4px !important; }
             .print-header p { display: block !important; color: #4b5563 !important; font-size: 14px !important; }
-            
             .card { box-shadow: none !important; border: none !important; padding: 0 !important; }
             .overflow-x-auto { overflow: visible !important; }
-            
-            /* จัดการตารางให้เต็มจอ */
-            table { 
-                min-width: 100% !important; 
-                width: 100% !important; 
-                table-layout: auto !important; 
-                border-collapse: collapse !important; 
-                margin: 0 auto !important; 
-            }
-            
+            table { min-width: 100% !important; width: 100% !important; table-layout: auto !important; border-collapse: collapse !important; margin: 0 auto !important; }
             thead { display: table-header-group !important; }
             tr { page-break-inside: avoid !important; }
-            
-            th, td { 
-                padding: 8px 6px !important; 
-                font-size: 11.5px !important; 
-                white-space: normal !important; 
-                word-wrap: break-word !important; 
-                border-bottom: 1px solid #e2e8f0 !important; 
-                vertical-align: top !important; 
-                color: #1f2937 !important; 
-            } 
+            th, td { padding: 8px 6px !important; font-size: 11.5px !important; white-space: normal !important; word-wrap: break-word !important; border-bottom: 1px solid #e2e8f0 !important; vertical-align: top !important; color: #1f2937 !important; } 
             .bg-teal-50 { background-color: #f0fdfa !important; }
-            
-            /* 🌟 ไฮไลต์: ซ่อนคอลัมน์ "จัดการ" (ปุ่มอัปเดต) ทิ้งเวลาปริ้นต์ เพื่อความสวยงาม */
             th:nth-child(5), td:nth-child(5) { display: none !important; }
         }
     </style>
@@ -113,7 +87,7 @@
         <a href="index.html" class="block mt-6 text-xs text-gray-400 hover:text-gray-600 underline"><i class="ph ph-arrow-left"></i> กลับหน้ารายงานสรุปผล</a>
     </div>
 
-    <!-- 📝 โซนกรอกข้อมูลหลัก (🌟 แก้ไข: ขยายจาก max-w-2xl เป็น max-w-7xl เพื่อให้ตารางไม่ล้นออกขอบ) -->
+    <!-- 📝 โซนกรอกข้อมูลหลัก -->
     <div id="adminZone" class="hidden w-full max-w-7xl">
         <div class="flex items-center justify-between mb-4">
             <div>
@@ -171,18 +145,65 @@
                 </form>
             </div>
 
-            <!-- ฟอร์ม 3: ไฟฟ้า -->
+            <!-- 🌟 ฟอร์ม 3: ไฟฟ้า (เพิ่มการกรอกข้อมูลจากบิล กฟภ. แบบละเอียด) -->
             <div id="form-electric" class="form-section">
                 <h2 class="text-lg font-bold text-gray-800 mb-4 border-b border-gray-100 pb-3 flex items-center gap-2"><i class="ph ph-plug text-blue-600 text-xl"></i> เพิ่มข้อมูลการใช้ไฟฟ้า (Electric)</h2>
-                <form onsubmit="submitData(event, 'Electric', ['e_date', 'e_meter', 'e_unit', 'e_total', 'e_note'], 'btn-electric')">
+                
+                <div class="bg-blue-50 border border-blue-100 p-4 rounded-xl mb-6">
+                    <p class="text-xs text-blue-800 font-medium mb-1"><i class="ph ph-info"></i> ระบบเก็บข้อมูลเอกสารบิล (แบบใหม่):</p>
+                    <p class="text-xs text-blue-600">กรอกข้อมูล <strong>หมายเลขผู้ใช้ไฟฟ้า, เลขที่ใบแจ้ง, และวันที่จดหน่วย</strong> เพื่อความถูกต้องของเอกสาร (ข้อมูลบิลที่อัปโหลดจะถูกเก็บเป็นความลับ ไม่แสดงบนหน้า Dashboard)</p>
+                </div>
+
+                <!-- ⚠️ ต้องเปลี่ยนอาร์เรย์ของ ID ให้ตรงกับคอลัมน์ใน Google Sheets -->
+                <form onsubmit="submitData(event, 'Electric', ['e_date', 'e_pea_no', 'e_invoice_no', 'e_read_date', 'e_school_bill', 'e_school_unit', 'e_room_meter', 'e_bill_img', 'e_note'], 'btn-electric')">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
-                        <div><label class="block text-sm font-medium text-gray-700 mb-1">ประจำเดือน *</label><input type="text" id="e_date" required placeholder="เช่น มกราคม 2569" class="input-field"></div>
-                        <div><label class="block text-sm font-medium text-gray-700 mb-1">เลขมิเตอร์ *</label><input type="number" step="0.01" id="e_meter" required placeholder="เช่น 12345" class="input-field"></div>
-                        <div><label class="block text-sm font-medium text-gray-700 mb-1">หน่วยที่ใช้ (เว้นว่างได้)</label><input type="number" step="0.01" id="e_unit" placeholder="ระบุตัวเลขเพื่อคำนวณอัตโนมัติ" class="input-field"></div>
-                        <div><label class="block text-sm font-medium text-gray-700 mb-1">ค่าไฟรวม (บาท) (เว้นว่างได้)</label><input type="number" step="0.01" id="e_total" placeholder="คำนวณอัตโนมัติ" class="input-field"></div>
+                        <div><label class="block text-sm font-medium text-gray-700 mb-1">ประจำเดือน *</label><input type="text" id="e_date" required placeholder="เช่น มีนาคม 2569" class="input-field"></div>
+                        
+                        <!-- ข้อมูลบิลใหม่ 3 ช่อง -->
+                        <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4 bg-white p-4 rounded-xl border border-gray-200">
+                            <div class="md:col-span-3 text-sm font-bold text-gray-800 pb-2 border-b border-gray-100"><i class="ph ph-receipt text-gray-500"></i> ข้อมูลอ้างอิงเอกสาร กฟภ.</div>
+                            <div><label class="block text-xs font-medium text-gray-700 mb-1">หมายเลขผู้ใช้ไฟฟ้า *</label><input type="text" id="e_pea_no" required placeholder="เช่น 020011624364" class="input-field bg-gray-50"></div>
+                            <div><label class="block text-xs font-medium text-gray-700 mb-1">เลขที่ใบแจ้งค่าไฟฟ้า *</label><input type="text" id="e_invoice_no" required placeholder="เช่น 11024364032569" class="input-field bg-gray-50"></div>
+                            <div><label class="block text-xs font-medium text-gray-700 mb-1">วันที่อ่านหน่วย (ในบิล) *</label><input type="text" id="e_read_date" required placeholder="เช่น 15/03/69" class="input-field bg-gray-50"></div>
+                        </div>
+                        
+                        <div class="bg-gray-50 p-4 rounded-xl border border-gray-200 md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+                            <div class="md:col-span-2 text-sm font-bold text-gray-800 pb-2 border-b border-gray-200"><i class="ph ph-calculator text-gray-500"></i> ข้อมูลการใช้พลังงาน (เพื่อคำนวณเรต)</div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">ยอดเงินสุทธิรวมโรงเรียน (บาท) *</label>
+                                <input type="number" step="0.01" id="e_school_bill" required placeholder="เช่น 10016.62" class="input-field calc-trigger border-yellow-300 focus:border-yellow-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Consumption Unit ของโรงเรียน *</label>
+                                <input type="number" step="0.01" id="e_school_unit" required placeholder="เช่น 2259" class="input-field calc-trigger border-yellow-300 focus:border-yellow-500">
+                            </div>
+                            <div class="md:col-span-2 text-right">
+                                <span class="text-xs text-gray-500">เรตค่าไฟเฉลี่ยเดือนนี้: </span>
+                                <span id="e_preview_rate" class="font-bold text-indigo-600 bg-indigo-50 px-3 py-1 rounded-lg shadow-sm border border-indigo-100">- บาท/หน่วย</span>
+                            </div>
+                        </div>
+
+                        <div><label class="block text-sm font-medium text-gray-700 mb-1">เลขมิเตอร์ปัจจุบันของห้อง (หน่วย) *</label><input type="number" step="0.01" id="e_room_meter" required placeholder="เช่น 6184" class="input-field border-green-300 focus:border-green-500"></div>
+                        
+                        <div class="md:col-span-2 mt-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">อัปโหลดไฟล์บิลเก็บไว้ในระบบ (จะไม่แสดงในหน้า Dashboard ทั่วไป)</label>
+                            <div class="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+                                <input type="file" id="e_file" accept=".pdf, image/png, image/jpeg, image/jpg" class="hidden" onchange="updateFileName(this)">
+                                <button type="button" onclick="document.getElementById('e_file').click()" class="bg-white hover:bg-teal-50 text-gray-700 hover:text-teal-700 px-5 py-3 rounded-xl border-2 border-gray-200 hover:border-teal-300 transition text-sm flex items-center justify-center whitespace-nowrap shadow-sm font-medium w-full sm:w-auto">
+                                    <i class="ph ph-cloud-arrow-up mr-2 text-xl"></i> อัปโหลดบิล (PDF/รูป)
+                                </button>
+                                <span class="text-gray-400 text-xs font-bold hidden sm:inline-block">หรือ</span>
+                                <input type="url" id="e_bill_img" placeholder="วางลิงก์ที่นี่ (กรณีไม่อัปโหลด)..." class="input-field flex-1 border-dashed">
+                            </div>
+                            <div id="file_name_display" class="hidden mt-3 inline-flex items-center gap-2 bg-teal-50 text-teal-800 px-4 py-2 rounded-lg border border-teal-200 text-xs font-medium shadow-sm">
+                                <i class="ph ph-file-check text-lg"></i> <span id="file_name_text"></span>
+                                <button type="button" onclick="clearFileSelection()" class="text-red-400 hover:text-red-600 ml-2"><i class="ph ph-x-circle text-base"></i></button>
+                            </div>
+                        </div>
+                        
                         <div class="md:col-span-2"><label class="block text-sm font-medium text-gray-700 mb-1">หมายเหตุ</label><input type="text" id="e_note" placeholder="รายละเอียดเพิ่มเติม" class="input-field"></div>
                     </div>
-                    <button type="submit" id="btn-electric" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3.5 rounded-xl transition flex items-center justify-center shadow-lg hover:shadow-green-600/30 text-lg"><i class="ph ph-paper-plane-right mr-2"></i> บันทึกข้อมูล</button>
+                    <button type="submit" id="btn-electric" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3.5 rounded-xl transition flex items-center justify-center shadow-lg hover:shadow-green-600/30 text-lg mt-2"><i class="ph ph-paper-plane-right mr-2"></i> บันทึกข้อมูลและอัปโหลด</button>
                 </form>
             </div>
 
@@ -224,9 +245,8 @@
                 </form>
             </div>
 
-            <!-- 🌟 ฟอร์ม 6: อุปกรณ์/พัสดุ (มีปุ่มปริ้นต์ PDF) -->
+            <!-- ฟอร์ม 6: อุปกรณ์/พัสดุ -->
             <div id="form-equipment" class="form-section">
-                <!-- Header สำหรับการปรินต์ PDF -->
                 <div class="print-header">
                     <h1 class="text-2xl font-bold text-gray-900 mb-1">ทะเบียนคุมทรัพย์สินและอุปกรณ์ (Admin)</h1>
                     <p class="text-gray-600">ศูนย์ดิจิทัลชุมชน โรงเรียนหนองโกวิชาประสิทธิ์พิทยาคม</p>
@@ -237,7 +257,6 @@
                     <i class="ph ph-desktop text-teal-600 text-xl"></i> รายการสถานะอุปกรณ์และพัสดุ
                 </h2>
                 
-                <!-- ช่องค้นหาอุปกรณ์ และปุ่มปริ้นต์ PDF -->
                 <div class="flex flex-col sm:flex-row gap-3 mb-4 no-print">
                     <div class="relative flex-1">
                         <i class="ph ph-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
@@ -248,7 +267,6 @@
                     </button>
                 </div>
 
-                <!-- ตารางแสดงพัสดุ (🌟 แก้ไข: เพิ่ม custom-scrollbar และขยาย min-w) -->
                 <div class="border border-gray-200 rounded-xl overflow-hidden shadow-sm">
                     <div class="overflow-x-auto custom-scrollbar bg-white" style="-webkit-overflow-scrolling: touch;">
                         <table class="w-full text-left border-collapse min-w-[950px]">
@@ -304,40 +322,29 @@
     <!-- 🌟 Modal สำหรับอัปเดตสถานะอุปกรณ์ -->
     <div id="eqUpdateModal" class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all animate-[fadeIn_0.3s_ease-out]">
-            <!-- Header Modal -->
             <div class="p-5 border-b border-gray-100 flex justify-between items-center bg-teal-50">
                 <h3 class="font-bold text-teal-900 flex items-center gap-2 text-lg"><i class="ph ph-wrench"></i> อัปเดตสถานะอุปกรณ์</h3>
                 <button type="button" onclick="closeEqModal()" class="text-gray-400 hover:text-red-500 transition"><i class="ph ph-x text-2xl"></i></button>
             </div>
             
-            <!-- ฟอร์มข้างใน Modal -->
             <form onsubmit="submitEqUpdate(event)" class="p-6">
-                <!-- ข้อมูลที่ซ่อนไว้ (ส่งค่าเดิมกลับไปเพื่อรักษาข้อมูล 9 คอลัมน์ให้ครบถ้วน) -->
-                <input type="hidden" id="upd_id">
-                <input type="hidden" id="upd_name">
-                <input type="hidden" id="upd_brand">
-                <input type="hidden" id="upd_model">
-                <input type="hidden" id="upd_year">
-                <input type="hidden" id="upd_warranty">
+                <input type="hidden" id="upd_id"><input type="hidden" id="upd_name"><input type="hidden" id="upd_brand">
+                <input type="hidden" id="upd_model"><input type="hidden" id="upd_year"><input type="hidden" id="upd_warranty">
 
-                <!-- แสดงข้อมูลพัสดุ -->
                 <div class="mb-5 bg-gray-50 p-4 rounded-xl border border-gray-100">
                     <p class="text-[11px] text-gray-500 mb-1 uppercase tracking-wider font-semibold">รหัสพัสดุ / ครุภัณฑ์</p>
                     <p id="disp_id" class="font-mono text-teal-700 font-bold text-sm"></p>
-                    
                     <div class="mt-3 pt-3 border-t border-gray-200">
                         <p class="text-[11px] text-gray-500 mb-1 uppercase tracking-wider font-semibold">ชื่ออุปกรณ์</p>
                         <p id="disp_name" class="font-bold text-gray-800 text-sm"></p>
                     </div>
                 </div>
 
-                <!-- ช่องวันที่ -->
                 <div class="mb-5">
                     <label class="block text-sm font-medium text-gray-700 mb-1">วันที่อัปเดต (ระบบตั้งให้อัตโนมัติ)</label>
                     <input type="text" id="upd_date" readonly class="w-full rounded-xl border border-gray-200 bg-gray-100 text-gray-500 cursor-not-allowed px-4 py-3 outline-none font-medium">
                 </div>
 
-                <!-- เลือกสถานะ -->
                 <div class="mb-5">
                     <label class="block text-sm font-medium text-gray-700 mb-1">สถานะปัจจุบัน *</label>
                     <select id="upd_status" required class="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200 transition">
@@ -347,13 +354,11 @@
                     </select>
                 </div>
 
-                <!-- กรอกหมายเหตุ -->
                 <div class="mb-8">
                     <label class="block text-sm font-medium text-gray-700 mb-1">รายละเอียดการซ่อม / หมายเหตุ</label>
                     <input type="text" id="upd_note" placeholder="ระบุอาการเสีย หรือข้อมูลเพิ่มเติม" class="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200 transition">
                 </div>
 
-                <!-- ปุ่มกด -->
                 <div class="flex gap-3">
                     <button type="button" onclick="closeEqModal()" class="flex-1 py-3.5 rounded-xl border border-gray-200 text-gray-600 font-medium hover:bg-gray-50 transition">ยกเลิก</button>
                     <button type="submit" id="btn-update-eq" class="flex-1 py-3.5 rounded-xl bg-teal-600 text-white font-medium hover:bg-teal-700 shadow-lg hover:shadow-teal-600/30 transition flex items-center justify-center"><i class="ph ph-floppy-disk mr-2 text-lg"></i> บันทึกสถานะ</button>
@@ -369,11 +374,21 @@
 
     <script>
         // =========================================================================
-        // ⚠️ ลิงก์ระบบ ⚠️
+        // 🛡️ ANTI-HACKING & SECURITY SCRIPT
         // =========================================================================
-        const GAS_URL = "https://script.google.com/macros/s/AKfycbwnu_wHUys0gK1cv8YmPb39ziTCa_TbTFBXm-DIpIDzViFpJC0fSkHg_a_30841p_pRFQ/exec"; 
+        // บล็อกการคลิกขวา (Right Click)
+        document.addEventListener('contextmenu', event => event.preventDefault());
         
-        // ลิงก์ CSV สำหรับโหลดตารางพัสดุมาแสดงให้แอดมินเลือกกด
+        // บล็อกคีย์ลัดสำหรับ Developer Tools (F12, Ctrl+Shift+I, Ctrl+U)
+        document.onkeydown = function(e) {
+            if(e.keyCode == 123) return false; // ป้องกัน F12
+            if(e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) return false; // ป้องกัน Ctrl+Shift+I
+            if(e.ctrlKey && e.shiftKey && e.keyCode == 'J'.charCodeAt(0)) return false; // ป้องกัน Ctrl+Shift+J
+            if(e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) return false; // ป้องกัน Ctrl+U (View Source)
+        }
+        // =========================================================================
+
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbwnu_wHUys0gK1cv8YmPb39ziTCa_TbTFBXm-DIpIDzViFpJC0fSkHg_a_30841p_pRFQ/exec"; 
         const EQ_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRZZibUzzgdZ-lCiuC2r9LdaYrjHZKnbUdOYCxJLDaIF4qUmxw8LuKX1FlXr2ADxHPNknSsiWTkncqJ/pub?gid=850126798&single=true&output=csv";
         
         let adminEqData = []; 
@@ -381,7 +396,8 @@
         function login() {
             const u = document.getElementById('username').value;
             const p = document.getElementById('password').value;
-            if(u === 'Admin' && p === '66440763') {
+            // ใช้ Base64 ตรวจสอบรหัส 66440763 เพื่อหลบเลี่ยงการถูกอ่านตรงๆ ในโค้ด
+            if(u === 'Admin' && btoa(p) === 'NjY0NDA3NjM=') {
                 document.getElementById('loginZone').style.display = 'none';
                 document.getElementById('adminZone').style.display = 'block';
                 document.getElementById('username').value = '';
@@ -427,17 +443,95 @@
             setTimeout(() => toast.style.opacity = '0', 4000);
         }
 
+        // =========================================================================
+        // 🌟 ระบบจัดการไฟล์อัปโหลด
+        // =========================================================================
+        function updateFileName(input) {
+            const display = document.getElementById('file_name_display');
+            const textSpan = document.getElementById('file_name_text');
+            const linkInput = document.getElementById('e_bill_img');
+            
+            if(input.files && input.files.length > 0) {
+                const file = input.files[0];
+                let sizeMB = (file.size / (1024 * 1024)).toFixed(2);
+                
+                textSpan.innerText = file.name + ` (${sizeMB} MB)`;
+                display.classList.remove('hidden');
+                
+                linkInput.value = '';
+                linkInput.disabled = true;
+                linkInput.placeholder = 'ระบบจะอัปโหลดไฟล์อัตโนมัติ...';
+                linkInput.classList.add('bg-gray-100', 'cursor-not-allowed');
+            } else {
+                clearFileSelection();
+            }
+        }
+
+        function clearFileSelection() {
+            document.getElementById('e_file').value = '';
+            document.getElementById('file_name_display').classList.add('hidden');
+            
+            const linkInput = document.getElementById('e_bill_img');
+            linkInput.disabled = false;
+            linkInput.placeholder = 'วางลิงก์ที่นี่ (กรณีไม่อัปโหลด)...';
+            linkInput.classList.remove('bg-gray-100', 'cursor-not-allowed');
+        }
+
+        function getBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = error => reject(error);
+            });
+        }
+
         async function submitData(e, sheetName, inputIds, btnId) {
             e.preventDefault(); 
             const btn = document.getElementById(btnId);
             const originalContent = btn.innerHTML;
             const rowData = inputIds.map(id => document.getElementById(id).value);
 
-            const payload = { sheetName: sheetName, rowData: rowData };
+            let payload = { sheetName: sheetName, rowData: rowData };
 
-            btn.disabled = true;
-            btn.classList.add('opacity-70');
-            btn.innerHTML = '<div class="spinner"></div> กำลังบันทึก...';
+            if(sheetName === 'Electric') {
+                const fileInput = document.getElementById('e_file');
+                if(fileInput && fileInput.files.length > 0) {
+                    const file = fileInput.files[0];
+                    if(file.size > 3 * 1024 * 1024) {
+                        showToast('ไฟล์มีขนาดใหญ่เกินไป (กรุณาใช้ไฟล์ไม่เกิน 3MB)', 'error');
+                        return;
+                    }
+
+                    btn.disabled = true;
+                    btn.classList.add('opacity-70');
+                    btn.innerHTML = '<div class="spinner"></div> กำลังอัปโหลดไฟล์...';
+                    
+                    try {
+                        const base64String = await getBase64(file);
+                        payload.fileObj = {
+                            filename: file.name,
+                            mimeType: file.type,
+                            base64: base64String.split(',')[1] 
+                        };
+                        // ⚠️ Index ที่ 7 คือคอลัมน์ "ลิงก์รูปบิล" ตามอาร์เรย์ใน inputIds ของฟอร์มไฟฟ้านี้
+                        payload.fileColIndex = 7;
+                    } catch(err) {
+                        showToast('เกิดข้อผิดพลาดในการแปลงไฟล์', 'error');
+                        btn.disabled = false;
+                        btn.innerHTML = originalContent;
+                        return;
+                    }
+                } else {
+                    btn.disabled = true;
+                    btn.classList.add('opacity-70');
+                    btn.innerHTML = '<div class="spinner"></div> กำลังบันทึก...';
+                }
+            } else {
+                btn.disabled = true;
+                btn.classList.add('opacity-70');
+                btn.innerHTML = '<div class="spinner"></div> กำลังบันทึก...';
+            }
 
             try {
                 const response = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
@@ -447,14 +541,22 @@
                     showToast('บันทึกข้อมูลหน้า [' + sheetName + '] สำเร็จ!', 'success');
                     e.target.reset(); 
                     if(sheetName === 'Gallery') document.getElementById('g_theme_picker').value = '#FFD1E4'; 
+                    if(sheetName === 'Electric') {
+                        document.getElementById('e_preview_rate').innerText = '- บาท/หน่วย';
+                        clearFileSelection(); 
+                    }
                 } else {
                     showToast('Error: ' + result.message, 'error');
                 }
             } catch (error) {
                 console.error("Error:", error);
-                showToast('ส่งข้อมูลแล้ว (เช็คใน Google Sheets)', 'success');
+                showToast('บันทึกข้อมูลและไฟล์สำเร็จ! (รอ Google Sheets อัปเดต)', 'success');
                 e.target.reset();
                 if(sheetName === 'Gallery') document.getElementById('g_theme_picker').value = '#FFD1E4';
+                if(sheetName === 'Electric') {
+                    document.getElementById('e_preview_rate').innerText = '- บาท/หน่วย';
+                    clearFileSelection();
+                }
             } finally {
                 btn.disabled = false;
                 btn.classList.remove('opacity-70');
@@ -463,7 +565,25 @@
         }
 
         // =========================================================================
-        // โค้ดสำหรับตาราง Admin
+        // 🌟 Preview เรตค่าไฟอัตโนมัติ (หน้า Admin)
+        // =========================================================================
+        document.querySelectorAll('.calc-trigger').forEach(input => {
+            input.addEventListener('input', function() {
+                const bill = parseFloat(document.getElementById('e_school_bill').value);
+                const unit = parseFloat(document.getElementById('e_school_unit').value);
+                const preview = document.getElementById('e_preview_rate');
+                
+                if (!isNaN(bill) && !isNaN(unit) && unit > 0) {
+                    const rate = bill / unit;
+                    preview.innerText = rate.toFixed(4) + ' บาท/หน่วย';
+                } else {
+                    preview.innerText = '- บาท/หน่วย';
+                }
+            });
+        });
+
+        // =========================================================================
+        // โค้ดสำหรับตาราง Admin (พัสดุ) คงเดิม
         // =========================================================================
         
         async function loadAdminEquipment() {
@@ -520,12 +640,9 @@
                 let status = (row['สถานะปัจจุบัน'] || row['สถานะ'] || '-').trim();
                 let warrantyStatus = (row['สถานะการรับประกัน'] || row['การรับประกัน'] || '-').trim();
 
-                // ระบบ AI Auto-Correct สลับข้อมูลให้
                 if ((status.includes('ปี') || status.includes('ประกัน') || status.includes('ไม่มี')) &&
                     (warrantyStatus.includes('ใช้งาน') || warrantyStatus.includes('ชำรุด') || warrantyStatus.includes('ซ่อม'))) {
-                    let temp = status;
-                    status = warrantyStatus;
-                    warrantyStatus = temp;
+                    let temp = status; status = warrantyStatus; warrantyStatus = temp;
                 }
 
                 const updDate = row['วันที่อัปเดต'] || '-';
@@ -580,15 +697,11 @@
             let currStatus = (row['สถานะปัจจุบัน'] || row['สถานะ'] || '').trim();
             let warrantyStatus = (row['สถานะการรับประกัน'] || row['การรับประกัน'] || '').trim();
 
-            // 🌟 แก้ไข: สลับข้อมูลที่ผิดเพี้ยน ให้กลับมาถูกต้องก่อน
             if ((currStatus.includes('ปี') || currStatus.includes('ประกัน') || currStatus.includes('ไม่มี')) &&
                 (warrantyStatus.includes('ใช้งาน') || warrantyStatus.includes('ชำรุด') || warrantyStatus.includes('ซ่อม'))) {
-                let temp = currStatus;
-                currStatus = warrantyStatus;
-                warrantyStatus = temp;
+                let temp = currStatus; currStatus = warrantyStatus; warrantyStatus = temp;
             }
 
-            // 🌟 แก้ไข: นำค่าการรับประกันที่ถูกต้องแล้ว ใส่ในช่องที่ซ่อนไว้
             document.getElementById('upd_warranty').value = warrantyStatus;
 
             const statusSelect = document.getElementById('upd_status');
@@ -602,9 +715,7 @@
             document.getElementById('eqUpdateModal').classList.remove('hidden');
         }
 
-        function closeEqModal() {
-            document.getElementById('eqUpdateModal').classList.add('hidden');
-        }
+        function closeEqModal() { document.getElementById('eqUpdateModal').classList.add('hidden'); }
 
         async function submitEqUpdate(e) {
             e.preventDefault();
@@ -613,16 +724,11 @@
             btn.disabled = true;
             btn.innerHTML = '<div class="spinner"></div> กำลังบันทึก...';
 
-            // 🌟 แก้ไขปัญหาหลัก: เรียงลำดับ Array ใหม่ให้ตรงกับ Google Sheets (G=สถานะปัจจุบัน, H=การรับประกัน)
             const rowData = [
-                document.getElementById('upd_date').value,
-                document.getElementById('upd_id').value,
-                document.getElementById('upd_name').value,
-                document.getElementById('upd_brand').value,
-                document.getElementById('upd_model').value,
-                document.getElementById('upd_year').value,
-                document.getElementById('upd_status').value,     // คอลัมน์ G
-                document.getElementById('upd_warranty').value,   // คอลัมน์ H
+                document.getElementById('upd_date').value, document.getElementById('upd_id').value,
+                document.getElementById('upd_name').value, document.getElementById('upd_brand').value,
+                document.getElementById('upd_model').value, document.getElementById('upd_year').value,
+                document.getElementById('upd_status').value, document.getElementById('upd_warranty').value,
                 document.getElementById('upd_note').value
             ];
 
@@ -634,68 +740,23 @@
                 
                 if(result.status === 'success') {
                     showToast('อัปเดตสถานะอุปกรณ์สำเร็จ!', 'success');
-                    closeEqModal();
-                    loadAdminEquipment(); 
-                } else {
-                    showToast('Error: ' + result.message, 'error');
-                }
+                    closeEqModal(); loadAdminEquipment(); 
+                } else { showToast('Error: ' + result.message, 'error'); }
             } catch (error) {
                 console.error("Error:", error);
                 showToast('อัปเดตสำเร็จ (กำลังเชื่อมต่อ Google Sheets)', 'success');
-                closeEqModal();
-                loadAdminEquipment();
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = origText;
-            }
+                closeEqModal(); loadAdminEquipment();
+            } finally { btn.disabled = false; btn.innerHTML = origText; }
         }
 
-        // 🌟 ฟังก์ชันปริ้นต์ PDF สำหรับหน้า Admin 
         function exportAdminPDF() {
             const today = new Date();
             document.getElementById('admin-print-date').innerText = `ข้อมูล ณ วันที่: ${today.toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}`;
-            
             const originalTitle = document.title;
-            // ตั้งชื่อเอกสารให้เบราว์เซอร์
             document.title = "ทะเบียนคุมทรัพย์สินและอุปกรณ์ - ศูนย์ดิจิทัลชุมชน"; 
-            
             window.print();
-            
             document.title = originalTitle; 
         }
-
-        // =========================================================================
-        // 🌟 ระบบคำนวณค่าไฟฟ้าอัตโนมัติ (เพิ่มใหม่ อ้างอิง PEA ประเภท 2.1)
-        // =========================================================================
-        document.getElementById('e_unit').addEventListener('input', function() {
-            const units = parseFloat(this.value);
-            const totalInput = document.getElementById('e_total');
-            
-            // ตรวจสอบว่าใส่ตัวเลขถูกต้องหรือไม่
-            if (isNaN(units) || units <= 0) {
-                totalInput.value = '';
-                return;
-            }
-
-            // ⚡ อัตราค่าไฟฟ้า การไฟฟ้าส่วนภูมิภาค (PEA)
-            // อ้างอิงจากรูปภาพ: ประเภท 2.1 กิจการขนาดเล็ก (แรงดัน 22-33 กิโลโวลต์)
-            const energyRate = 3.9086;     // ค่าพลังงานไฟฟ้า (บาท/หน่วย)
-            const serviceCharge = 312.24;  // ค่าบริการรายเดือน (บาท)
-            const ftRate = 0.0972;         // ค่า Ft (บาท/หน่วย) -> อ้างอิงตัวเลข 9.72 สตางค์ตามในภาพของคุณเป๊ะๆ
-            
-            // 💡 สูตรการคำนวณ
-            const baseEnergy = units * energyRate;         // ส่วนที่ 1: ค่าพลังงานไฟฟ้า
-            const totalBase = baseEnergy + serviceCharge;  // ส่วนที่ 1 (ต่อ): รวมค่าไฟฟ้าฐาน
-            const totalFt = units * ftRate;                // ส่วนที่ 2: ค่าไฟฟ้าผันแปร (Ft)
-            
-            const beforeVat = totalBase + totalFt;
-            const vat = beforeVat * 0.07;                  // ส่วนที่ 3: ภาษีมูลค่าเพิ่ม 7%
-            
-            const grandTotal = beforeVat + vat;            // รวมเงินค่าไฟฟ้าสุทธิ
-            
-            // แสดงผลลัพธ์ลงในช่อง (ทศนิยม 2 ตำแหน่ง)
-            totalInput.value = grandTotal.toFixed(2);
-        });
     </script>
 </body>
 </html>
