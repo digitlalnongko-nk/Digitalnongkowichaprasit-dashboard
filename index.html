@@ -23,7 +23,7 @@
     <style> 
         body { 
             font-family: 'Prompt', sans-serif; 
-            background-color: #F8FAFC; /* ปรับพื้นหลังให้เป็นสีเทาอมฟ้าสว่างๆ ดูคลีนขึ้น */
+            background-color: #F8FAFC; 
             color: #1e293b; 
             -webkit-tap-highlight-color: transparent; 
             padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
@@ -66,6 +66,22 @@
 
         .pdf-header { display: none; text-align: center; margin-bottom: 20px; }
 
+        /* Background Animation สำหรับหน้า Landing */
+        @keyframes blob {
+            0% { transform: translate(0px, 0px) scale(1); }
+            33% { transform: translate(30px, -50px) scale(1.1); }
+            66% { transform: translate(-20px, 20px) scale(0.9); }
+            100% { transform: translate(0px, 0px) scale(1); }
+        }
+        .animate-blob { animation: blob 7s infinite; }
+        .animation-delay-2000 { animation-delay: 2s; }
+
+        /* Custom Scrollbar */
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
         @media print {
             @page { size: A4 landscape; margin: 15.5mm 10mm 12mm 10mm; }
             body { background-color: white !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; padding: 0 !important; }
@@ -85,41 +101,125 @@
 </head>
 <body class="text-sm w-full max-w-[100vw] h-screen overflow-hidden">
 
-    <div id="landing-view" class="flex flex-col items-center justify-center h-full w-full absolute inset-0 z-50 bg-gradient-to-br from-[#f0fdf4] to-[#fefce8] px-6 py-10 overflow-y-auto">
-        <div class="max-w-3xl lg:max-w-5xl w-full text-center animate-[fadeIn_0.6s_ease-out] my-auto relative z-10">
-            <div class="inline-block p-4 bg-white rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.08)] mb-8 transform hover:scale-105 transition-transform duration-500">
-                <img src="https://lh3.googleusercontent.com/d/1kKyIkEA88lsbUcHPsxeWB_KJwHFNaySD" alt="Logo" class="h-20 md:h-28 lg:h-36 drop-shadow-sm" referrerpolicy="no-referrer">
+    <div id="landing-view" class="absolute inset-0 z-50 bg-white overflow-y-auto overflow-x-hidden scroll-smooth">
+        
+        <nav class="fixed top-0 w-full bg-white/90 backdrop-blur-md border-b border-slate-100 z-50 px-6 py-4 flex justify-between items-center shadow-sm">
+            <div class="flex items-center gap-3">
+                <img src="https://lh3.googleusercontent.com/d/1kKyIkEA88lsbUcHPsxeWB_KJwHFNaySD" class="h-10" alt="Logo" referrerpolicy="no-referrer">
+                <span class="font-bold text-slate-800 text-sm hidden sm:block">ศูนย์ดิจิทัล หนองโกฯ</span>
             </div>
-            <h1 class="text-3xl md:text-5xl lg:text-6xl font-extrabold text-slate-800 mb-3 tracking-tight">ศูนย์ดิจิทัลชุมชน</h1>
-            <p class="text-base md:text-lg lg:text-xl text-emerald-600 mb-14 font-medium tracking-wide">โรงเรียนหนองโกวิชาประสิทธิ์พิทยาคม</p>
+            <div class="flex items-center gap-6 text-sm font-medium text-slate-600">
+                <a href="#hero" class="hover:text-emerald-600 transition hidden md:block">หน้าหลัก</a>
+                <a href="#about" class="hover:text-emerald-600 transition hidden md:block">บริการของเรา</a>
+                <button onclick="enterDashboard()" class="bg-emerald-600 text-white px-5 py-2.5 rounded-full hover:bg-emerald-700 transition shadow-lg shadow-emerald-600/30 font-bold flex items-center gap-2">
+                    <i class="ph-fill ph-lock-key"></i> เข้าสู่ระบบจัดการ
+                </button>
+            </div>
+        </nav>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 lg:gap-8 max-w-2xl lg:max-w-4xl mx-auto">
-                <div onclick="enterDashboard()" class="bg-white rounded-[32px] p-8 lg:p-10 cursor-pointer hover:-translate-y-2 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.08)] hover:shadow-[0_20px_50px_-10px_rgba(22,163,74,0.2)] transition-all duration-300 border border-slate-100 flex flex-col items-center group">
-                    <div class="w-20 h-20 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-600 mb-6 group-hover:bg-emerald-600 group-hover:text-white group-hover:rotate-6 transition-all duration-300">
-                        <i class="ph ph-chart-pie-slice text-4xl"></i>
+        <section id="hero" class="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-[#f0fdf4] to-[#fefce8] px-6 py-20 relative pt-24">
+            <div class="absolute inset-0 overflow-hidden pointer-events-none">
+                <div class="absolute -top-24 -left-24 w-96 h-96 bg-emerald-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
+                <div class="absolute top-48 -right-24 w-96 h-96 bg-amber-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
+            </div>
+
+            <div class="max-w-4xl w-full text-center animate-[fadeIn_0.6s_ease-out] relative z-10 mt-10">
+                <img src="https://lh3.googleusercontent.com/d/1kKyIkEA88lsbUcHPsxeWB_KJwHFNaySD" alt="Logo" class="h-28 md:h-36 lg:h-44 mx-auto mb-8 drop-shadow-xl hover:scale-105 transition-transform duration-500" referrerpolicy="no-referrer">
+                <h1 class="text-3xl md:text-5xl lg:text-6xl font-extrabold text-slate-800 mb-4 tracking-tight">ศูนย์ดิจิทัลชุมชน</h1>
+                <p class="text-base md:text-lg lg:text-xl text-emerald-600 mb-12 font-medium tracking-wide">โรงเรียนหนองโกวิชาประสิทธิ์พิทยาคม</p>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-2xl mx-auto">
+                    <div onclick="enterDashboard()" class="bg-white rounded-[24px] p-6 cursor-pointer hover:-translate-y-2 shadow-lg hover:shadow-xl hover:shadow-emerald-600/10 transition-all duration-300 border border-slate-100 flex items-center gap-4 group">
+                        <div class="w-16 h-16 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white transition-all duration-300 flex-shrink-0">
+                            <i class="ph-fill ph-chart-pie-slice text-3xl"></i>
+                        </div>
+                        <div class="text-left">
+                            <h3 class="text-lg font-bold text-slate-800 mb-1">ระบบแดชบอร์ด</h3>
+                            <p class="text-xs text-slate-500">รายงานสรุปผลและสถิติ</p>
+                        </div>
                     </div>
-                    <h3 class="text-lg md:text-xl font-bold text-slate-800 mb-2">ระบบรายงานสรุปผล</h3>
-                    <p class="text-sm text-slate-500 leading-relaxed">การให้บริการ สถิติผู้ใช้งาน และคลังข้อมูล</p>
+
+                    <a href="gallery.html" target="_blank" class="bg-white rounded-[24px] p-6 cursor-pointer hover:-translate-y-2 shadow-lg hover:shadow-xl hover:shadow-amber-500/10 transition-all duration-300 border border-slate-100 flex items-center gap-4 group text-current no-underline">
+                        <div class="w-16 h-16 bg-amber-50 rounded-2xl flex items-center justify-center text-amber-500 group-hover:bg-amber-500 group-hover:text-white transition-all duration-300 flex-shrink-0">
+                            <i class="ph-fill ph-images-square text-3xl"></i>
+                        </div>
+                        <div class="text-left">
+                            <h3 class="text-lg font-bold text-slate-800 mb-1">คลังรูปภาพ</h3>
+                            <p class="text-xs text-slate-500">ระบบประมวลผลกิจกรรม</p>
+                        </div>
+                    </a>
+                </div>
+            </div>
+            
+            <a href="#about" class="absolute bottom-8 animate-bounce text-emerald-400 hover:text-emerald-600 transition p-2">
+                <i class="ph ph-caret-double-down text-3xl"></i>
+            </a>
+        </section>
+
+        <section id="about" class="py-24 px-6 bg-white max-w-6xl mx-auto">
+            <div class="text-center mb-16">
+                <span class="text-emerald-600 font-bold tracking-widest text-sm uppercase bg-emerald-50 px-4 py-1.5 rounded-full">Our Services</span>
+                <h2 class="text-3xl lg:text-4xl font-extrabold text-slate-800 mt-6 mb-4">บริการของศูนย์ดิจิทัลชุมชน</h2>
+                <p class="text-slate-500 max-w-2xl mx-auto">ส่งเสริมการเรียนรู้ พัฒนาทักษะด้านเทคโนโลยีดิจิทัล และเป็นศูนย์กลางการให้บริการเครื่องมือที่ทันสมัยแก่นักเรียนและชุมชนอย่างยั่งยืน</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="p-8 rounded-[32px] bg-slate-50 border border-slate-100 text-center hover:shadow-[0_20px_40px_-10px_rgba(0,0,0,0.05)] hover:-translate-y-2 transition-all duration-300">
+                    <div class="w-20 h-20 bg-blue-100 text-blue-600 rounded-[20px] flex items-center justify-center mx-auto mb-6 text-3xl shadow-inner"><i class="ph-fill ph-desktop"></i></div>
+                    <h3 class="font-bold text-lg mb-2 text-slate-800">ศูนย์การเรียนรู้คอมพิวเตอร์</h3>
+                    <p class="text-sm text-slate-500 leading-relaxed">พื้นที่สำหรับการค้นคว้าข้อมูลและใช้งานระบบอินเทอร์เน็ตเพื่อยกระดับการศึกษา</p>
+                </div>
+                <div class="p-8 rounded-[32px] bg-slate-50 border border-slate-100 text-center hover:shadow-[0_20px_40px_-10px_rgba(0,0,0,0.05)] hover:-translate-y-2 transition-all duration-300">
+                    <div class="w-20 h-20 bg-purple-100 text-purple-600 rounded-[20px] flex items-center justify-center mx-auto mb-6 text-3xl shadow-inner"><i class="ph-fill ph-users-three"></i></div>
+                    <h3 class="font-bold text-lg mb-2 text-slate-800">จัดอบรมทักษะดิจิทัล</h3>
+                    <p class="text-sm text-slate-500 leading-relaxed">พัฒนาศักยภาพ ถ่ายทอดองค์ความรู้ และสร้างสรรค์คอนเทนต์สำหรับเป้าหมายทุกช่วงวัย</p>
+                </div>
+                <div class="p-8 rounded-[32px] bg-slate-50 border border-slate-100 text-center hover:shadow-[0_20px_40px_-10px_rgba(0,0,0,0.05)] hover:-translate-y-2 transition-all duration-300">
+                    <div class="w-20 h-20 bg-rose-100 text-rose-500 rounded-[20px] flex items-center justify-center mx-auto mb-6 text-3xl shadow-inner"><i class="ph-fill ph-camera"></i></div>
+                    <h3 class="font-bold text-lg mb-2 text-slate-800">บริการอุปกรณ์โสตทัศนูปกรณ์</h3>
+                    <p class="text-sm text-slate-500 leading-relaxed">ให้บริการพื้นที่และระบบยืม-คืนอุปกรณ์เทคโนโลยีและสื่อมัลติมีเดียที่ทันสมัย</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="gallery-preview" class="py-24 px-6 bg-slate-50 border-t border-slate-100">
+            <div class="max-w-6xl mx-auto">
+                <div class="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
+                    <div>
+                        <span class="text-amber-500 font-bold tracking-widest text-sm uppercase bg-amber-50 px-4 py-1.5 rounded-full border border-amber-100">Recent Activities</span>
+                        <h2 class="text-3xl lg:text-4xl font-extrabold text-slate-800 mt-6 mb-3">ภาพกิจกรรมล่าสุด</h2>
+                        <p class="text-slate-500 max-w-xl">ประมวลภาพบรรยากาศการเรียนรู้และการให้บริการของศูนย์ดิจิทัลชุมชนที่ถูกอัปเดตล่าสุดจากระบบ</p>
+                    </div>
+                    <a href="gallery.html" target="_blank" class="bg-white border border-slate-200 text-slate-700 px-6 py-3 rounded-full hover:bg-slate-100 hover:text-amber-600 hover:border-amber-200 transition-all shadow-sm font-bold flex items-center gap-2 whitespace-nowrap">
+                        ดูภาพทั้งหมด <i class="ph-bold ph-arrow-right"></i>
+                    </a>
                 </div>
 
-                <a href="gallery.html" target="_blank" class="bg-white rounded-[32px] p-8 lg:p-10 cursor-pointer hover:-translate-y-2 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.08)] hover:shadow-[0_20px_50px_-10px_rgba(234,179,8,0.2)] transition-all duration-300 border border-slate-100 flex flex-col items-center group text-current no-underline">
-                    <div class="w-20 h-20 bg-amber-50 rounded-2xl flex items-center justify-center text-amber-500 mb-6 group-hover:bg-amber-500 group-hover:text-white group-hover:-rotate-6 transition-all duration-300">
-                        <i class="ph ph-images-square text-4xl"></i>
+                <div id="landingActivityContainer" class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div class="animate-pulse bg-white p-2 rounded-[24px] border border-slate-100 shadow-sm h-72">
+                        <div class="bg-slate-100 h-44 rounded-[18px] mb-4"></div>
+                        <div class="px-3"><div class="bg-slate-100 h-4 w-3/4 rounded mb-2"></div><div class="bg-slate-50 h-3 w-1/2 rounded"></div></div>
                     </div>
-                    <h3 class="text-lg md:text-xl font-bold text-slate-800 mb-2">ระบบคลังรูปภาพกิจกรรม</h3>
-                    <p class="text-sm text-slate-500 leading-relaxed">คลังภาพกิจกรรม และดาวน์โหลดรูปภาพ</p>
-                </a>
+                    <div class="animate-pulse bg-white p-2 rounded-[24px] border border-slate-100 shadow-sm h-72 hidden md:block">
+                        <div class="bg-slate-100 h-44 rounded-[18px] mb-4"></div>
+                        <div class="px-3"><div class="bg-slate-100 h-4 w-3/4 rounded mb-2"></div><div class="bg-slate-50 h-3 w-1/2 rounded"></div></div>
+                    </div>
+                    <div class="animate-pulse bg-white p-2 rounded-[24px] border border-slate-100 shadow-sm h-72 hidden md:block">
+                        <div class="bg-slate-100 h-44 rounded-[18px] mb-4"></div>
+                        <div class="px-3"><div class="bg-slate-100 h-4 w-3/4 rounded mb-2"></div><div class="bg-slate-50 h-3 w-1/2 rounded"></div></div>
+                    </div>
+                </div>
             </div>
-        </div>
-        
-        <div class="fixed top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
-            <div class="absolute -top-24 -left-24 w-96 h-96 bg-green-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
-            <div class="absolute top-48 -right-24 w-96 h-96 bg-yellow-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
-        </div>
+        </section>
 
-        <div class="mt-12 text-xs text-slate-400 font-medium tracking-widest text-center">
-            COPYRIGHT Ⓒ SARAN THAPKHWA
-        </div>
+        <footer class="bg-slate-900 pt-16 pb-8 px-6 text-center text-slate-400">
+            <img src="https://lh3.googleusercontent.com/d/1kKyIkEA88lsbUcHPsxeWB_KJwHFNaySD" alt="Logo" class="h-16 mx-auto mb-6 opacity-80 grayscale hover:grayscale-0 transition" referrerpolicy="no-referrer">
+            <h4 class="text-white font-bold text-lg mb-1">ศูนย์ดิจิทัลชุมชน โรงเรียนหนองโกวิชาประสิทธิ์พิทยาคม</h4>
+            <p class="text-sm mb-8 text-slate-500">Nongkowichaprasit School, Maha Sarakham</p>
+            <div class="border-t border-slate-800 pt-8 text-[10px] tracking-widest uppercase font-medium">
+                Copyright Ⓒ Saran Thapkhwa | All Rights Reserved
+            </div>
+        </footer>
     </div>
 
     <div id="dashboard-view" class="hidden flex-col lg:flex-row h-full w-full relative">
@@ -137,8 +237,8 @@
 
         <aside id="sidebar" class="w-72 bg-slate-900 flex flex-col h-full p-6 shadow-2xl flex-shrink-0 no-print z-50 text-slate-300">
             <div class="mb-10 text-center relative">
-                <div class="inline-block bg-white p-3 rounded-2xl shadow-lg mb-4">
-                    <img src="https://lh3.googleusercontent.com/d/1kKyIkEA88lsbUcHPsxeWB_KJwHFNaySD" alt="Hub Logo" class="h-14 w-auto object-contain" referrerpolicy="no-referrer">
+                <div class="flex justify-center mb-6 mt-2">
+                    <img src="https://lh3.googleusercontent.com/d/1kKyIkEA88lsbUcHPsxeWB_KJwHFNaySD" alt="Hub Logo" class="h-16 lg:h-20 w-auto object-contain drop-shadow-[0_4px_12px_rgba(255,255,255,0.15)] hover:scale-105 transition-transform duration-300" referrerpolicy="no-referrer">
                 </div>
                 <h1 class="font-bold text-base text-white leading-snug">ศูนย์ดิจิทัลชุมชน<br>โรงเรียนหนองโกวิชาประสิทธิ์พิทยาคม</h1>
                 <p class="text-[9px] text-emerald-400 mt-2 uppercase tracking-[0.2em] font-semibold">Digital Nongkowichaprasit</p>
@@ -182,7 +282,7 @@
                 
                 <div class="mt-6 pt-4 border-t border-slate-800">
                     <div class="nav-item px-4 py-3.5 flex items-center gap-3.5 text-sm text-slate-400 hover:!bg-rose-500/10 hover:!text-rose-400" onclick="enterLanding()">
-                        <i class="ph ph-sign-out text-xl"></i> ออกจากระบบ
+                        <i class="ph ph-sign-out text-xl"></i> กลับหน้าแรก
                     </div>
                 </div>
             </nav>
@@ -345,14 +445,6 @@
             </div>
         </div>
     </div>
-
-    <style>
-        /* Custom Scrollbar for inner elements */
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-    </style>
 
     <script>
         // =========================================================================
@@ -743,6 +835,61 @@
 
         document.getElementById('eqPassword').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') verifyEqPwd();
+        });
+
+        // =========================================================================
+        // 🌟 ดึงข้อมูลภาพกิจกรรม 3 ภาพล่าสุด มาแสดงที่หน้า Landing Page อัตโนมัติ
+        // =========================================================================
+        async function loadLandingActivities() {
+            try {
+                const data = await fetchSheetData('Activity');
+                const container = document.getElementById('landingActivityContainer');
+                
+                if(!data || data.length === 0) {
+                    container.innerHTML = '<div class="col-span-full text-center py-10 text-slate-400 font-medium">ยังไม่มีรูปภาพกิจกรรมในระบบ</div>';
+                    return;
+                }
+                
+                let html = '';
+                const latestActivities = data.slice(-3).reverse();
+                
+                latestActivities.forEach(row => {
+                    const url = row['ลิงก์รูปภาพ'] || row['ภาพกิจกรรม'] || '';
+                    const date = formatBE(row['วันที่'] || '');
+                    const title = row['ชื่อกิจกรรม'] || 'กิจกรรมศูนย์ดิจิทัลชุมชน';
+                    const desc = row['รายละเอียด'] || '';
+                    
+                    const img = url ? `<img src="${url}" class="w-full h-44 object-cover group-hover:scale-110 transition duration-700" referrerpolicy="no-referrer">` : `<div class="w-full h-44 bg-slate-50 flex items-center justify-center text-slate-300"><i class="ph ph-image text-4xl"></i></div>`;
+                    
+                    html += `
+                    <a href="${WEB_APP_LINK}" target="_blank" class="block group">
+                        <div class="bg-white rounded-[24px] p-2 border border-slate-100 shadow-[0_4px_20px_rgb(0,0,0,0.03)] hover:shadow-[0_20px_40px_-10px_rgba(245,158,11,0.15)] hover:-translate-y-2 transition-all duration-500 h-full flex flex-col relative overflow-hidden">
+                            <div class="overflow-hidden rounded-[18px] relative mb-4">
+                                ${img}
+                                <div class="absolute inset-0 bg-gradient-to-t from-slate-900/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
+                                    <span class="text-white text-xs font-bold bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full"><i class="ph-bold ph-eye"></i> ดูแกลเลอรี</span>
+                                </div>
+                            </div>
+                            <div class="px-3 pb-3 flex-1 flex flex-col">
+                                <h3 class="font-bold text-slate-800 mb-1 text-sm group-hover:text-amber-500 transition-colors line-clamp-1">${title}</h3>
+                                <p class="text-[11px] text-slate-500 line-clamp-2 mb-3 leading-relaxed">${desc}</p>
+                                <div class="mt-auto text-[10px] font-bold text-slate-400 flex items-center justify-between">
+                                    <span class="flex items-center gap-1"><i class="ph-fill ph-calendar-blank text-amber-400"></i> ${date}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </a>`;
+                });
+                container.innerHTML = html;
+            } catch(e) {
+                console.log("โหลดภาพล้มเหลว:", e);
+                const container = document.getElementById('landingActivityContainer');
+                if(container) container.innerHTML = '<div class="col-span-full text-center py-10 text-rose-400 text-xs">ไม่สามารถเชื่อมต่อฐานข้อมูลรูปภาพได้</div>';
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            loadLandingActivities();
         });
     </script>
 </body>
