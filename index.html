@@ -36,10 +36,10 @@
 
         /* Sidebar Navigation Styles */
         .nav-item { cursor: pointer; transition: all 0.3s ease; border-radius: 16px; margin-bottom: 4px; }
-        .nav-item.active { background-color: #16a34a; color: #ffffff; font-weight: 600; box-shadow: 0 4px 12px rgba(22, 163, 74, 0.3); }
+        .nav-item.active { background-color: #10b981; color: #ffffff; font-weight: 600; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3); }
         .nav-item:hover:not(.active) { background-color: rgba(255, 255, 255, 0.1); color: #ffffff; transform: translateX(4px); }
         
-        .page-section { display: none; animation: fadeIn 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+        .page-section { display: none; animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
         .page-section.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
         
@@ -53,8 +53,6 @@
         .card-cute { background-color: #ffffff; border-radius: 24px; box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.06); border: 1px solid rgba(226, 232, 240, 0.8); overflow: hidden; transition: transform 0.3s ease, box-shadow 0.3s ease; }
         .card-cute:hover { box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.09); }
         .chart-container { position: relative; height: 220px; width: 100%; max-width: 100%; margin: 0 auto; display: flex; justify-content: center; align-items: center; }
-
-        /* กึ่งกลางโดนัทชาร์ต */
         .chart-center-text { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; margin-top: -15px; }
 
         #sidebarOverlay { display: none; }
@@ -66,7 +64,6 @@
 
         .pdf-header { display: none; text-align: center; margin-bottom: 20px; }
 
-        /* Background Animation สำหรับหน้า Landing */
         @keyframes blob {
             0% { transform: translate(0px, 0px) scale(1); }
             33% { transform: translate(30px, -50px) scale(1.1); }
@@ -76,7 +73,6 @@
         .animate-blob { animation: blob 7s infinite; }
         .animation-delay-2000 { animation-delay: 2s; }
 
-        /* Custom Scrollbar */
         .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
@@ -99,9 +95,10 @@
         }
     </style>
 </head>
-<body class="text-sm w-full max-w-[100vw] h-screen overflow-hidden">
 
-    <div id="landing-view" class="absolute inset-0 z-50 bg-white overflow-y-auto overflow-x-hidden scroll-smooth">
+<body class="text-sm w-full h-screen overflow-hidden bg-white text-slate-800">
+
+    <div id="landing-view" class="w-full h-full overflow-y-auto overflow-x-hidden scroll-smooth relative z-10" style="display: block;">
         
         <nav class="fixed top-0 w-full bg-white/90 backdrop-blur-md border-b border-slate-100 z-50 px-6 py-4 flex justify-between items-center shadow-sm">
             <div class="flex items-center gap-3">
@@ -126,7 +123,6 @@
             <div class="max-w-7xl mx-auto w-full flex flex-col lg:flex-row items-center gap-16 relative z-10">
                 
                 <div class="w-full lg:w-1/2 flex flex-col items-center lg:items-start text-center lg:text-left mt-10 lg:mt-0">
-                    
                     <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-emerald-100 text-emerald-600 text-xs font-bold uppercase tracking-widest mb-6 shadow-sm">
                         <span class="relative flex h-2.5 w-2.5">
                             <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
@@ -164,7 +160,6 @@
                 <div class="w-full lg:w-1/2 relative flex justify-center lg:justify-end mt-10 lg:mt-0">
                     <div class="relative w-full max-w-lg aspect-square lg:aspect-auto lg:h-[550px]">
                         <div class="absolute inset-0 bg-gradient-to-tr from-emerald-100 to-amber-50 rounded-[3rem] transform rotate-3 scale-105 -z-10"></div>
-                        
                         <img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Digital Learning" class="rounded-[3rem] shadow-2xl object-cover w-full h-full border-8 border-white relative z-10">
                         
                         <div class="absolute -bottom-6 -left-6 bg-white px-6 py-4 rounded-2xl shadow-xl z-20 flex items-center gap-4 animate-[bounce_4s_infinite]">
@@ -184,7 +179,6 @@
                         </div>
                     </div>
                 </div>
-                
             </div>
             
             <a href="#about" class="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce text-emerald-400 hover:text-emerald-600 transition p-2 z-20">
@@ -195,7 +189,6 @@
         <section id="about" class="py-24 px-6 bg-white overflow-hidden relative">
             <div class="max-w-7xl mx-auto">
                 <div class="flex flex-col lg:flex-row items-center gap-12 lg:gap-20">
-                    
                     <div class="w-full lg:w-1/2 relative flex justify-center lg:justify-start">
                         <div class="hidden xl:block absolute -left-16 top-10 transform -rotate-90 origin-top-left text-slate-100 font-black text-8xl tracking-widest uppercase z-0 pointer-events-none select-none">
                             DIGITAL HUB
@@ -220,25 +213,19 @@
                     </div>
 
                     <div class="w-full lg:w-1/2 relative z-10">
-                        <span class="inline-block text-emerald-600 font-bold tracking-widest text-xs uppercase bg-emerald-50 px-4 py-2 rounded-full border border-emerald-100 mb-6">
-                            เกี่ยวกับศูนย์ของเรา
-                        </span>
-                        
+                        <span class="inline-block text-emerald-600 font-bold tracking-widest text-xs uppercase bg-emerald-50 px-4 py-2 rounded-full border border-emerald-100 mb-6">เกี่ยวกับศูนย์ของเรา</span>
                         <h2 class="text-3xl md:text-4xl lg:text-5xl font-extrabold text-slate-800 leading-tight mb-6">
                             ศูนย์ดิจิทัลชุมชน <br>
                             <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-500">โรงเรียนหนองโกวิชาประสิทธิ์พิทยาคม</span>
                         </h2>
-                        
                         <p class="text-slate-600 text-base md:text-lg mb-8 leading-relaxed font-light">
                             ระบบจัดการฐานข้อมูลและศูนย์รวมการให้บริการด้านเทคโนโลยีดิจิทัล ที่ครอบคลุมกระบวนการเรียนรู้ การอบรมทักษะ และการเข้าถึงสื่อการสอนที่ทันสมัย ตั้งแต่การใช้งานคอมพิวเตอร์พื้นฐาน ไปจนถึงการสร้างสรรค์นวัตกรรม
                         </p>
-                        
                         <div class="bg-slate-50 border-l-4 border-emerald-500 p-6 rounded-r-2xl mb-8 shadow-sm">
                             <p class="text-slate-700 font-medium text-sm md:text-base leading-relaxed">
                                 "เป็นศูนย์กลางที่มีความทันสมัยและสามารถตอบสนองต่อความต้องการในการขับเคลื่อนการดำเนินงาน ด้านการจัดการการเรียนรู้และการเข้าถึงทรัพยากรดิจิทัลของนักเรียนและชุมชนในทุกระดับ"
                             </p>
                         </div>
-
                         <div class="space-y-4 mb-10">
                             <div class="flex items-center gap-4 group cursor-pointer">
                                 <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center text-emerald-500 shadow-md border border-slate-100 group-hover:bg-emerald-500 group-hover:text-white transition-colors">
@@ -253,7 +240,6 @@
                                 <span class="font-bold text-slate-700 group-hover:text-amber-600 transition-colors">จัดอบรมและพัฒนาทักษะดิจิทัล</span>
                             </div>
                         </div>
-
                         <a href="gallery.html" target="_blank" class="inline-flex items-center gap-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white px-8 py-3.5 rounded-full font-bold shadow-lg shadow-emerald-500/30 hover:shadow-xl hover:shadow-emerald-500/40 hover:-translate-y-1 transition-all">
                             ดูผลงานกิจกรรม <i class="ph-bold ph-arrow-right"></i>
                         </a>
@@ -262,7 +248,36 @@
             </div>
         </section>
 
-    
+        <section id="gallery-preview" class="py-24 px-6 bg-slate-50 border-t border-slate-100">
+            <div class="max-w-6xl mx-auto">
+                <div class="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
+                    <div>
+                        <span class="text-amber-500 font-bold tracking-widest text-sm uppercase bg-amber-50 px-4 py-1.5 rounded-full border border-amber-100">Recent Activities</span>
+                        <h2 class="text-3xl lg:text-4xl font-extrabold text-slate-800 mt-6 mb-3">ภาพกิจกรรมล่าสุด</h2>
+                        <p class="text-slate-500 max-w-xl">ประมวลภาพบรรยากาศการเรียนรู้และการให้บริการของศูนย์ดิจิทัลชุมชนที่ถูกอัปเดตล่าสุดจากระบบ</p>
+                    </div>
+                    <a href="gallery.html" target="_blank" class="bg-white border border-slate-200 text-slate-700 px-6 py-3 rounded-full hover:bg-slate-100 hover:text-amber-600 hover:border-amber-200 transition-all shadow-sm font-bold flex items-center gap-2 whitespace-nowrap">
+                        ดูภาพทั้งหมด <i class="ph-bold ph-arrow-right"></i>
+                    </a>
+                </div>
+
+                <div id="landingActivityContainer" class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div class="animate-pulse bg-white p-2 rounded-[24px] border border-slate-100 shadow-sm h-72">
+                        <div class="bg-slate-100 h-44 rounded-[18px] mb-4"></div>
+                        <div class="px-3"><div class="bg-slate-100 h-4 w-3/4 rounded mb-2"></div><div class="bg-slate-50 h-3 w-1/2 rounded"></div></div>
+                    </div>
+                    <div class="animate-pulse bg-white p-2 rounded-[24px] border border-slate-100 shadow-sm h-72 hidden md:block">
+                        <div class="bg-slate-100 h-44 rounded-[18px] mb-4"></div>
+                        <div class="px-3"><div class="bg-slate-100 h-4 w-3/4 rounded mb-2"></div><div class="bg-slate-50 h-3 w-1/2 rounded"></div></div>
+                    </div>
+                    <div class="animate-pulse bg-white p-2 rounded-[24px] border border-slate-100 shadow-sm h-72 hidden md:block">
+                        <div class="bg-slate-100 h-44 rounded-[18px] mb-4"></div>
+                        <div class="px-3"><div class="bg-slate-100 h-4 w-3/4 rounded mb-2"></div><div class="bg-slate-50 h-3 w-1/2 rounded"></div></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <footer class="bg-slate-900 pt-16 pb-8 px-6 text-center text-slate-400">
             <img src="https://lh3.googleusercontent.com/d/1kKyIkEA88lsbUcHPsxeWB_KJwHFNaySD" alt="Logo" class="h-16 mx-auto mb-6 opacity-80 grayscale hover:grayscale-0 transition" referrerpolicy="no-referrer">
             <h4 class="text-white font-bold text-lg mb-1">ศูนย์ดิจิทัลชุมชนโรงเรียนหนองโกวิชาประสิทธิ์พิทยาคม</h4>
@@ -273,8 +288,10 @@
         </footer>
     </div>
 
-    <div id="dashboard-view" class="hidden flex-col lg:flex-row h-full w-full relative">
-        <header class="lg:hidden flex items-center justify-between p-4 bg-slate-900 border-b border-slate-800 z-20 shadow-md w-full no-print">
+
+    <div id="dashboard-view" class="flex-col lg:flex-row w-full h-full bg-slate-50 relative z-20" style="display: none;">
+        
+        <header class="lg:hidden flex items-center justify-between p-4 bg-slate-900 border-b border-slate-800 z-30 shadow-md w-full flex-shrink-0 no-print">
             <div class="flex items-center gap-3">
                 <div class="bg-white p-1 rounded-full"><img src="https://lh3.googleusercontent.com/d/1kKyIkEA88lsbUcHPsxeWB_KJwHFNaySD" class="h-8 w-8 rounded-full" referrerpolicy="no-referrer"></div>
                 <span class="font-bold text-white text-sm">ศูนย์ดิจิทัลหนองโกฯ</span>
@@ -311,8 +328,8 @@
                     ระบบสำหรับเจ้าหน้าที่ <i class="ph-fill ph-lock-key text-slate-600"></i>
                 </div>
                 
-                <div class="nav-item px-4 py-3.5 flex items-center gap-3.5 text-sm hover:!text-yellow-400" onclick="openPwdModalForPage('electric', this)">
-                    <i class="ph ph-plug-charging text-xl text-yellow-500"></i> ระบบการใช้งานไฟฟ้า
+                <div class="nav-item px-4 py-3.5 flex items-center gap-3.5 text-sm hover:!text-amber-400" onclick="openPwdModalForPage('electric', this)">
+                    <i class="ph ph-plug-charging text-xl text-amber-500"></i> ระบบการใช้งานไฟฟ้า
                 </div>
                 
                 <div class="nav-item px-4 py-3.5 flex items-center gap-3.5 text-sm hover:!text-rose-400" onclick="openPwdModalForPage('staff', this)">
@@ -333,7 +350,7 @@
                 
                 <div class="mt-6 pt-4 border-t border-slate-800">
                     <div class="nav-item px-4 py-3.5 flex items-center gap-3.5 text-sm text-slate-400 hover:!bg-rose-500/10 hover:!text-rose-400" onclick="enterLanding()">
-                        <i class="ph ph-sign-out text-xl"></i> กลับหน้าแรก
+                        <i class="ph ph-house-line text-xl"></i> กลับสู่หน้าหลัก
                     </div>
                 </div>
             </nav>
@@ -343,7 +360,7 @@
             </div>
         </aside>
 
-        <main class="flex-1 h-full overflow-y-auto overflow-x-hidden p-4 lg:p-10 xl:p-12 relative w-full">
+        <main class="flex-1 h-full overflow-y-auto overflow-x-hidden p-4 lg:p-8 xl:p-12 relative w-full custom-scrollbar">
             
             <div id="mainLoader" class="absolute inset-0 bg-white/90 backdrop-blur-md z-50 flex flex-col items-center justify-center hidden no-print">
                 <div class="relative w-16 h-16 flex items-center justify-center mb-4">
@@ -360,7 +377,7 @@
                 <p class="text-sm text-slate-400 mt-2" id="print-date"></p>
             </div>
 
-            <div class="flex flex-col xl:flex-row justify-between items-start xl:items-end mb-10 gap-6 w-full no-print bg-white p-6 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.03)] border border-slate-100">
+            <div class="flex flex-col xl:flex-row justify-between items-start xl:items-end mb-8 gap-6 w-full no-print bg-white p-6 rounded-3xl shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-slate-100">
                 <div>
                     <div class="flex items-center gap-2 text-emerald-600 font-semibold text-sm mb-2 bg-emerald-50 w-max px-3 py-1 rounded-full">
                         <i class="ph-fill ph-check-circle"></i> ข้อมูลอัปเดตล่าสุดพร้อมใช้งาน
@@ -407,7 +424,6 @@
                             </div>
                         </div>
                     </div>
-                    
                     <div class="card-cute p-1 w-full lg:col-span-2">
                         <div class="table-wrapper h-[320px] overflow-y-auto custom-scrollbar rounded-[23px]">
                             <table class="w-full text-left table-minimal">
@@ -432,7 +448,6 @@
                             </div>
                         </div>
                     </div>
-                    
                     <div class="card-cute p-1 w-full lg:col-span-2">
                         <div class="table-wrapper h-[320px] overflow-y-auto custom-scrollbar rounded-[23px]">
                             <table class="w-full text-left table-minimal border-collapse">
@@ -575,19 +590,23 @@
             }
         }
 
+        // =========================================================================
+        // 🌟 แก้ไขระบบสลับหน้าให้เสถียร 100% (จัดการ Display ตรงๆ ไม่ใช้ Flex ทับซ้อน)
+        // =========================================================================
         function enterDashboard() {
-            document.getElementById('landing-view').classList.add('hidden');
-            document.getElementById('landing-view').classList.remove('flex');
-            document.getElementById('dashboard-view').classList.remove('hidden');
-            document.getElementById('dashboard-view').classList.add('flex');
+            // ซ่อนหน้าแรกให้สนิท
+            document.getElementById('landing-view').style.display = 'none';
+            // โชว์หน้าแดชบอร์ด
+            document.getElementById('dashboard-view').style.display = 'flex';
             fetchAllData(); 
         }
 
         function enterLanding() {
-            document.getElementById('dashboard-view').classList.add('hidden');
-            document.getElementById('dashboard-view').classList.remove('flex');
-            document.getElementById('landing-view').classList.remove('hidden');
-            document.getElementById('landing-view').classList.add('flex');
+            // ซ่อนหน้าแดชบอร์ด
+            document.getElementById('dashboard-view').style.display = 'none';
+            // โชว์หน้าแรก
+            document.getElementById('landing-view').style.display = 'block';
+            window.scrollTo({ top: 0, behavior: 'smooth' }); // เลื่อนกลับไปบนสุด
         }
 
         function toggleSidebar() {
@@ -682,7 +701,6 @@
             updateElectricChart(electricData);
         }
 
-        // Modern Chart Configuration
         Chart.defaults.font.family = "'Prompt', sans-serif";
         Chart.defaults.color = '#64748b';
 
@@ -741,11 +759,9 @@
             const tbody = document.getElementById('electricTableBody'); 
             if(!dataArray.length) { tbody.innerHTML = emptyRow(4); return; }
             let html = '';
-            
             dataArray.forEach((row) => {
                 const date = formatBE(row['ประจำเดือน'] || '-');
                 const rateText = row._avgRate > 0 ? row._avgRate.toFixed(4) : '-';
-                
                 html += `
                 <tr>
                     <td class="align-top whitespace-nowrap">
@@ -889,7 +905,7 @@
         });
 
         // =========================================================================
-        // 🌟 ดึงข้อมูลภาพกิจกรรม 3 ภาพล่าสุด มาแสดงที่หน้า Landing Page อัตโนมัติ
+        // 🌟 ดึงข้อมูลภาพกิจกรรมล่าสุด
         // =========================================================================
         async function loadLandingActivities() {
             try {
