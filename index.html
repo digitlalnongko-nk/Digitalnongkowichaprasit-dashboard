@@ -18,6 +18,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <style> 
@@ -328,6 +329,10 @@
                     ระบบสำหรับเจ้าหน้าที่ <i class="ph-fill ph-lock-key text-slate-600"></i>
                 </div>
                 
+                <div class="nav-item px-4 py-3.5 flex items-center gap-3.5 text-sm hover:!text-emerald-400" onclick="openPwdModalForPage('import', this)">
+                    <i class="ph ph-file-xls text-xl text-emerald-500"></i> นำเข้าข้อมูล (Excel)
+                </div>
+
                 <div class="nav-item px-4 py-3.5 flex items-center gap-3.5 text-sm hover:!text-amber-400" onclick="openPwdModalForPage('electric', this)">
                     <i class="ph ph-plug-charging text-xl text-amber-500"></i> ระบบการใช้งานไฟฟ้า
                 </div>
@@ -410,6 +415,29 @@
                     </button>
                 </div>
             </div>
+
+            <section id="page-import" class="page-section w-full">
+                <div class="card-cute p-8 mb-6 bg-gradient-to-br from-white to-emerald-50/30">
+                    <div class="flex items-center gap-3 mb-2">
+                        <div class="w-10 h-10 bg-emerald-100 text-emerald-600 rounded-xl flex items-center justify-center text-xl">
+                            <i class="ph-fill ph-microsoft-excel-logo"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-slate-800">นำเข้าข้อมูลผู้ใช้งานศูนย์ฯ</h3>
+                    </div>
+                    <p class="text-slate-500 text-sm mb-6 ml-13">อัปโหลดไฟล์ Excel (.xlsx หรือ .csv) จากระบบ DCC เพื่อตรวจสอบความถูกต้องและเตรียมข้อมูลเข้าสู่ฐานข้อมูล</p>
+
+                    <div id="dropZone" class="border-2 border-dashed border-emerald-300/60 rounded-[32px] p-12 flex flex-col items-center justify-center bg-white hover:bg-emerald-50/50 hover:border-emerald-400 transition-all cursor-pointer shadow-sm group" onclick="document.getElementById('fileInput').click()" ondragover="handleDragOver(event)" ondrop="handleDrop(event)">
+                        <div class="w-20 h-20 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center text-4xl mb-4 shadow-inner group-hover:scale-110 transition-transform">
+                            <i class="ph-fill ph-file-arrow-up"></i>
+                        </div>
+                        <p class="font-bold text-slate-700 text-lg mb-1 group-hover:text-emerald-600 transition-colors">คลิกเพื่อเลือกไฟล์ หรือ ลากไฟล์มาวางที่นี่</p>
+                        <p class="text-sm text-slate-400">รองรับไฟล์ฟอร์แมต .xlsx หรือ .csv เท่านั้น</p>
+                        <input type="file" id="fileInput" class="hidden" accept=".xlsx, .xls, .csv" onchange="handleFileSelect(event)">
+                    </div>
+                </div>
+
+                <div id="validationResult" class="hidden w-full transition-all duration-500"></div>
+            </section>
 
             <section id="page-usage" class="page-section active w-full">
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8 w-full">
@@ -513,9 +541,6 @@
     </div>
 
     <script>
-        // =========================================================================
-        // 🛡️ ANTI-HACKING & SECURITY SCRIPT
-        // =========================================================================
         document.addEventListener('contextmenu', event => event.preventDefault());
         document.onkeydown = function(e) {
             if(e.keyCode == 123) return false; 
@@ -590,23 +615,16 @@
             }
         }
 
-        // =========================================================================
-        // 🌟 แก้ไขระบบสลับหน้าให้เสถียร 100% (จัดการ Display ตรงๆ ไม่ใช้ Flex ทับซ้อน)
-        // =========================================================================
         function enterDashboard() {
-            // ซ่อนหน้าแรกให้สนิท
             document.getElementById('landing-view').style.display = 'none';
-            // โชว์หน้าแดชบอร์ด
             document.getElementById('dashboard-view').style.display = 'flex';
             fetchAllData(); 
         }
 
         function enterLanding() {
-            // ซ่อนหน้าแดชบอร์ด
             document.getElementById('dashboard-view').style.display = 'none';
-            // โชว์หน้าแรก
             document.getElementById('landing-view').style.display = 'block';
-            window.scrollTo({ top: 0, behavior: 'smooth' }); // เลื่อนกลับไปบนสุด
+            window.scrollTo({ top: 0, behavior: 'smooth' }); 
         }
 
         function toggleSidebar() {
@@ -616,7 +634,16 @@
             overlay.classList.toggle('active');
         }
 
-        const titles = { 'usage': 'สรุปผลใช้งานระบบ', 'borrow': 'รายงานการยืม-คืนอุปกรณ์', 'electric': 'รายงานสัดส่วนค่าไฟฟ้า', 'activity': 'คลังภาพผลงานกิจกรรม', 'staff': 'สรุปการปฏิบัติงาน' };
+        // 🌟 อัปเดต Title ให้รู้จักหน้า import ด้วย
+        const titles = { 
+            'usage': 'สรุปผลใช้งานระบบ', 
+            'borrow': 'รายงานการยืม-คืนอุปกรณ์', 
+            'electric': 'รายงานสัดส่วนค่าไฟฟ้า', 
+            'activity': 'คลังภาพผลงานกิจกรรม', 
+            'staff': 'สรุปการปฏิบัติงาน',
+            'import': 'ระบบนำเข้าข้อมูลและตรวจสอบ'
+        };
+        
         const WEB_APP_LINK = "gallery.html"; 
         let usageChart, electricChart;
         let globalDataStore = {};
@@ -904,9 +931,6 @@
             if (e.key === 'Enter') verifyEqPwd();
         });
 
-        // =========================================================================
-        // 🌟 ดึงข้อมูลภาพกิจกรรมล่าสุด
-        // =========================================================================
         async function loadLandingActivities() {
             try {
                 const data = await fetchSheetData('Activity');
@@ -953,6 +977,143 @@
                 const container = document.getElementById('landingActivityContainer');
                 if(container) container.innerHTML = '<div class="col-span-full text-center py-10 text-rose-400 text-xs">ไม่สามารถเชื่อมต่อฐานข้อมูลรูปภาพได้</div>';
             }
+        }
+
+        // =========================================================================
+        // 🌟 โลจิกใหม่: ระบบอ่านไฟล์ Excel และ Validation
+        // =========================================================================
+
+        function handleDragOver(event) {
+            event.preventDefault();
+            document.getElementById('dropZone').classList.add('border-emerald-500', 'bg-emerald-50');
+        }
+
+        function handleDrop(event) {
+            event.preventDefault();
+            document.getElementById('dropZone').classList.remove('border-emerald-500', 'bg-emerald-50');
+            const file = event.dataTransfer.files[0];
+            if (file) processExcelFile(file);
+        }
+
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) processExcelFile(file);
+        }
+
+        function processExcelFile(file) {
+            const resultDiv = document.getElementById('validationResult');
+            resultDiv.classList.remove('hidden');
+            resultDiv.innerHTML = `<div class="flex items-center justify-center p-10"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600 mr-3"></div><span class="text-slate-600 font-medium">กำลังอ่านไฟล์และตรวจสอบข้อมูล...</span></div>`;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, {type: 'array'});
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
+                    
+                    const jsonData = XLSX.utils.sheet_to_json(worksheet, {defval: ""});
+                    
+                    setTimeout(() => validateImportData(jsonData, file.name), 800); 
+                } catch(error) {
+                    showErrorResult(`ไม่สามารถอ่านไฟล์ได้ กรุณาตรวจสอบว่าเป็นไฟล์ .xlsx ที่ถูกต้อง`);
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function validateImportData(data, fileName) {
+            const resultDiv = document.getElementById('validationResult');
+            let errors = [];
+            
+            if(data.length === 0) {
+                showErrorResult(`ไฟล์ <b>${fileName}</b> ไม่มีข้อมูล หรือโครงสร้างไม่ถูกต้อง`);
+                return;
+            }
+
+            data.forEach((row, index) => {
+                const rowNum = index + 2; 
+
+                // 1. ตรวจสอบ "วันที่เข้าใช้บริการ" (ห้ามว่าง)
+                if (!row['วันที่เข้าใช้บริการ']) {
+                    errors.push(`<b>บรรทัดที่ ${rowNum}:</b> ขาดข้อมูลช่อง <span class="text-rose-500">"วันที่เข้าใช้บริการ"</span> <i>(วิธีแก้: กรุณาระบุวันที่รูปแบบ YYYY-MM-DD)</i>`);
+                }
+
+                // 2. ตรวจสอบ "เวลาเข้าใช้บริการ"
+                if (!row['เวลาเข้าใช้บริการ']) {
+                    errors.push(`<b>บรรทัดที่ ${rowNum}:</b> ขาดข้อมูลช่อง <span class="text-rose-500">"เวลาเข้าใช้บริการ"</span>`);
+                }
+
+                // 3. ตรวจสอบ "จำนวนผู้เข้าใช้งาน"
+                let userCount = row['จำนวนผู้เข้าใช้งาน'];
+                if (!userCount || isNaN(userCount) || parseInt(userCount) <= 0) {
+                    errors.push(`<b>บรรทัดที่ ${rowNum}:</b> ช่อง <span class="text-rose-500">"จำนวนผู้เข้าใช้งาน"</span> ต้องระบุเป็นตัวเลขและมากกว่า 0 <i>(วิธีแก้: กรอกตัวเลขเช่น 1, 2, 3...)</i>`);
+                }
+
+                // 4. เช็กความสัมพันธ์
+                let job = row['อาชีพ'] || '';
+                let eduLevel = row['ระดับชั้นของนักเรียน (ถ้าเป็นนักเรียน)'] || '';
+                if (job.includes('นักเรียน') && !eduLevel) {
+                    errors.push(`<b>บรรทัดที่ ${rowNum}:</b> เลือกว่าเป็นนักเรียน แต่ไม่ได้ระบุ <span class="text-rose-500">"ระดับชั้น"</span>`);
+                }
+            });
+
+            if (errors.length > 0) {
+                let errorHtml = `
+                <div class="bg-white rounded-3xl border border-rose-200 shadow-lg overflow-hidden">
+                    <div class="bg-rose-50 px-6 py-4 border-b border-rose-100 flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center text-xl"><i class="ph-fill ph-warning-circle"></i></div>
+                            <div>
+                                <h4 class="text-rose-700 font-bold text-lg leading-tight">ตรวจสอบพบข้อผิดพลาด ${errors.length} รายการ</h4>
+                                <p class="text-rose-500 text-xs">ไฟล์: ${fileName}</p>
+                            </div>
+                        </div>
+                        <button onclick="document.getElementById('validationResult').classList.add('hidden')" class="text-slate-400 hover:text-slate-600"><i class="ph ph-x text-xl"></i></button>
+                    </div>
+                    <div class="p-6 bg-white max-h-[400px] overflow-y-auto custom-scrollbar">
+                        <ul class="space-y-3 text-sm text-slate-600">`;
+                
+                errors.forEach(err => {
+                    errorHtml += `<li class="flex items-start gap-2 bg-slate-50 p-3 rounded-xl border border-slate-100"><i class="ph-fill ph-x-circle text-rose-400 mt-0.5"></i> <div>${err}</div></li>`;
+                });
+                
+                errorHtml += `</ul>
+                    </div>
+                    <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end">
+                        <button onclick="document.getElementById('fileInput').click()" class="px-5 py-2 bg-white border border-slate-200 text-slate-700 rounded-xl font-bold hover:bg-slate-100 transition shadow-sm text-sm">เลือกไฟล์ใหม่</button>
+                    </div>
+                </div>`;
+                resultDiv.innerHTML = errorHtml;
+            } else {
+                resultDiv.innerHTML = `
+                <div class="bg-white rounded-3xl border border-emerald-200 shadow-lg overflow-hidden">
+                    <div class="bg-emerald-50 px-6 py-5 flex items-center justify-between">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 bg-emerald-500 text-white rounded-full flex items-center justify-center text-2xl shadow-md shadow-emerald-500/30"><i class="ph-bold ph-check"></i></div>
+                            <div>
+                                <h4 class="text-emerald-700 font-extrabold text-xl leading-tight">ข้อมูลถูกต้องทั้งหมดสมบูรณ์ 100%</h4>
+                                <p class="text-emerald-600 text-sm mt-0.5">พร้อมนำเข้าข้อมูลจำนวน <b>${data.length}</b> รายการ จากไฟล์ ${fileName}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="px-6 py-5 bg-white flex justify-end gap-3">
+                        <button onclick="document.getElementById('validationResult').classList.add('hidden')" class="px-6 py-2.5 bg-slate-100 text-slate-600 rounded-xl font-bold hover:bg-slate-200 transition text-sm">ยกเลิก</button>
+                        <button class="px-6 py-2.5 bg-emerald-600 text-white rounded-xl font-bold shadow-lg shadow-emerald-600/20 hover:bg-emerald-700 hover:-translate-y-0.5 transition flex items-center gap-2 text-sm">
+                            <i class="ph-bold ph-database"></i> ยืนยันการนำเข้าสู่ระบบ
+                        </button>
+                    </div>
+                </div>`;
+            }
+        }
+
+        function showErrorResult(msg) {
+            document.getElementById('validationResult').innerHTML = `
+                <div class="bg-rose-50 border border-rose-200 p-6 rounded-2xl flex items-center gap-4">
+                    <i class="ph-fill ph-warning text-3xl text-rose-500"></i>
+                    <p class="text-rose-700 font-medium">${msg}</p>
+                </div>`;
         }
 
         document.addEventListener("DOMContentLoaded", () => {
