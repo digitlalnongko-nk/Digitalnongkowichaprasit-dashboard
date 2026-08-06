@@ -539,12 +539,12 @@
     <script>
         document.addEventListener('contextmenu', event => event.preventDefault());
 
-        const CSV_URLS = {
+       const CSV_URLS = {
             'Usage': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRZZibUzzgdZ-lCiuC2r9LdaYrjHZKnbUdOYCxJLDaIF4qUmxw8LuKX1FlXr2ADxHPNknSsiWTkncqJ/pub?gid=0&single=true&output=csv',
             'Borrow': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRZZibUzzgdZ-lCiuC2r9LdaYrjHZKnbUdOYCxJLDaIF4qUmxw8LuKX1FlXr2ADxHPNknSsiWTkncqJ/pub?gid=559563872&single=true&output=csv',
             'Electric': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRZZibUzzgdZ-lCiuC2r9LdaYrjHZKnbUdOYCxJLDaIF4qUmxw8LuKX1FlXr2ADxHPNknSsiWTkncqJ/pub?gid=1214972960&single=true&output=csv',
-            // URL ดึงข้อมูลแกลเลอรีภาพกิจกรรม
-            'Activity': 'https://docs.google.com/spreadsheets/d/1WJ3IcN108ETC29jtuvATX-NHHRFA9m4JZffsOQNxcCU/pub?gid=0&single=true&output=csv',
+            // 🌟 อัปเดตลิงก์แกลเลอรีภาพกิจกรรม
+            'Activity': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTOumFScq6lLZNOElqE0ATrEyN1B8jmPVBGEvVJ16Fgt8FZzOtr1o6eKNoJbXag2hvpfDZBrwYL5I0B/pub?output=csv',
             'Staff': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRZZibUzzgdZ-lCiuC2r9LdaYrjHZKnbUdOYCxJLDaIF4qUmxw8LuKX1FlXr2ADxHPNknSsiWTkncqJ/pub?gid=552763500&single=true&output=csv'
         };
 
@@ -1022,71 +1022,32 @@
             const container = document.getElementById('landingActivityContainer');
             if (!container) return;
 
-            // 🌟 ลิงก์ดึงข้อมูล CSV จาก Google Sheets ของแกลเลอรีภาพกิจกรรม
-            const GALLERY_CSV_URL = "https://docs.google.com/spreadsheets/d/1WJ3IcN108ETC29jtuvATX-NHHRFA9m4JZffsOQNxcCU/pub?gid=0&single=true&output=csv";
-
             try {
-                // 🌟 1. ดึงข้อมูล CSV และแปลงเป็น Array ของ Object
-                const response = await fetch(GALLERY_CSV_URL);
-                const csvText = await response.text();
+                // 🌟 ดึงข้อมูลจาก Google Sheet แกลเลอรีภาพโดยตรง (ใช้คีย์จาก Sheet ใหม่)
+                const data = await fetchSheetData('Activity');
                 
-                const lines = csvText.split('\n').filter(line => line.trim() !== ''); // ตัดบรรทัดว่างออก
-                if (lines.length <= 1) {
-                    container.innerHTML = '<div class="col-span-full text-center py-10 text-slate-400 font-medium">ยังไม่มีอัลบั้มกิจกรรม</div>';
-                    return;
+                // ดักจับกรณีชีทยังไม่ถูกเผยแพร่ หรือไม่มีข้อมูล
+                if(!data || data.length === 0 || (data[0] && !data[0]['Name'])) { 
+                    container.innerHTML = '<div class="col-span-full text-center py-10 text-slate-400 font-medium">ยังไม่มีรูปภาพกิจกรรม หรือลิงก์ผิดพลาด</div>'; 
+                    return; 
                 }
-
-                // ดึงหัวคอลัมน์
-                const headers = lines[0].split(',').map(h => h.replace(/^"|"$/g, '').trim());
-                const albums = [];
-
-                // แปลงข้อมูลแต่ละบรรทัด
-                for (let i = 1; i < lines.length; i++) {
-                    let obj = {};
-                    let inQuotes = false;
-                    let val = "";
-                    let cols = [];
-                    
-                    for (let char of lines[i]) {
-                        if (char === '"') inQuotes = !inQuotes;
-                        else if (char === ',' && !inQuotes) { cols.push(val.trim()); val = ""; }
-                        else val += char;
-                    }
-                    cols.push(val.trim());
-
-                    headers.forEach((h, idx) => {
-                        obj[h] = cols[idx] ? cols[idx].replace(/^"|"$/g, '') : "";
-                    });
-                    
-                    // เพิ่มเฉพาะแถวที่มีข้อมูลชื่ออัลบั้ม (Name)
-                    if(obj['Name']) {
-                        albums.push(obj);
-                    }
-                }
-
-                if (albums.length === 0) {
-                    container.innerHTML = '<div class="col-span-full text-center py-10 text-slate-400 font-medium">ยังไม่มีอัลบั้มกิจกรรม</div>';
-                    return;
-                }
-
-                // 🌟 2. เลือก 3 อัลบั้มล่าสุด (ดึงจากท้ายตาราง เพราะรายการใหม่อยู่ด้านล่าง)
-                const latestAlbums = albums.slice(-3).reverse();
-
+                
                 let html = '';
-                latestAlbums.forEach(album => {
-                    // ดึงค่าตามชื่อคอลัมน์ใน Sheet ใหม่
-                    const coverId = album['CoverID'] || '';
-                    const date = album['Year'] || '-';
-                    const title = album['Name'] || '-';
-                    const desc = album['Details'] || '';
+                // 🌟 ดึง 3 กิจกรรมล่าสุด (จากท้ายตารางขึ้นมา)
+                const latestActivities = data.slice(-3).reverse();
+                
+                latestActivities.forEach(row => {
+                    // ใช้ชื่อคอลัมน์จากชีทแกลเลอรีใหม่ (Name, Year, CoverID, Details)
+                    const coverId = row['CoverID'] || '';
+                    const date = row['Year'] || '-';
+                    const title = row['Name'] || '-';
+                    const desc = row['Details'] || '';
                     
-                    // สร้าง URL รูปภาพจาก CoverID
                     const imgUrl = coverId ? `https://drive.google.com/thumbnail?id=${coverId}&sz=w800` : '';
                     const img = imgUrl 
-                        ? `<img src="${imgUrl}" class="w-full h-48 object-cover group-hover:scale-105 transition duration-700" referrerpolicy="no-referrer">` 
+                        ? `<img src="${imgUrl}" class="w-full h-48 object-cover hover:scale-105 transition duration-700" referrerpolicy="no-referrer">` 
                         : `<div class="w-full h-48 bg-slate-50 flex items-center justify-center text-slate-300"><i class="ph ph-image text-4xl"></i></div>`;
 
-                    // 🌟 3. โครงสร้างการ์ด (โชว์ภาพเฉยๆ ไม่ให้กดเป็นลิงก์)
                     html += `
                     <div class="block group">
                         <div class="bg-white rounded-[24px] p-2 shadow-sm border border-slate-100 h-full flex flex-col relative overflow-hidden">
@@ -1101,7 +1062,7 @@
                                         <div class="w-5 h-5 rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center">
                                             <i class="ph-fill ph-calendar-blank"></i>
                                         </div> 
-                                        ${date}
+                                        ${formatBE(date)}
                                     </span>
                                 </div>
                             </div>
@@ -1113,7 +1074,7 @@
 
             } catch (error) {
                 console.error("เกิดข้อผิดพลาดในการดึงข้อมูลแกลเลอรี:", error);
-                container.innerHTML = '<div class="col-span-full text-center py-10 text-slate-400 font-medium">ไม่สามารถโหลดรูปภาพกิจกรรมได้</div>';
+                container.innerHTML = '<div class="col-span-full text-center py-10 text-rose-400 font-medium">ไม่สามารถเชื่อมต่อฐานข้อมูลได้</div>';
             }
         }
             startHeroSlider(); // เรียกใช้งานระบบสไลด์ภาพ
