@@ -104,12 +104,12 @@
         <nav class="fixed top-0 w-full bg-white/90 backdrop-blur-md border-b border-slate-100 z-50 px-6 py-4 flex justify-between items-center shadow-sm">
             <div class="flex items-center gap-3">
                 <img src="https://lh3.googleusercontent.com/d/1kKyIkEA88lsbUcHPsxeWB_KJwHFNaySD" class="h-10" alt="Logo" referrerpolicy="no-referrer">
-                <span class="font-bold text-slate-800 text-sm hidden sm:block">ศูนย์ดิจิทัลชุมชน</span>
+                <span class="font-bold text-slate-800 text-sm hidden sm:block">ศูนย์ดิจิทัล หนองโกฯ</span>
             </div>
             <div class="flex items-center gap-6 text-sm font-medium text-slate-600">
                 <a href="#hero" class="hover:text-emerald-600 transition hidden md:block">หน้าหลัก</a>
                 <a href="#about" class="hover:text-emerald-600 transition hidden md:block">บริการของเรา</a>
-                <a href="#public-stats" class="hover:text-emerald-600 transition hidden md:block">สถิติการใช้งานศูนย์</a>
+                <a href="#public-stats" class="hover:text-emerald-600 transition hidden md:block">สถิติศูนย์ฯ</a>
                 <button onclick="requestAdminLogin()" class="bg-emerald-600 text-white px-5 py-2.5 rounded-full hover:bg-emerald-700 transition shadow-lg shadow-emerald-600/30 font-bold flex items-center gap-2">
                     <i class="ph-fill ph-lock-key"></i> ระบบเจ้าหน้าที่
                 </button>
@@ -130,12 +130,12 @@
                             <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                             <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
                         </span>
-                        Digital Learning 
+                        Digital Learning Hub
                     </div>
 
                     <h1 class="text-4xl md:text-5xl lg:text-6xl lg:leading-[1.15] font-extrabold text-slate-800 mb-6 tracking-tight">
                         ศูนย์ดิจิทัลชุมชน <br/>
-                        <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-500">โรงเรียนหนองโกวิชาประสิทธิ์พิทยาคม</span>
+                        <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-500">โรงเรียนหนองโกวิชาประสิทธิ์ฯ</span>
                     </h1>
                     
                     <p class="text-slate-500 text-base md:text-lg max-w-lg mb-10 leading-relaxed font-light">
@@ -239,9 +239,6 @@
                                 <span class="font-bold text-slate-700 group-hover:text-amber-600 transition-colors">จัดอบรมและพัฒนาทักษะดิจิทัล</span>
                             </div>
                         </div>
-                        <a href="gallery.html" target="_blank" class="inline-flex items-center gap-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white px-8 py-3.5 rounded-full font-bold shadow-lg shadow-emerald-500/30 hover:shadow-xl hover:shadow-emerald-500/40 hover:-translate-y-1 transition-all">
-                            ดูผลงานกิจกรรม <i class="ph-bold ph-arrow-right"></i>
-                        </a>
                     </div>
                 </div>
             </div>
@@ -269,7 +266,7 @@
 
                 <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-6">
                     <div class="flex flex-col gap-6 lg:col-span-1">
-                        <div class="bg-slate-800/50 backdrop-blur-md border border-slate-700/50 p-6 rounded-[24px] flex flex-col justify-center items-center text-center">
+                        <div class="bg-slate-800/50 backdrop-blur-md border border-slate-700/50 p-6 rounded-[24px] flex flex-col justify-center items-center text-center h-full">
                             <div class="w-16 h-16 bg-emerald-500/20 text-emerald-400 rounded-2xl flex items-center justify-center text-3xl mb-4">
                                 <i class="ph-fill ph-users"></i>
                             </div>
@@ -312,7 +309,7 @@
 
                 <div class="bg-slate-800/50 backdrop-blur-md border border-slate-700/50 p-6 rounded-[24px] w-full flex flex-col mt-6">
                     <h3 class="text-xl font-bold text-white mb-1">การเข้าใช้งานตามระดับชั้น</h3>
-                    <p class="text-slate-400 text-xs mb-6">ข้อมูลทางสถิติการใช้งานของนักเรียนระดับต่างๆ</p>
+                    <p class="text-slate-400 text-xs mb-6">ข้อมูลสถิติการใช้งานของนักเรียนระดับต่างๆ</p>
                     <div class="relative w-full min-h-[250px]">
                         <canvas id="publicGradeChart"></canvas>
                     </div>
@@ -546,7 +543,8 @@
             'Usage': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRZZibUzzgdZ-lCiuC2r9LdaYrjHZKnbUdOYCxJLDaIF4qUmxw8LuKX1FlXr2ADxHPNknSsiWTkncqJ/pub?gid=0&single=true&output=csv',
             'Borrow': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRZZibUzzgdZ-lCiuC2r9LdaYrjHZKnbUdOYCxJLDaIF4qUmxw8LuKX1FlXr2ADxHPNknSsiWTkncqJ/pub?gid=559563872&single=true&output=csv',
             'Electric': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRZZibUzzgdZ-lCiuC2r9LdaYrjHZKnbUdOYCxJLDaIF4qUmxw8LuKX1FlXr2ADxHPNknSsiWTkncqJ/pub?gid=1214972960&single=true&output=csv',
-            'Activity': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRZZibUzzgdZ-lCiuC2r9LdaYrjHZKnbUdOYCxJLDaIF4qUmxw8LuKX1FlXr2ADxHPNknSsiWTkncqJ/pub?gid=1343315254&single=true&output=csv',
+            // URL ดึงข้อมูลแกลเลอรีภาพกิจกรรม
+            'Activity': 'https://docs.google.com/spreadsheets/d/1WJ3IcN108ETC29jtuvATX-NHHRFA9m4JZffsOQNxcCU/pub?gid=0&single=true&output=csv',
             'Staff': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRZZibUzzgdZ-lCiuC2r9LdaYrjHZKnbUdOYCxJLDaIF4qUmxw8LuKX1FlXr2ADxHPNknSsiWTkncqJ/pub?gid=552763500&single=true&output=csv'
         };
 
@@ -620,10 +618,11 @@
         async function fetchAllData() {
             document.getElementById('mainLoader').classList.remove('hidden');
             try {
-                const [usage, borrow, electric, activity, staff] = await Promise.all([
-                    fetchSheetData('Usage'), fetchSheetData('Borrow'), fetchSheetData('Electric'), fetchSheetData('Activity'), fetchSheetData('Staff')
+                const [usage, borrow, electric, staff] = await Promise.all([
+                    fetchSheetData('Usage'), fetchSheetData('Borrow'), fetchSheetData('Electric'), fetchSheetData('Staff')
                 ]);
-                globalDataStore = { usage, borrow, electric: processElectricData(electric), activity, staff };
+                // สำหรับ Admin View (อาจจะต้องแยก Activity อีกแบบถ้าต้องการ แต่ในที่นี้เน้นหน้า Landing เป็นหลัก)
+                globalDataStore = { usage, borrow, electric: processElectricData(electric), staff };
                 
                 // สำหรับ Admin Usage ให้โชว์ข้อมูลเดือนล่าสุด
                 const latestUsage = getLatestMonthData(globalDataStore.usage);
@@ -631,7 +630,7 @@
                 updateUsageChart(latestUsage);
                 
                 renderElectric(globalDataStore.electric); updateElectricChart(globalDataStore.electric);
-                renderBorrow(borrow); renderActivity(activity); renderStaff(staff);
+                renderBorrow(borrow); renderStaff(staff);
             } finally { document.getElementById('mainLoader').classList.add('hidden'); }
         }
 
@@ -657,7 +656,7 @@
                     document.getElementById('dashboard-view').style.display = 'flex';
                     fetchAllData();
                     showPage('usage', document.querySelector('.nav-item[onclick*="usage"]'));
-                    updateLineChart('all'); // โหลดกราฟเส้นเมื่อล็อกอิน
+                    updateLineChart('all'); // โหลดกราฟเส้น
                 } else if (pwdMode === 'url') {
                     window.location.href = targetEqUrl;
                 }
@@ -720,38 +719,38 @@
                     let count = parseInt(row['จำนวนผู้เข้าใช้งาน'] || row['จำนวน (คน)'] || 1);
                     if(!isNaN(count)) total += count;
 
-                    // วันที่ (สำหรับหาค่าเฉลี่ยต่อวัน)
+                    // เก็บวันที่เพื่อหาค่าเฉลี่ย
                     let dateStr = row['วันที่เข้าใช้บริการ'] || row['วันที่'] || '';
                     if (dateStr) uniqueDates.add(dateStr);
 
-                    // อาชีพ/ประเภท
+                    // แยกตามอาชีพ
                     let job = row['อาชีพ'] || row['ประเภทผู้ใช้บริการ'] || 'ไม่ระบุ';
                     if(job.includes('นักเรียน') || job.includes('นักศึกษา')) job = 'นักเรียน/นักศึกษา';
                     else if(job !== 'ไม่ระบุ') job = 'ประชาชน/ทั่วไป';
                     jobs[job] = (jobs[job] || 0) + count;
 
-                    // เพศ
+                    // แยกตามเพศ
                     let gender = row['เพศ'] || 'ไม่ระบุ';
                     if (gender.includes('ชาย')) gender = 'ชาย';
                     else if (gender.includes('หญิง')) gender = 'หญิง';
                     else gender = 'ไม่ระบุ';
                     genders[gender] = (genders[gender] || 0) + count;
 
-                    // ช่วงเวลา
+                    // แยกตามช่วงเวลา
                     let timeStr = row['เวลาเข้าใช้บริการ'] || '';
                     let timeCat = 'ไม่ระบุ';
                     if (timeStr) {
-                        let hourStr = timeStr.split(/[:.]/)[0]; // รองรับทั้ง : และ .
+                        let hourStr = timeStr.split(/[:.]/)[0];
                         let hour = parseInt(hourStr);
                         if (!isNaN(hour)) {
                             if (hour < 12) timeCat = 'ช่วงเช้า';
-                            else if (hour === 12) timeCat = 'ช่วงกลางวัน';
+                            else if (hour >= 12 && hour <= 13) timeCat = 'ช่วงกลางวัน';
                             else timeCat = 'ช่วงบ่าย';
                         }
                     }
                     times[timeCat] = (times[timeCat] || 0) + count;
 
-                    // ระดับชั้น
+                    // แยกตามระดับชั้น
                     let grade = row['ระดับชั้นของนักเรียน (ถ้าเป็นนักเรียน)'] || '';
                     if (!grade && job === 'ประชาชน/ทั่วไป') grade = 'บุคคลทั่วไป';
                     else if (!grade) grade = 'ไม่ระบุ';
@@ -811,43 +810,44 @@
 
         async function loadLandingActivities() {
             try {
+                // 🌟 ดึงข้อมูลจาก Google Sheet แกลเลอรีภาพโดยตรง
                 const data = await fetchSheetData('Activity');
                 const container = document.getElementById('landingActivityContainer');
                 if(!data || data.length === 0) { container.innerHTML = '<div class="col-span-full text-center py-10 text-slate-400 font-medium">ยังไม่มีรูปภาพกิจกรรม</div>'; return; }
                 
                 let html = '';
-                // ดึง 3 กิจกรรมล่าสุด
+                // 🌟 ดึง 3 กิจกรรมล่าสุด (สมมติว่าเพิ่มต่อท้ายแถว จากใหม่ไปเก่า)
                 const latestActivities = data.slice(-3).reverse();
                 
                 latestActivities.forEach(row => {
-                    const url = row['ลิงก์รูปภาพ'] || row['ภาพกิจกรรม'] || '';
-                    const date = formatBE(row['วันที่'] || '');
-                    const title = row['ชื่อกิจกรรม'] || '-';
-                    const desc = row['รายละเอียด'] || '';
+                    const coverId = row['CoverID'] || '';
+                    const date = row['Year'] || '-';
+                    const title = row['Name'] || '-';
+                    const desc = row['Details'] || '';
                     
-                    const img = url ? `<img src="${url}" class="w-full h-44 object-cover group-hover:scale-110 transition duration-700" referrerpolicy="no-referrer">` : `<div class="w-full h-44 bg-slate-50 flex items-center justify-center text-slate-300"><i class="ph ph-image text-4xl"></i></div>`;
+                    // สร้าง URL รูปภาพจาก CoverID
+                    const imgUrl = coverId ? `https://drive.google.com/thumbnail?id=${coverId}&sz=w800` : '';
+                    const img = imgUrl ? `<img src="${imgUrl}" class="w-full h-44 object-cover hover:scale-110 transition duration-700" referrerpolicy="no-referrer">` : `<div class="w-full h-44 bg-slate-50 flex items-center justify-center text-slate-300"><i class="ph ph-image text-4xl"></i></div>`;
                     
+                    // 🌟 นำแท็ก <a> ออกไป เพื่อให้เป็นการโชว์เฉยๆ ไม่สามารถกดลิงก์ได้
                     html += `
-                    <a href="${WEB_APP_LINK}" target="_blank" class="block group">
-                        <div class="bg-white rounded-[24px] p-2 shadow-sm hover:shadow-[0_20px_40px_-10px_rgba(16,185,129,0.15)] hover:-translate-y-2 transition-all duration-500 h-full flex flex-col relative overflow-hidden border border-slate-100">
+                    <div class="block group">
+                        <div class="bg-white rounded-[24px] p-2 shadow-sm border border-slate-100 h-full flex flex-col relative overflow-hidden">
                             <div class="overflow-hidden rounded-[18px] relative mb-4">
                                 ${img}
-                                <div class="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
-                                    <span class="text-emerald-800 text-xs font-bold bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full"><i class="ph-bold ph-images"></i> ดูรูปภาพทั้งหมด</span>
-                                </div>
                             </div>
                             <div class="px-3 pb-3 flex-1 flex flex-col">
-                                <h3 class="font-bold text-slate-800 mb-1 text-sm group-hover:text-emerald-600 transition-colors line-clamp-2 leading-snug">${title}</h3>
+                                <h3 class="font-bold text-slate-800 mb-1 text-sm line-clamp-2 leading-snug">${title}</h3>
                                 <p class="text-[11px] text-slate-500 line-clamp-2 mb-3 leading-relaxed">${desc}</p>
                                 <div class="mt-auto text-[10px] font-bold text-slate-400 flex items-center justify-between">
-                                    <span class="flex items-center gap-1.5"><div class="w-5 h-5 rounded-full bg-amber-100 text-amber-500 flex items-center justify-center"><i class="ph-fill ph-calendar-blank"></i></div> ${date}</span>
+                                    <span class="flex items-center gap-1.5"><div class="w-5 h-5 rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center"><i class="ph-fill ph-calendar-blank"></i></div> ${date}</span>
                                 </div>
                             </div>
                         </div>
-                    </a>`;
+                    </div>`;
                 });
                 container.innerHTML = html;
-            } catch(e) { console.log(e); }
+            } catch(e) { console.log("Error loading gallery activities:", e); }
         }
 
         // =======================================================
@@ -949,7 +949,7 @@
                 if(errors.length > 10) errList += `<li class="text-slate-500 text-xs text-center pt-2">...และพบข้อผิดพลาดอีก ${errors.length - 10} รายการ</li>`;
                 res.innerHTML = `<div class="bg-white rounded-3xl border border-rose-200 shadow-lg overflow-hidden"><div class="bg-rose-50 px-6 py-4 border-b border-rose-100 flex items-center gap-3"><div class="w-10 h-10 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center text-xl"><i class="ph-fill ph-warning-circle"></i></div><div><h4 class="text-rose-700 font-bold">พบข้อผิดพลาด ${errors.length} รายการ</h4><p class="text-rose-500 text-xs">ไฟล์: ${fileName}</p></div></div><div class="p-6 max-h-[300px] overflow-y-auto"><ul class="space-y-2 text-sm">${errList}</ul></div></div>`;
             } else {
-                res.innerHTML = `<div class="bg-white rounded-3xl border border-emerald-200 shadow-lg overflow-hidden"><div class="bg-emerald-50 px-6 py-5 flex items-center gap-4"><div class="w-12 h-12 bg-emerald-500 text-white rounded-full flex items-center justify-center text-2xl shadow-md"><i class="ph-bold ph-check"></i></div><div><h4 class="text-emerald-700 font-extrabold text-xl">ข้อมูลถูกต้อง 100%</h4><p class="text-emerald-600 text-sm">พร้อมนำเข้า <b>${data.length}</b> รายการ จาก ${fileName}</p></div></div><div class="px-6 py-4 bg-white flex justify-end gap-3"><button class="px-6 py-2 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 transition shadow-sm">ยืนยันนำเข้าข้อมูล</button></div></div>`;
+                res.innerHTML = `<div class="bg-white rounded-3xl border border-emerald-200 shadow-lg overflow-hidden"><div class="bg-emerald-50 px-6 py-5 flex items-center gap-4"><div class="w-12 h-12 bg-emerald-50 text-white rounded-full flex items-center justify-center text-2xl shadow-md"><i class="ph-bold ph-check"></i></div><div><h4 class="text-emerald-700 font-extrabold text-xl">ข้อมูลถูกต้อง 100%</h4><p class="text-emerald-600 text-sm">พร้อมนำเข้า <b>${data.length}</b> รายการ จาก ${fileName}</p></div></div><div class="px-6 py-4 bg-white flex justify-end gap-3"><button class="px-6 py-2 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 transition shadow-sm">ยืนยันนำเข้าข้อมูล</button></div></div>`;
             }
         }
 
