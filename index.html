@@ -1018,7 +1018,64 @@
         // ==========================================
         document.addEventListener("DOMContentLoaded", () => {
             loadPublicStatistics();
-            loadLandingActivities();
+            async function loadLandingActivities() {
+            const container = document.getElementById('landingActivityContainer');
+            if (!container) return;
+
+            // 🌟 1. ลิงก์ API ตัวเดียวกับที่ใช้ใน gallery.html
+            const GAS_API_URL = "https://script.google.com/macros/s/AKfycby0hNUSRLGNWS_Wdh92uIg6L__I2AbqKjw1wHJgDScBZmLzhmHwqP0yuOjLaipNYLej/exec";
+
+            try {
+                // 🌟 2. สั่งดึงรายการอัลบั้มทั้งหมด
+                const response = await fetch(GAS_API_URL + "?action=getAlbums");
+                const albums = await response.json();
+
+                if (!albums || albums.length === 0) {
+                    container.innerHTML = '<div class="col-span-full text-center py-10 text-slate-400 font-medium">ยังไม่มีอัลบั้มกิจกรรม</div>';
+                    return;
+                }
+
+                // 🌟 3. ดึงเฉพาะ 3 อัลบั้มล่าสุด (แกลเลอรีเรียงจากใหม่ไปเก่าให้อยู่แล้ว)
+                const latestAlbums = albums.slice(0, 3);
+
+                let html = '';
+                latestAlbums.forEach(album => {
+                    // ดึง CoverID มาทำเป็นลิงก์รูปภาพแสดงผล
+                    const imgUrl = album.coverId ? `https://drive.google.com/thumbnail?id=${album.coverId}&sz=w800` : '';
+                    const img = imgUrl 
+                        ? `<img src="${imgUrl}" class="w-full h-48 object-cover group-hover:scale-105 transition duration-700" referrerpolicy="no-referrer">` 
+                        : `<div class="w-full h-48 bg-slate-50 flex items-center justify-center text-slate-300"><i class="ph ph-image text-4xl"></i></div>`;
+
+                    // โครงสร้างการ์ด (โชว์เฉยๆ ไม่กดลิงก์ไปไหน)
+                    html += `
+                    <div class="block group">
+                        <div class="bg-white rounded-[24px] p-2 shadow-sm border border-slate-100 h-full flex flex-col relative overflow-hidden">
+                            <div class="overflow-hidden rounded-[18px] relative mb-4">
+                                ${img}
+                            </div>
+                            <div class="px-3 pb-3 flex-1 flex flex-col">
+                                <h3 class="font-bold text-slate-800 mb-1 text-sm line-clamp-2 leading-snug">${album.name || '-'}</h3>
+                                <p class="text-[11px] text-slate-500 line-clamp-2 mb-3 leading-relaxed">${album.details || ''}</p>
+                                <div class="mt-auto text-[10px] font-bold text-slate-400 flex items-center justify-between">
+                                    <span class="flex items-center gap-1.5">
+                                        <div class="w-5 h-5 rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center">
+                                            <i class="ph-fill ph-calendar-blank"></i>
+                                        </div> 
+                                        ${album.date || '-'}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>`;
+                });
+
+                container.innerHTML = html;
+
+            } catch (error) {
+                console.error("เกิดข้อผิดพลาดในการดึงข้อมูลแกลเลอรี:", error);
+                container.innerHTML = '<div class="col-span-full text-center py-10 text-slate-400 font-medium">ไม่สามารถโหลดรูปภาพกิจกรรมได้</div>';
+            }
+        }
             startHeroSlider(); // เรียกใช้งานระบบสไลด์ภาพ
         });
     </script>
