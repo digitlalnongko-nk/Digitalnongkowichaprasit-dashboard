@@ -1022,31 +1022,71 @@
             const container = document.getElementById('landingActivityContainer');
             if (!container) return;
 
-            // 🌟 1. ลิงก์ API ตัวเดียวกับที่ใช้ใน gallery.html
-            const GAS_API_URL = "https://script.google.com/macros/s/AKfycby0hNUSRLGNWS_Wdh92uIg6L__I2AbqKjw1wHJgDScBZmLzhmHwqP0yuOjLaipNYLej/exec";
+            // 🌟 ลิงก์ดึงข้อมูล CSV จาก Google Sheets ของแกลเลอรีภาพกิจกรรม
+            const GALLERY_CSV_URL = "https://docs.google.com/spreadsheets/d/1WJ3IcN108ETC29jtuvATX-NHHRFA9m4JZffsOQNxcCU/pub?gid=0&single=true&output=csv";
 
             try {
-                // 🌟 2. สั่งดึงรายการอัลบั้มทั้งหมด
-                const response = await fetch(GAS_API_URL + "?action=getAlbums");
-                const albums = await response.json();
-
-                if (!albums || albums.length === 0) {
+                // 🌟 1. ดึงข้อมูล CSV และแปลงเป็น Array ของ Object
+                const response = await fetch(GALLERY_CSV_URL);
+                const csvText = await response.text();
+                
+                const lines = csvText.split('\n').filter(line => line.trim() !== ''); // ตัดบรรทัดว่างออก
+                if (lines.length <= 1) {
                     container.innerHTML = '<div class="col-span-full text-center py-10 text-slate-400 font-medium">ยังไม่มีอัลบั้มกิจกรรม</div>';
                     return;
                 }
 
-                // 🌟 3. ดึงเฉพาะ 3 อัลบั้มล่าสุด (แกลเลอรีเรียงจากใหม่ไปเก่าให้อยู่แล้ว)
-                const latestAlbums = albums.slice(0, 3);
+                // ดึงหัวคอลัมน์
+                const headers = lines[0].split(',').map(h => h.replace(/^"|"$/g, '').trim());
+                const albums = [];
+
+                // แปลงข้อมูลแต่ละบรรทัด
+                for (let i = 1; i < lines.length; i++) {
+                    let obj = {};
+                    let inQuotes = false;
+                    let val = "";
+                    let cols = [];
+                    
+                    for (let char of lines[i]) {
+                        if (char === '"') inQuotes = !inQuotes;
+                        else if (char === ',' && !inQuotes) { cols.push(val.trim()); val = ""; }
+                        else val += char;
+                    }
+                    cols.push(val.trim());
+
+                    headers.forEach((h, idx) => {
+                        obj[h] = cols[idx] ? cols[idx].replace(/^"|"$/g, '') : "";
+                    });
+                    
+                    // เพิ่มเฉพาะแถวที่มีข้อมูลชื่ออัลบั้ม (Name)
+                    if(obj['Name']) {
+                        albums.push(obj);
+                    }
+                }
+
+                if (albums.length === 0) {
+                    container.innerHTML = '<div class="col-span-full text-center py-10 text-slate-400 font-medium">ยังไม่มีอัลบั้มกิจกรรม</div>';
+                    return;
+                }
+
+                // 🌟 2. เลือก 3 อัลบั้มล่าสุด (ดึงจากท้ายตาราง เพราะรายการใหม่อยู่ด้านล่าง)
+                const latestAlbums = albums.slice(-3).reverse();
 
                 let html = '';
                 latestAlbums.forEach(album => {
-                    // ดึง CoverID มาทำเป็นลิงก์รูปภาพแสดงผล
-                    const imgUrl = album.coverId ? `https://drive.google.com/thumbnail?id=${album.coverId}&sz=w800` : '';
+                    // ดึงค่าตามชื่อคอลัมน์ใน Sheet ใหม่
+                    const coverId = album['CoverID'] || '';
+                    const date = album['Year'] || '-';
+                    const title = album['Name'] || '-';
+                    const desc = album['Details'] || '';
+                    
+                    // สร้าง URL รูปภาพจาก CoverID
+                    const imgUrl = coverId ? `https://drive.google.com/thumbnail?id=${coverId}&sz=w800` : '';
                     const img = imgUrl 
                         ? `<img src="${imgUrl}" class="w-full h-48 object-cover group-hover:scale-105 transition duration-700" referrerpolicy="no-referrer">` 
                         : `<div class="w-full h-48 bg-slate-50 flex items-center justify-center text-slate-300"><i class="ph ph-image text-4xl"></i></div>`;
 
-                    // โครงสร้างการ์ด (โชว์เฉยๆ ไม่กดลิงก์ไปไหน)
+                    // 🌟 3. โครงสร้างการ์ด (โชว์ภาพเฉยๆ ไม่ให้กดเป็นลิงก์)
                     html += `
                     <div class="block group">
                         <div class="bg-white rounded-[24px] p-2 shadow-sm border border-slate-100 h-full flex flex-col relative overflow-hidden">
@@ -1054,14 +1094,14 @@
                                 ${img}
                             </div>
                             <div class="px-3 pb-3 flex-1 flex flex-col">
-                                <h3 class="font-bold text-slate-800 mb-1 text-sm line-clamp-2 leading-snug">${album.name || '-'}</h3>
-                                <p class="text-[11px] text-slate-500 line-clamp-2 mb-3 leading-relaxed">${album.details || ''}</p>
+                                <h3 class="font-bold text-slate-800 mb-1 text-sm line-clamp-2 leading-snug">${title}</h3>
+                                <p class="text-[11px] text-slate-500 line-clamp-2 mb-3 leading-relaxed">${desc}</p>
                                 <div class="mt-auto text-[10px] font-bold text-slate-400 flex items-center justify-between">
                                     <span class="flex items-center gap-1.5">
                                         <div class="w-5 h-5 rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center">
                                             <i class="ph-fill ph-calendar-blank"></i>
                                         </div> 
-                                        ${album.date || '-'}
+                                        ${date}
                                     </span>
                                 </div>
                             </div>
