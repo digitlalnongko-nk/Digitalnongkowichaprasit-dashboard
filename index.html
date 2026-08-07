@@ -18,6 +18,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&family=Kanit:wght@400;500;600&family=Sarabun:wght@400;500;600&display=swap" rel="stylesheet">
     
     <style> 
@@ -243,38 +244,27 @@
     <script>
         document.addEventListener('contextmenu', event => event.preventDefault());
 
-        // 🌟 ตั้งค่าลิงก์ CSV Data
         const CSV_USAGE_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRZZibUzzgdZ-lCiuC2r9LdaYrjHZKnbUdOYCxJLDaIF4qUmxw8LuKX1FlXr2ADxHPNknSsiWTkncqJ/pub?gid=0&single=true&output=csv";
         const CSV_GALLERY_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTOumFScq6lLZNOElqE0ATrEyN1B8jmPVBGEvVJ16Fgt8FZzOtr1o6eKNoJbXag2hvpfDZBrwYL5I0B/pub?output=csv";
 
         let publicJobChart, publicTimeChart, publicGradeChart, publicGenderChart;
         Chart.defaults.font.family = "'Kanit', 'Prompt', sans-serif";
 
+        // 🌟 อัปเกรดระบบอ่านไฟล์ CSV ด้วย SheetJS (ตัดปัญหาสระ หรือลูกน้ำคั่น)
         async function fetchCSV(url) {
             try {
                 const res = await fetch(url);
-                const csv = await res.text();
-                if (csv.includes('<html')) return []; 
+                const arrayBuffer = await res.arrayBuffer();
+                const data = new Uint8Array(arrayBuffer);
+                const workbook = XLSX.read(data, {type: 'array'});
+                const worksheet = workbook.Sheets[workbook.SheetNames[0]];
                 
-                const lines = csv.split('\n').map(l => l.trim()).filter(l => l !== '');
-                if (lines.length <= 1) return [];
-                
-                const headers = lines[0].split(',').map(h => h.replace(/^"|"$/g, '').trim());
-                const result = [];
-                
-                for (let i = 1; i < lines.length; i++) {
-                    let obj = {}, inQuotes = false, val = "", cols = [];
-                    for(let char of lines[i]) {
-                        if(char === '"') inQuotes = !inQuotes;
-                        else if(char === ',' && !inQuotes) { cols.push(val.trim()); val = ""; }
-                        else val += char;
-                    }
-                    cols.push(val.trim());
-                    headers.forEach((h, idx) => obj[h] = cols[idx] ? cols[idx].replace(/^"|"$/g, '') : "");
-                    result.push(obj);
-                }
-                return result;
-            } catch (err) { return []; }
+                // ให้แปลงวันที่ใน CSV เป็น String สวยๆ อัตโนมัติ ป้องกันข้อมูลหาย
+                return XLSX.utils.sheet_to_json(worksheet, {defval: "", raw: false});
+            } catch (err) { 
+                console.error(err);
+                return []; 
+            }
         }
 
         function formatBE(text) {
@@ -282,9 +272,22 @@
             return text.toString().replace(/\d{4}/g, year => { const y = parseInt(year); return (y < 2500) ? (y + 543) : y; });
         }
 
+        // 🌟 ยึดเดือนของข้อมูลที่อยู่ "บนสุด" เป็นหลักแทน (ดึงจากแถวแรกสุดของข้อมูล)
         function getLatestMonthData(dataArray) {
             if(!dataArray || dataArray.length === 0) return [];
-            const lastRowDate = dataArray[dataArray.length - 1]['วันที่เข้าใช้บริการ'] || dataArray[dataArray.length - 1]['ประจำเดือน'] || dataArray[dataArray.length - 1]['วันที่'] || '';
+            
+            // หาคอลัมน์ชื่อ "วันที่เข้าใช้บริการ" (รับมือกับชื่อเพี้ยนๆ ในตาราง 22 คอลัมน์)
+            let dateKey = Object.keys(dataArray[0]).find(k => k.includes('วันที่')) || 'วันที่เข้าใช้บริการ';
+            
+            let lastRowDate = '';
+            // เริ่มหาจากบรรทัดบนสุดลงมา แทนที่จะหาจากล่างสุด
+            for(let i = 0; i < dataArray.length; i++) {
+                if(dataArray[i][dateKey]) { 
+                    lastRowDate = String(dataArray[i][dateKey]); 
+                    break; 
+                }
+            }
+            
             if (!lastRowDate) return dataArray;
 
             let latestMonthKey = lastRowDate;
@@ -300,7 +303,7 @@
             }
 
             return dataArray.filter(row => {
-                const rowDate = String(row['วันที่เข้าใช้บริการ'] || row['ประจำเดือน'] || row['วันที่'] || '');
+                const rowDate = String(row[dateKey] || '');
                 return rowDate.includes(latestMonthKey);
             });
         }
@@ -310,29 +313,39 @@
                 const data = await fetchCSV(CSV_USAGE_URL); 
                 if(!data || data.length === 0) return;
 
+                // 🌟 ทำระบบค้นหาคอลัมน์แบบยืดหยุ่น เพื่อรับมือกับชื่อตาราง 22 คอลัมน์
+                const keys = Object.keys(data[0]);
+                const cCount = keys.find(k => k.includes('จำนวนผู้เข้าใช้') || k.includes('จำนวน (คน)')) || 'จำนวนผู้ใช้งาน';
+                const cDate = keys.find(k => k.includes('วันที่')) || 'วันที่เข้าใช้บริการ';
+                const cJob = keys.find(k => k.includes('ประเภทผู้ใช้บริการ') || k.includes('อาชีพ')) || 'อาชีพ';
+                const cGender = keys.find(k => k.includes('เพศ')) || 'เพศ';
+                const cTime = keys.find(k => k.includes('เวลา')) || 'เวลาเข้าใช้บริการ';
+                const cGrade = keys.find(k => k.includes('ระดับชั้น')) || 'ระดับชั้นของนักเรียน (ถ้าเป็นนักเรียน)';
+
                 const filteredData = getLatestMonthData(data);
+                
                 let total = 0; let jobs = {}; let genders = {}; let times = {}; let grades = {};
                 let uniqueDates = new Set();
 
                 filteredData.forEach(row => {
-                    let count = parseInt(row['จำนวนผู้เข้าใช้งาน'] || row['จำนวน (คน)'] || 1);
+                    let count = parseInt(row[cCount] || row['จำนวนผู้ใช้งาน'] || 1);
                     if(!isNaN(count)) total += count;
 
-                    let dateStr = row['วันที่เข้าใช้บริการ'] || row['วันที่'] || '';
+                    let dateStr = row[cDate] || '';
                     if (dateStr) uniqueDates.add(dateStr);
 
-                    let job = row['อาชีพ'] || row['ประเภทผู้ใช้บริการ'] || 'ไม่ระบุ';
+                    let job = row[cJob] || 'ไม่ระบุ';
                     if(job.includes('นักเรียน') || job.includes('นักศึกษา')) job = 'นักเรียน/นักศึกษา';
                     else if(job !== 'ไม่ระบุ') job = 'ประชาชน/ทั่วไป';
                     jobs[job] = (jobs[job] || 0) + count;
 
-                    let gender = row['เพศ'] || 'ไม่ระบุ';
+                    let gender = row[cGender] || 'ไม่ระบุ';
                     if (gender.includes('ชาย')) gender = 'ชาย';
                     else if (gender.includes('หญิง')) gender = 'หญิง';
                     else gender = 'ไม่ระบุ';
                     genders[gender] = (genders[gender] || 0) + count;
 
-                    let timeStr = row['เวลาเข้าใช้บริการ'] || '';
+                    let timeStr = row[cTime] || '';
                     let timeCat = 'ไม่ระบุ';
                     if (timeStr) {
                         let hour = parseInt(timeStr.split(/[:.]/)[0]);
@@ -344,7 +357,7 @@
                     }
                     times[timeCat] = (times[timeCat] || 0) + count;
 
-                    let grade = row['ระดับชั้นของนักเรียน (ถ้าเป็นนักเรียน)'] || '';
+                    let grade = row[cGrade] || '';
                     if (!grade && job === 'ประชาชน/ทั่วไป') grade = 'บุคคลทั่วไป';
                     else if (!grade) grade = 'ไม่ระบุ';
                     grades[grade] = (grades[grade] || 0) + count;
@@ -376,14 +389,18 @@
             if (!container) return;
             try {
                 const data = await fetchCSV(CSV_GALLERY_URL);
-                if(!data || data.length === 0 || !data[0]['Name']) { 
+                
+                // กรองเอาเฉพาะแถวที่มีข้อมูลชื่อกิจกรรม (ป้องกันดึงแถวว่างมาแสดง)
+                const validData = data.filter(row => row['Name'] && String(row['Name']).trim() !== '');
+                
+                if(!validData || validData.length === 0) { 
                     container.innerHTML = '<div class="col-span-full text-center py-10 text-slate-400 font-medium">ยังไม่มีรูปภาพกิจกรรม</div>'; 
                     return; 
                 }
                 
                 let html = '';
-                // 🌟 แก้ไขจุดนี้: ดึง 3 อันดับแรกจากบนสุดของตาราง (เพราะกรอกข้อมูลใหม่ด้านบน)
-                const latestActivities = data.slice(0, 3);
+                // 🌟 ดึงข้อมูลจากบนสุด 3 อันดับแรก (ตัดแถวบน 3 แถว)
+                const latestActivities = validData.slice(0, 3);
                 
                 latestActivities.forEach(row => {
                     const coverId = row['CoverID'] || '';
