@@ -164,53 +164,74 @@
             </div>
 
             <div class="max-w-7xl mx-auto relative z-10">
-                <div class="text-center mb-16 font-kanit">
+                <div class="text-center mb-10 font-kanit">
                     <span class="inline-block text-emerald-400 font-bold tracking-widest text-xs uppercase bg-emerald-900/50 px-4 py-2 rounded-full border border-emerald-800 mb-4">
                         Open Data & Analytics
                     </span>
-                    <h2 class="text-3xl md:text-4xl lg:text-5xl font-extrabold text-white leading-tight mb-4">สถิติการให้บริการของศูนย์ฯ</h2>
-                    <p class="text-slate-400 max-w-2xl mx-auto text-base font-sarabun">แสดงข้อมูลสถิติภาพรวม เพื่อวิเคราะห์ศักยภาพและการเข้าถึงเทคโนโลยีดิจิทัลของชุมชน</p>
+                    <h2 class="text-3xl md:text-4xl lg:text-5xl font-extrabold text-white leading-tight mb-3">สถิติการให้บริการของศูนย์ฯ</h2>
+                    <p class="text-emerald-400 text-lg font-bold mb-2" id="currentMonthText">กำลังโหลดข้อมูล...</p>
+                    <p class="text-slate-400 max-w-2xl mx-auto text-sm font-sarabun">แสดงสถิติแบบ Real-time ตั้งแต่วันแรกของเดือนจนถึงวันที่มีการใช้งานล่าสุด</p>
+                </div>
+
+                <div class="flex flex-col sm:flex-row gap-4 justify-center items-center mb-10 z-20 relative">
+                    <div class="flex items-center gap-2 bg-slate-800/50 p-1.5 rounded-full border border-slate-700/50">
+                        <div class="bg-emerald-500 text-white w-8 h-8 rounded-full flex items-center justify-center"><i class="ph-fill ph-funnel"></i></div>
+                        <select id="filterCategory" onchange="applyFilters()" class="bg-transparent text-white border-none pr-6 font-sarabun text-sm outline-none cursor-pointer">
+                            <option value="ALL">-- ทุกหมวดหมู่กิจกรรม --</option>
+                        </select>
+                    </div>
+                    <div class="flex items-center gap-2 bg-slate-800/50 p-1.5 rounded-full border border-slate-700/50">
+                        <div class="bg-amber-500 text-white w-8 h-8 rounded-full flex items-center justify-center"><i class="ph-fill ph-users"></i></div>
+                        <select id="filterClass" onchange="applyFilters()" class="bg-transparent text-white border-none pr-6 font-sarabun text-sm outline-none cursor-pointer">
+                            <option value="ALL">-- ทุกระดับชั้น / อาชีพ --</option>
+                        </select>
+                    </div>
                 </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-6">
                     <div class="flex flex-col gap-6 lg:col-span-1">
-                        <div class="bg-slate-800/50 backdrop-blur-md border border-slate-700/50 p-6 rounded-[24px] flex flex-col justify-center items-center text-center h-full">
-                            <div class="w-16 h-16 bg-emerald-500/20 text-emerald-400 rounded-2xl flex items-center justify-center text-3xl mb-4">
-                                <i class="ph-fill ph-users"></i>
-                            </div>
-                            <p class="text-slate-400 text-sm font-medium mb-2 font-kanit">ผู้ใช้บริการ (ทั้งหมด)</p>
-                            <h3 class="text-5xl font-black text-white font-kanit" id="publicTotalUsers">0</h3>
+                        <div class="bg-slate-800/50 backdrop-blur-md border border-slate-700/50 p-6 rounded-[24px] flex flex-col justify-center items-center text-center">
+                            <p class="text-slate-400 text-sm font-medium mb-1 font-kanit">ผู้ใช้บริการ (ล่าสุด)</p>
+                            <h3 class="text-5xl font-black text-emerald-400 font-kanit" id="publicTodayUsers">0</h3>
+                            <p class="text-emerald-400 text-[10px] font-bold mt-3 bg-emerald-900/50 px-3 py-1 rounded-full" id="latestDateLabel">วันที่: -</p>
                         </div>
                         
                         <div class="bg-slate-800/50 backdrop-blur-md border border-slate-700/50 p-6 rounded-[24px] flex flex-col justify-center items-center text-center">
+                            <p class="text-slate-400 text-sm font-medium mb-2 font-kanit">สะสม (เดือนนี้)</p>
+                            <h3 class="text-4xl font-black text-white font-kanit" id="publicTotalUsers">0</h3>
+                        </div>
+
+                        <div class="bg-slate-800/50 backdrop-blur-md border border-slate-700/50 p-6 rounded-[24px] flex flex-col justify-center items-center text-center">
                             <p class="text-slate-400 text-sm font-medium mb-2 font-kanit">เฉลี่ยต่อวัน</p>
-                            <h3 class="text-3xl font-black text-emerald-400 font-kanit" id="publicAvgUsers">0</h3>
+                            <h3 class="text-3xl font-black text-teal-400 font-kanit" id="publicAvgUsers">0</h3>
                         </div>
                     </div>
 
-                    <div class="bg-slate-800/50 backdrop-blur-md border border-slate-700/50 p-6 rounded-[24px] flex flex-col">
-                        <h3 class="text-lg font-bold text-white mb-1 font-kanit">กลุ่มผู้ใช้งาน</h3>
-                        <p class="text-slate-400 text-xs mb-4 font-sarabun">นักเรียน vs ทั่วไป</p>
-                        <div class="relative w-full flex-1 min-h-[160px]"><canvas id="publicJobChart"></canvas></div>
-                    </div>
+                    <div class="lg:col-span-3 grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="bg-slate-800/50 backdrop-blur-md border border-slate-700/50 p-6 rounded-[24px] flex flex-col">
+                            <h3 class="text-lg font-bold text-white mb-1 font-kanit">หมวดหมู่กิจกรรม</h3>
+                            <p class="text-slate-400 text-xs mb-4 font-sarabun">เรื่องที่เข้าใช้งาน</p>
+                            <div class="relative w-full flex-1 min-h-[180px]"><canvas id="publicCatChart"></canvas></div>
+                        </div>
 
-                    <div class="bg-slate-800/50 backdrop-blur-md border border-slate-700/50 p-6 rounded-[24px] flex flex-col">
-                        <h3 class="text-lg font-bold text-white mb-1 font-kanit">สัดส่วนเพศ</h3>
-                        <p class="text-slate-400 text-xs mb-4 font-sarabun">ข้อมูลภาพรวมผู้ใช้บริการ</p>
-                        <div class="relative w-full flex-1 min-h-[160px]"><canvas id="publicGenderChart"></canvas></div>
-                    </div>
+                        <div class="bg-slate-800/50 backdrop-blur-md border border-slate-700/50 p-6 rounded-[24px] flex flex-col">
+                            <h3 class="text-lg font-bold text-white mb-1 font-kanit">สัดส่วนเพศ</h3>
+                            <p class="text-slate-400 text-xs mb-4 font-sarabun">ข้อมูลภาพรวมผู้ใช้บริการ</p>
+                            <div class="relative w-full flex-1 min-h-[180px]"><canvas id="publicGenderChart"></canvas></div>
+                        </div>
 
-                    <div class="bg-slate-800/50 backdrop-blur-md border border-slate-700/50 p-6 rounded-[24px] flex flex-col">
-                        <h3 class="text-lg font-bold text-white mb-1 font-kanit">ช่วงเวลาการใช้งาน</h3>
-                        <p class="text-slate-400 text-xs mb-4 font-sarabun">เช้า / กลางวัน / บ่าย</p>
-                        <div class="relative w-full flex-1 min-h-[160px]"><canvas id="publicTimeChart"></canvas></div>
+                        <div class="bg-slate-800/50 backdrop-blur-md border border-slate-700/50 p-6 rounded-[24px] flex flex-col">
+                            <h3 class="text-lg font-bold text-white mb-1 font-kanit">ช่วงเวลาการใช้งาน</h3>
+                            <p class="text-slate-400 text-xs mb-4 font-sarabun">เช้า / กลางวัน / บ่าย</p>
+                            <div class="relative w-full flex-1 min-h-[180px]"><canvas id="publicTimeChart"></canvas></div>
+                        </div>
                     </div>
                 </div>
 
                 <div class="bg-slate-800/50 backdrop-blur-md border border-slate-700/50 p-6 rounded-[24px] w-full flex flex-col mt-6">
-                    <h3 class="text-xl font-bold text-white mb-1 font-kanit">การเข้าใช้งานตามระดับชั้น</h3>
-                    <p class="text-slate-400 text-xs mb-6 font-sarabun">ข้อมูลสถิติการใช้งานของนักเรียนระดับต่างๆ</p>
-                    <div class="relative w-full min-h-[250px]"><canvas id="publicGradeChart"></canvas></div>
+                    <h3 class="text-xl font-bold text-white mb-1 font-kanit">การเข้าใช้งานตามระดับชั้น / อาชีพ</h3>
+                    <p class="text-slate-400 text-xs mb-6 font-sarabun">เปรียบเทียบสถิติการใช้งานแต่ละกลุ่มย่อย</p>
+                    <div class="relative w-full min-h-[280px]"><canvas id="publicGradeChart"></canvas></div>
                 </div>
             </div>
         </section>
@@ -247,17 +268,20 @@
         const CSV_USAGE_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRZZibUzzgdZ-lCiuC2r9LdaYrjHZKnbUdOYCxJLDaIF4qUmxw8LuKX1FlXr2ADxHPNknSsiWTkncqJ/pub?gid=0&single=true&output=csv";
         const CSV_GALLERY_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTOumFScq6lLZNOElqE0ATrEyN1B8jmPVBGEvVJ16Fgt8FZzOtr1o6eKNoJbXag2hvpfDZBrwYL5I0B/pub?output=csv";
 
-        let publicJobChart, publicTimeChart, publicGradeChart, publicGenderChart;
+        let publicCatChart, publicTimeChart, publicGradeChart, publicGenderChart;
+        let globalMonthData = []; // เก็บข้อมูลเฉพาะของเดือนปัจจุบันไว้สำหรับฟิลเตอร์
+        let latestDateGlobal = ''; // วันที่ล่าสุดของเดือน
+
         Chart.defaults.font.family = "'Kanit', 'Prompt', sans-serif";
 
         async function fetchCSVAsArray(url) {
             try {
                 const res = await fetch(url);
                 const arrayBuffer = await res.arrayBuffer();
-                const data = new Uint8Array(arrayBuffer);
-                const workbook = XLSX.read(data, {type: 'array'});
+                const decoder = new TextDecoder('utf-8');
+                const csvText = decoder.decode(arrayBuffer);
+                const workbook = XLSX.read(csvText, {type: 'string'});
                 const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-                // 🌟 อ่านข้อมูลออกมาเป็น Array แบบแถวต่อแถว (Array of Arrays) ป้องกันชื่อหัวคอลัมน์คลาดเคลื่อน
                 return XLSX.utils.sheet_to_json(worksheet, {header: 1, defval: "", raw: false});
             } catch (err) { 
                 console.error(err);
@@ -265,87 +289,179 @@
             }
         }
 
-        function formatBE(text) {
-            if (!text) return '-';
-            return text.toString().replace(/\d{4}/g, year => { const y = parseInt(year); return (y < 2500) ? (y + 543) : y; });
+        // แปลงเดือนเป็นภาษาไทย
+        function getThaiMonthName(dateStr) {
+            if(!dateStr) return '';
+            const months = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
+            if(dateStr.includes('/')) {
+                const p = dateStr.split('/');
+                return `เดือน ${months[parseInt(p[1])-1]} พ.ศ. ${p[2]}`;
+            } else if(dateStr.includes('-')) {
+                const p = dateStr.split('-');
+                return `เดือน ${months[parseInt(p[1])-1]} พ.ศ. ${parseInt(p[0])+543}`;
+            }
+            return dateStr;
         }
 
-        async function loadPublicStatistics() {
+        async function initDashboard() {
             try {
                 const rows = await fetchCSVAsArray(CSV_USAGE_URL); 
                 if(!rows || rows.length <= 1) return;
 
-                let total = 0; let jobs = {}; let genders = {}; let times = {}; let grades = {};
-                let uniqueDates = new Set();
+                // 🌟 อ้างอิง Index 22 คอลัมน์ 
+                const IDX_DATE = 2;   // Col C: วันที่เข้าใช้บริการ
+                const IDX_TIME = 3;   // Col D: เวลาเข้าใช้บริการ
+                const IDX_JOB = 4;    // Col E: อาชีพ
+                const IDX_CLASS = 5;  // Col F: ระดับชั้น
+                const IDX_GENDER = 7; // Col H: เพศ
+                const IDX_CAT = 13;   // Col N: หมวดหมู่การใช้งาน
+                const IDX_COUNT = 20; // Col U: จำนวนคน
 
-                // 🌟 อ้างอิงตาม Index (ตำแหน่งคอลัมน์) จากตาราง 22 คอลัมน์จริง 100%
-                const IDX_DATE = 2;   // คอลัมน์ C: วันที่เข้าใช้บริการ
-                const IDX_TIME = 3;   // คอลัมน์ D: เวลาเข้าใช้บริการ
-                const IDX_JOB = 4;    // คอลัมน์ E: ประเภทผู้ใช้บริการ
-                const IDX_CLASS = 5;  // คอลัมน์ F: ระดับชั้นของนักเรียน
-                const IDX_GENDER = 7; // คอลัมน์ H: เพศ
-                const IDX_COUNT = 20; // คอลัมน์ U: จำนวนผู้เข้าใช้งาน
-
-                // ข้ามแถวที่ 0 (หัวตาราง) แล้วเริ่มวนลูปตั้งแต่แถวที่ 1 เป็นต้นไป
+                // 1. หาวันที่ "ล่าสุด" (อยู่บนสุดของตาราง - แถวที่ 1)
+                let latestDate = '';
                 for (let i = 1; i < rows.length; i++) {
-                    const row = rows[i];
-                    if (!row || row.every(cell => !cell)) continue; // ข้ามแถวว่าง
-
-                    let count = parseInt(row[IDX_COUNT] || 1);
-                    if(isNaN(count) || count <= 0) count = 1;
-                    total += count;
-
-                    let dateStr = row[IDX_DATE] || '';
-                    if (dateStr) uniqueDates.add(dateStr);
-
-                    let job = row[IDX_JOB] || 'ไม่ระบุ';
-                    if(job.includes('นักเรียน') || job.includes('นักศึกษา')) job = 'นักเรียน/นักศึกษา';
-                    else if(job !== 'ไม่ระบุ') job = 'ประชาชน/ทั่วไป';
-                    jobs[job] = (jobs[job] || 0) + count;
-
-                    let gender = row[IDX_GENDER] || 'ไม่ระบุ';
-                    if (gender.includes('ชาย')) gender = 'ชาย';
-                    else if (gender.includes('หญิง')) gender = 'หญิง';
-                    else gender = 'ไม่ระบุ';
-                    genders[gender] = (genders[gender] || 0) + count;
-
-                    let timeStr = row[IDX_TIME] || '';
-                    let timeCat = 'ไม่ระบุ';
-                    if (timeStr) {
-                        let hour = parseInt(timeStr.split(/[:.]/)[0]);
-                        if (!isNaN(hour)) {
-                            if (hour < 12) timeCat = 'ช่วงเช้า';
-                            else if (hour >= 12 && hour <= 13) timeCat = 'ช่วงกลางวัน';
-                            else timeCat = 'ช่วงบ่าย';
-                        }
+                    if (rows[i][IDX_DATE]) {
+                        latestDate = String(rows[i][IDX_DATE]).trim();
+                        break;
                     }
-                    times[timeCat] = (times[timeCat] || 0) + count;
+                }
+                latestDateGlobal = latestDate;
 
-                    let grade = row[IDX_CLASS] || '';
-                    if (!grade && job === 'ประชาชน/ทั่วไป') grade = 'บุคคลทั่วไป';
-                    else if (!grade) grade = 'ไม่ระบุ';
-                    grades[grade] = (grades[grade] || 0) + count;
+                // 2. ดึงรหัส "เดือน-ปี" ล่าสุด
+                let monthKey = latestDate;
+                if(latestDate.includes('/')) {
+                    const p = latestDate.split('/');
+                    if(p.length >= 2) monthKey = '/' + p[1] + '/' + p[2];
+                } else if (latestDate.includes('-')) {
+                    const p = latestDate.split('-');
+                    if(p.length >= 2) monthKey = p[0] + '-' + p[1];
                 }
 
-                document.getElementById('publicTotalUsers').innerText = total.toLocaleString();
-                let dayCount = uniqueDates.size > 0 ? uniqueDates.size : 1;
-                document.getElementById('publicAvgUsers').innerText = Math.round(total / dayCount).toLocaleString();
+                document.getElementById('currentMonthText').innerText = getThaiMonthName(latestDate);
+                document.getElementById('latestDateLabel').innerText = `วันที่: ${latestDate}`;
 
-                Chart.defaults.color = '#94a3b8';
+                // 3. กรองและจัดเก็บข้อมูลเฉพาะ "เดือนปัจจุบัน" ลงตัวแปร
+                let catsSet = new Set();
+                let classSet = new Set();
+
+                for (let i = 1; i < rows.length; i++) {
+                    const r = rows[i];
+                    if (!r || r.every(cell => !cell)) continue;
+
+                    let d = String(r[IDX_DATE] || '').trim();
+                    if(!d.includes(monthKey)) continue; // ข้ามข้อมูลเดือนเก่า
+
+                    let count = parseInt(r[IDX_COUNT] || 1);
+                    if(isNaN(count) || count <= 0) count = 1;
+
+                    let job = String(r[IDX_JOB] || 'ไม่ระบุ').trim();
+                    let grade = String(r[IDX_CLASS] || '').trim();
+                    let finalClass = grade ? grade : (job === 'ไม่ระบุ' ? 'บุคคลทั่วไป' : job);
+
+                    let cat = String(r[IDX_CAT] || 'อื่นๆ').trim();
+
+                    catsSet.add(cat);
+                    classSet.add(finalClass);
+
+                    globalMonthData.push({
+                        date: d,
+                        time: String(r[IDX_TIME] || '').trim(),
+                        gender: String(r[IDX_GENDER] || 'ไม่ระบุ').trim(),
+                        category: cat,
+                        classJob: finalClass,
+                        count: count
+                    });
+                }
+
+                // 4. นำตัวเลือกใส่ Dropdown
+                const selCat = document.getElementById('filterCategory');
+                catsSet.forEach(c => selCat.innerHTML += `<option value="${c}">${c}</option>`);
                 
-                if(publicJobChart) publicJobChart.destroy();
-                publicJobChart = new Chart(document.getElementById('publicJobChart'), { type: 'doughnut', data: { labels: Object.keys(jobs), datasets: [{ data: Object.values(jobs), backgroundColor: ['#f59e0b', '#3b82f6', '#8b5cf6', '#64748b'], borderWidth: 0, hoverOffset: 10 }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '75%', plugins: { legend: { position: 'bottom', labels: { color: '#cbd5e1', padding: 15, font: {size: 11} } } } } });
+                const selClass = document.getElementById('filterClass');
+                classSet.forEach(c => selClass.innerHTML += `<option value="${c}">${c}</option>`);
 
-                if(publicGenderChart) publicGenderChart.destroy();
-                publicGenderChart = new Chart(document.getElementById('publicGenderChart'), { type: 'doughnut', data: { labels: Object.keys(genders), datasets: [{ data: Object.values(genders), backgroundColor: ['#3b82f6', '#ec4899', '#94a3b8'], borderWidth: 0, hoverOffset: 10 }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '75%', plugins: { legend: { position: 'bottom', labels: { color: '#cbd5e1', padding: 15, font: {size: 11} } } } } });
+                // 5. ประมวลผลและวาดกราฟ
+                applyFilters();
 
-                if(publicTimeChart) publicTimeChart.destroy();
-                publicTimeChart = new Chart(document.getElementById('publicTimeChart'), { type: 'doughnut', data: { labels: Object.keys(times), datasets: [{ data: Object.values(times), backgroundColor: ['#fcd34d', '#f97316', '#8b5cf6', '#64748b'], borderWidth: 0, hoverOffset: 10 }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '75%', plugins: { legend: { position: 'bottom', labels: { color: '#cbd5e1', padding: 15, font: {size: 11} } } } } });
+            } catch(e) { console.log("Error loading stats:", e); }
+        }
 
-                if(publicGradeChart) publicGradeChart.destroy();
-                publicGradeChart = new Chart(document.getElementById('publicGradeChart'), { type: 'bar', data: { labels: Object.keys(grades), datasets: [{ label: 'จำนวน (คน)', data: Object.values(grades), backgroundColor: '#10b981', borderRadius: 6 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false }, ticks: { color: '#cbd5e1', font: {size: 10} } }, y: { grid: { color: '#334155', borderDash: [5,5] }, beginAtZero: true, ticks: { color: '#94a3b8' } } } } });
+        // ฟังก์ชันเมื่อมีการเปลี่ยน Dropdown
+        function applyFilters() {
+            if(globalMonthData.length === 0) return;
 
-            } catch(e) { console.log(e); }
+            const selectedCat = document.getElementById('filterCategory').value;
+            const selectedClass = document.getElementById('filterClass').value;
+
+            // กรองข้อมูลตามที่เลือก
+            let filtered = globalMonthData.filter(item => {
+                let mCat = (selectedCat === 'ALL' || item.category === selectedCat);
+                let mClass = (selectedClass === 'ALL' || item.classJob === selectedClass);
+                return mCat && mClass;
+            });
+
+            let total = 0; let todayTotal = 0;
+            let cats = {}; let genders = {}; let times = {}; let grades = {};
+            let uniqueDates = new Set();
+
+            filtered.forEach(row => {
+                total += row.count;
+                if(row.date === latestDateGlobal) todayTotal += row.count;
+                uniqueDates.add(row.date);
+
+                // นับหมวดหมู่กิจกรรม
+                cats[row.category] = (cats[row.category] || 0) + row.count;
+
+                // นับเพศ
+                let gender = row.gender;
+                if (gender.includes('ชาย')) gender = 'ชาย';
+                else if (gender.includes('หญิง')) gender = 'หญิง';
+                else gender = 'ไม่ระบุ';
+                genders[gender] = (genders[gender] || 0) + row.count;
+
+                // นับช่วงเวลา
+                let timeCat = 'ไม่ระบุ';
+                if (row.time) {
+                    let hour = parseInt(row.time.split(/[:.]/)[0]);
+                    if (!isNaN(hour)) {
+                        if (hour < 12) timeCat = 'ช่วงเช้า';
+                        else if (hour >= 12 && hour <= 13) timeCat = 'ช่วงกลางวัน';
+                        else timeCat = 'ช่วงบ่าย';
+                    }
+                }
+                times[timeCat] = (times[timeCat] || 0) + row.count;
+
+                // นับชั้น/อาชีพ
+                grades[row.classJob] = (grades[row.classJob] || 0) + row.count;
+            });
+
+            // อัปเดตตัวเลข
+            document.getElementById('publicTotalUsers').innerText = total.toLocaleString();
+            document.getElementById('publicTodayUsers').innerText = todayTotal.toLocaleString();
+            
+            let dayCount = uniqueDates.size > 0 ? uniqueDates.size : 1;
+            document.getElementById('publicAvgUsers').innerText = Math.round(total / dayCount).toLocaleString();
+
+            // อัปเดตกราฟทั้งหมด
+            Chart.defaults.color = '#94a3b8';
+            Chart.defaults.borderColor = 'rgba(255,255,255,0.05)';
+
+            // 1. หมวดหมู่กิจกรรม
+            if(publicCatChart) publicCatChart.destroy();
+            publicCatChart = new Chart(document.getElementById('publicCatChart'), { type: 'doughnut', data: { labels: Object.keys(cats), datasets: [{ data: Object.values(cats), backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#8b5cf6', '#ec4899', '#64748b'], borderWidth: 0, hoverOffset: 8 }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '75%', plugins: { legend: { position: 'right', labels: { color: '#cbd5e1', font: {size: 11} } } } } });
+
+            // 2. เพศ
+            if(publicGenderChart) publicGenderChart.destroy();
+            publicGenderChart = new Chart(document.getElementById('publicGenderChart'), { type: 'doughnut', data: { labels: Object.keys(genders), datasets: [{ data: Object.values(genders), backgroundColor: ['#3b82f6', '#ec4899', '#94a3b8'], borderWidth: 0, hoverOffset: 8 }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '75%', plugins: { legend: { position: 'bottom', labels: { color: '#cbd5e1', padding: 15, font: {size: 11} } } } } });
+
+            // 3. ช่วงเวลา
+            if(publicTimeChart) publicTimeChart.destroy();
+            publicTimeChart = new Chart(document.getElementById('publicTimeChart'), { type: 'doughnut', data: { labels: Object.keys(times), datasets: [{ data: Object.values(times), backgroundColor: ['#fcd34d', '#f97316', '#8b5cf6', '#64748b'], borderWidth: 0, hoverOffset: 8 }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '75%', plugins: { legend: { position: 'bottom', labels: { color: '#cbd5e1', padding: 15, font: {size: 11} } } } } });
+
+            // 4. ระดับชั้น (แท่ง) - หั่นข้อความให้สั้นลงถ้ามีวงเล็บ
+            let gLabels = Object.keys(grades).map(l => l.split('(')[0].trim());
+            if(publicGradeChart) publicGradeChart.destroy();
+            publicGradeChart = new Chart(document.getElementById('publicGradeChart'), { type: 'bar', data: { labels: gLabels, datasets: [{ label: 'จำนวน (คน)', data: Object.values(grades), backgroundColor: '#10b981', borderRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false }, ticks: { color: '#cbd5e1', maxRotation: 45, minRotation: 45, font: {size: 10} } }, y: { grid: { color: '#334155', borderDash: [5,5] }, beginAtZero: true, ticks: { color: '#94a3b8' } } } } });
         }
 
         async function loadLandingActivities() {
@@ -359,15 +475,15 @@
                 }
                 
                 let html = '';
-                // 🌟 ดึงข้อมูลจากบนสุด 3 อันดับแรก (แถวที่ 2, 3 และ 4 ใน Google Sheets) ข้ามแถวหัวตาราง (แถวที่ 0)
+                // 🌟 ดึงข้อมูลจากบนสุด 3 อันดับแรก (แถวที่ 2, 3 และ 4)
                 const validRows = rows.slice(1).filter(row => row[0] && String(row[0]).trim() !== '');
                 const latestActivities = validRows.slice(0, 3);
                 
                 latestActivities.forEach(row => {
-                    const title = row[0] || '-';  // Name (Col A)
-                    const date = row[1] || '-';   // Year (Col B)
-                    const coverId = row[2] || ''; // CoverID (Col C)
-                    const desc = row[5] || '';    // Details (Col F)
+                    const title = row[0] || '-';  
+                    const date = row[1] || '-';   
+                    const coverId = row[2] || ''; 
+                    const desc = row[5] || '';    
                     
                     const imgUrl = coverId ? `https://drive.google.com/thumbnail?id=${coverId}&sz=w800` : '';
                     const img = imgUrl ? `<img src="${imgUrl}" class="w-full h-48 object-cover group-hover:scale-105 transition duration-700" referrerpolicy="no-referrer">` : `<div class="w-full h-48 bg-slate-50 flex items-center justify-center text-slate-300"><i class="ph ph-image text-4xl"></i></div>`;
@@ -380,7 +496,7 @@
                                 <h3 class="font-bold text-slate-800 mb-1 text-sm line-clamp-2 leading-snug font-kanit">${title}</h3>
                                 <p class="text-[11px] text-slate-500 line-clamp-2 mb-3 leading-relaxed font-sarabun">${desc}</p>
                                 <div class="mt-auto text-[10px] font-bold text-slate-400 flex items-center justify-between font-sarabun">
-                                    <span class="flex items-center gap-1.5"><div class="w-5 h-5 rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center"><i class="ph-fill ph-calendar-blank"></i></div> ${formatBE(date)}</span>
+                                    <span class="flex items-center gap-1.5"><div class="w-5 h-5 rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center"><i class="ph-fill ph-calendar-blank"></i></div> ${date}</span>
                                 </div>
                             </div>
                         </div>
@@ -406,8 +522,7 @@
         }
 
         document.addEventListener("DOMContentLoaded", () => {
-            loadPublicStatistics();
-            loadLandingActivities(); 
+            initDashboard();
             startHeroSlider(); 
         });
     </script>
