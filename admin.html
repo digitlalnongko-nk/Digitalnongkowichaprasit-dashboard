@@ -482,29 +482,97 @@
         function handleDrop(e) { e.preventDefault(); document.getElementById('dropZone').classList.remove('bg-emerald-100'); processFile(e.dataTransfer.files[0]); }
         function handleFileSelect(e) { processFile(e.target.files[0]); }
 
+        // แทนที่ฟังก์ชัน processFile, validateData, executeImport เดิมด้วยโค้ดชุดนี้ครับ
         function processFile(file) {
-    if(!file) return;
-    const res = document.getElementById('validationResult');
-    res.classList.remove('hidden');
-    res.innerHTML = `<div class="flex items-center justify-center p-6 bg-white rounded-2xl border border-slate-100"><div class="spinner text-emerald-500 mr-3"></div><span class="text-slate-600 font-medium text-sm">กำลังตรวจสอบโครงสร้างไฟล์...</span></div>`;
+            if(!file) return;
+            const res = document.getElementById('validationResult');
+            res.classList.remove('hidden');
+            res.innerHTML = `<div class="flex items-center justify-center p-6 bg-white rounded-2xl border border-slate-100"><div class="spinner text-emerald-500 mr-3"></div><span class="text-slate-600 font-medium text-sm">กำลังตรวจสอบและแปลงรูปแบบวันที่...</span></div>`;
 
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        try {
-            const data = new Uint8Array(e.target.result);
-            const workbook = XLSX.read(data, {type: 'array'});
-            const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-            
-            // 🌟 เพิ่ม { raw: false } บรรทัดนี้ เพื่อให้อ่านวันที่/เวลาเป็นข้อความตรงตาม Excel
-            const jsonData = XLSX.utils.sheet_to_json(worksheet, {defval: "", raw: false});
-            
-            setTimeout(() => validateData(jsonData, file.name), 800); 
-        } catch(error) { 
-            res.innerHTML = `<div class="bg-rose-50 border border-rose-200 p-4 rounded-xl text-sm"><p class="text-rose-700 font-medium"><i class="ph-fill ph-warning"></i> ไม่สามารถอ่านไฟล์ได้</p></div>`; 
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, {type: 'array'});
+                    const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+                    
+                    // 🌟 อ่านเป็น 2D Array ป้องกันคอลัมน์เคลื่อน
+                    const rawData = XLSX.utils.sheet_to_json(worksheet, {header: 1, defval: ""});
+                    
+                    let cleanedData = [];
+                    for(let i=0; i<rawData.length; i++) {
+                        let row = rawData[i];
+                        if(row.every(cell => !cell)) continue; // ข้ามแถวว่าง
+                        
+                        // ข้ามแถวหัวตารางจากไฟล์ Excel (ถ้ามี)
+                        if(String(row[0]).includes('จังหวัด') || String(row[2]).includes('วันที่')) continue;
+
+                        // 🌟 แปลงวันที่ (คอลัมน์ C) จาก 46204 เป็น วัน/เดือน/ปี
+                        let rDate = row[2];
+                        if(!isNaN(parseFloat(rDate)) && parseFloat(rDate) > 30000) {
+                            let d = new Date(Math.round((parseFloat(rDate) - 25569) * 86400 * 1000));
+                            row[2] = `'${d.getDate().toString().padStart(2,'0')}/${(d.getMonth()+1).toString().padStart(2,'0')}/${d.getFullYear()+543}`;
+                        } else {
+                            row[2] = `'` + row[2]; // ใส่ ' นำหน้ากัน Sheets แปลงค่า
+                        }
+
+                        // 🌟 แปลงเวลา (คอลัมน์ D) จาก 0.5 เป็น 12:00
+                        let rTime = row[3];
+                        if(!isNaN(parseFloat(rTime)) && parseFloat(rTime) < 1) {
+                            let totalSecs = Math.round(parseFloat(rTime) * 86400);
+                            let h = Math.floor(totalSecs / 3600);
+                            let m = Math.floor((totalSecs % 3600) / 60);
+                            row[3] = `'${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}`;
+                        } else {
+                            row[3] = `'` + row[3];
+                        }
+                        
+                        cleanedData.push(row);
+                    }
+                    setTimeout(() => validateData(cleanedData, file.name), 800); 
+                } catch(error) { 
+                    res.innerHTML = `<div class="bg-rose-50 border border-rose-200 p-4 rounded-xl text-sm"><p class="text-rose-700 font-medium"><i class="ph-fill ph-warning"></i> ไม่สามารถอ่านไฟล์ได้</p></div>`; 
+                }
+            };
+            reader.readAsArrayBuffer(file);
         }
-    };
-    reader.readAsArrayBuffer(file);
-}
+
+        function validateData(data, fileName) {
+            const res = document.getElementById('validationResult');
+            if(data.length === 0) { res.innerHTML = `<div class="bg-rose-50 border border-rose-200 p-4 rounded-xl text-sm"><p class="text-rose-700 font-medium"><i class="ph-fill ph-warning"></i> ไฟล์ไม่มีข้อมูล</p></div>`; return; }
+
+            readyToImportData = data;
+            res.innerHTML = `<div class="bg-emerald-50 rounded-2xl border border-emerald-200 shadow-sm p-5 flex flex-col sm:flex-row justify-between items-center gap-4"><div class="flex items-center gap-3"><i class="ph-fill ph-check-circle text-emerald-500 text-2xl"></i><div><h4 class="text-emerald-800 font-bold text-sm">ข้อมูลพร้อมนำเข้า</h4><p class="text-emerald-600 text-xs mt-0.5">พบข้อมูล <b>${data.length}</b> รายการ (ระบบจัดการวันที่/เวลาให้แล้ว)</p></div></div><button id="btnImport" onclick="executeImport()" class="w-full sm:w-auto px-6 py-2.5 bg-slate-800 text-white rounded-xl font-medium hover:bg-slate-900 transition shadow-sm text-sm font-kanit">ยืนยันนำเข้าข้อมูล</button></div>`;
+        }
+
+        async function executeImport() {
+            const btn = document.getElementById('btnImport');
+            if (!readyToImportData || readyToImportData.length === 0) return;
+
+            btn.innerHTML = '<div class="spinner"></div> กำลังนำเข้า...';
+            btn.disabled = true; btn.classList.add('opacity-70');
+
+            let successCount = 0; let failCount = 0;
+
+            for (let i = 0; i < readyToImportData.length; i++) {
+                const payload = { sheetName: "Usage", rowData: readyToImportData[i] };
+                try {
+                    const response = await fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) });
+                    const result = await response.json();
+                    if (result.status === 'success') successCount++; else failCount++;
+                } catch (err) { failCount++; }
+            }
+
+            if (failCount === 0) {
+                showSuccess(`นำเข้าสำเร็จ ${successCount} รายการ`);
+                document.getElementById('validationResult').classList.add('hidden');
+                document.getElementById('fileInput').value = '';
+                readyToImportData = [];
+            } else {
+                showError(`สำเร็จ ${successCount} ล้มเหลว ${failCount}`);
+                btn.disabled = false; btn.innerHTML = 'ลองใหม่อีกครั้ง'; btn.classList.remove('opacity-70');
+            }
+        }
 
         function validateData(data, fileName) {
             const res = document.getElementById('validationResult');
