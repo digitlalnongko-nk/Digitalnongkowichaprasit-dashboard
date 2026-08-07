@@ -483,23 +483,28 @@
         function handleFileSelect(e) { processFile(e.target.files[0]); }
 
         function processFile(file) {
-            if(!file) return;
-            const res = document.getElementById('validationResult');
-            res.classList.remove('hidden');
-            res.innerHTML = `<div class="flex items-center justify-center p-6 bg-white rounded-2xl border border-slate-100"><div class="spinner text-emerald-500 mr-3"></div><span class="text-slate-600 font-medium text-sm">กำลังตรวจสอบโครงสร้างไฟล์...</span></div>`;
+    if(!file) return;
+    const res = document.getElementById('validationResult');
+    res.classList.remove('hidden');
+    res.innerHTML = `<div class="flex items-center justify-center p-6 bg-white rounded-2xl border border-slate-100"><div class="spinner text-emerald-500 mr-3"></div><span class="text-slate-600 font-medium text-sm">กำลังตรวจสอบโครงสร้างไฟล์...</span></div>`;
 
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const data = new Uint8Array(e.target.result);
-                    const workbook = XLSX.read(data, {type: 'array'});
-                    const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-                    const jsonData = XLSX.utils.sheet_to_json(worksheet, {defval: ""});
-                    setTimeout(() => validateData(jsonData, file.name), 800); 
-                } catch(error) { res.innerHTML = `<div class="bg-rose-50 border border-rose-200 p-4 rounded-xl text-sm"><p class="text-rose-700 font-medium"><i class="ph-fill ph-warning"></i> ไม่สามารถอ่านไฟล์ได้</p></div>`; }
-            };
-            reader.readAsArrayBuffer(file);
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, {type: 'array'});
+            const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+            
+            // 🌟 เพิ่ม { raw: false } บรรทัดนี้ เพื่อให้อ่านวันที่/เวลาเป็นข้อความตรงตาม Excel
+            const jsonData = XLSX.utils.sheet_to_json(worksheet, {defval: "", raw: false});
+            
+            setTimeout(() => validateData(jsonData, file.name), 800); 
+        } catch(error) { 
+            res.innerHTML = `<div class="bg-rose-50 border border-rose-200 p-4 rounded-xl text-sm"><p class="text-rose-700 font-medium"><i class="ph-fill ph-warning"></i> ไม่สามารถอ่านไฟล์ได้</p></div>`; 
         }
+    };
+    reader.readAsArrayBuffer(file);
+}
 
         function validateData(data, fileName) {
             const res = document.getElementById('validationResult');
