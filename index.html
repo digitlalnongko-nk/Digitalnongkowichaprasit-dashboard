@@ -81,7 +81,7 @@
 
                     <h1 class="text-4xl md:text-5xl lg:text-6xl lg:leading-[1.15] font-extrabold text-slate-800 mb-6 tracking-tight font-kanit">
                         ศูนย์ดิจิทัลชุมชน <br/>
-                        <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-500">โรงเรียนหนองโกวิชาประสิทธิ์พิทยาคม</span>
+                        <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-500">โรงเรียนหนองโกวิชาประสิทธิ์ฯ</span>
                     </h1>
                     
                     <p class="text-slate-500 text-base md:text-lg max-w-lg mb-10 leading-relaxed font-light font-sarabun">
@@ -169,7 +169,7 @@
                         Open Data & Analytics
                     </span>
                     <h2 class="text-3xl md:text-4xl lg:text-5xl font-extrabold text-white leading-tight mb-4">สถิติการให้บริการของศูนย์ฯ</h2>
-                    <p class="text-slate-400 max-w-2xl mx-auto text-base font-sarabun">แสดงข้อมูลสถิติเฉพาะเดือนล่าสุด เพื่อวิเคราะห์ศักยภาพและการเข้าถึงเทคโนโลยีดิจิทัลของชุมชน</p>
+                    <p class="text-slate-400 max-w-2xl mx-auto text-base font-sarabun">แสดงข้อมูลสถิติภาพรวม เพื่อวิเคราะห์ศักยภาพและการเข้าถึงเทคโนโลยีดิจิทัลของชุมชน</p>
                 </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-6">
@@ -178,7 +178,7 @@
                             <div class="w-16 h-16 bg-emerald-500/20 text-emerald-400 rounded-2xl flex items-center justify-center text-3xl mb-4">
                                 <i class="ph-fill ph-users"></i>
                             </div>
-                            <p class="text-slate-400 text-sm font-medium mb-2 font-kanit">ผู้ใช้บริการ (เดือนล่าสุด)</p>
+                            <p class="text-slate-400 text-sm font-medium mb-2 font-kanit">ผู้ใช้บริการ (ทั้งหมด)</p>
                             <h3 class="text-5xl font-black text-white font-kanit" id="publicTotalUsers">0</h3>
                         </div>
                         
@@ -250,17 +250,15 @@
         let publicJobChart, publicTimeChart, publicGradeChart, publicGenderChart;
         Chart.defaults.font.family = "'Kanit', 'Prompt', sans-serif";
 
-        // 🌟 อัปเกรดระบบอ่านไฟล์ CSV ด้วย SheetJS (ตัดปัญหาสระ หรือลูกน้ำคั่น)
-        async function fetchCSV(url) {
+        async function fetchCSVAsArray(url) {
             try {
                 const res = await fetch(url);
                 const arrayBuffer = await res.arrayBuffer();
                 const data = new Uint8Array(arrayBuffer);
                 const workbook = XLSX.read(data, {type: 'array'});
                 const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-                
-                // ให้แปลงวันที่ใน CSV เป็น String สวยๆ อัตโนมัติ ป้องกันข้อมูลหาย
-                return XLSX.utils.sheet_to_json(worksheet, {defval: "", raw: false});
+                // 🌟 อ่านข้อมูลออกมาเป็น Array แบบแถวต่อแถว (Array of Arrays) ป้องกันชื่อหัวคอลัมน์คลาดเคลื่อน
+                return XLSX.utils.sheet_to_json(worksheet, {header: 1, defval: "", raw: false});
             } catch (err) { 
                 console.error(err);
                 return []; 
@@ -272,80 +270,46 @@
             return text.toString().replace(/\d{4}/g, year => { const y = parseInt(year); return (y < 2500) ? (y + 543) : y; });
         }
 
-        // 🌟 ยึดเดือนของข้อมูลที่อยู่ "บนสุด" เป็นหลักแทน (ดึงจากแถวแรกสุดของข้อมูล)
-        function getLatestMonthData(dataArray) {
-            if(!dataArray || dataArray.length === 0) return [];
-            
-            // หาคอลัมน์ชื่อ "วันที่เข้าใช้บริการ" (รับมือกับชื่อเพี้ยนๆ ในตาราง 22 คอลัมน์)
-            let dateKey = Object.keys(dataArray[0]).find(k => k.includes('วันที่')) || 'วันที่เข้าใช้บริการ';
-            
-            let lastRowDate = '';
-            // เริ่มหาจากบรรทัดบนสุดลงมา แทนที่จะหาจากล่างสุด
-            for(let i = 0; i < dataArray.length; i++) {
-                if(dataArray[i][dateKey]) { 
-                    lastRowDate = String(dataArray[i][dateKey]); 
-                    break; 
-                }
-            }
-            
-            if (!lastRowDate) return dataArray;
-
-            let latestMonthKey = lastRowDate;
-            if(lastRowDate.includes('-')) {
-                const parts = lastRowDate.split('-');
-                if(parts.length >= 2) latestMonthKey = parts[0] + '-' + parts[1];
-            } else if (lastRowDate.includes('/')) {
-                const parts = lastRowDate.split('/');
-                if(parts.length >= 2) latestMonthKey = parts[1] + '/' + parts[2];
-            } else if (lastRowDate.indexOf(' ') > 0) {
-                const parts = lastRowDate.split(' ');
-                latestMonthKey = parts[0] + ' ' + parts[1];
-            }
-
-            return dataArray.filter(row => {
-                const rowDate = String(row[dateKey] || '');
-                return rowDate.includes(latestMonthKey);
-            });
-        }
-
         async function loadPublicStatistics() {
             try {
-                const data = await fetchCSV(CSV_USAGE_URL); 
-                if(!data || data.length === 0) return;
+                const rows = await fetchCSVAsArray(CSV_USAGE_URL); 
+                if(!rows || rows.length <= 1) return;
 
-                // 🌟 ทำระบบค้นหาคอลัมน์แบบยืดหยุ่น เพื่อรับมือกับชื่อตาราง 22 คอลัมน์
-                const keys = Object.keys(data[0]);
-                const cCount = keys.find(k => k.includes('จำนวนผู้เข้าใช้') || k.includes('จำนวน (คน)')) || 'จำนวนผู้ใช้งาน';
-                const cDate = keys.find(k => k.includes('วันที่')) || 'วันที่เข้าใช้บริการ';
-                const cJob = keys.find(k => k.includes('ประเภทผู้ใช้บริการ') || k.includes('อาชีพ')) || 'อาชีพ';
-                const cGender = keys.find(k => k.includes('เพศ')) || 'เพศ';
-                const cTime = keys.find(k => k.includes('เวลา')) || 'เวลาเข้าใช้บริการ';
-                const cGrade = keys.find(k => k.includes('ระดับชั้น')) || 'ระดับชั้นของนักเรียน (ถ้าเป็นนักเรียน)';
-
-                const filteredData = getLatestMonthData(data);
-                
                 let total = 0; let jobs = {}; let genders = {}; let times = {}; let grades = {};
                 let uniqueDates = new Set();
 
-                filteredData.forEach(row => {
-                    let count = parseInt(row[cCount] || row['จำนวนผู้ใช้งาน'] || 1);
-                    if(!isNaN(count)) total += count;
+                // 🌟 อ้างอิงตาม Index (ตำแหน่งคอลัมน์) จากตาราง 22 คอลัมน์จริง 100%
+                const IDX_DATE = 2;   // คอลัมน์ C: วันที่เข้าใช้บริการ
+                const IDX_TIME = 3;   // คอลัมน์ D: เวลาเข้าใช้บริการ
+                const IDX_JOB = 4;    // คอลัมน์ E: ประเภทผู้ใช้บริการ
+                const IDX_CLASS = 5;  // คอลัมน์ F: ระดับชั้นของนักเรียน
+                const IDX_GENDER = 7; // คอลัมน์ H: เพศ
+                const IDX_COUNT = 20; // คอลัมน์ U: จำนวนผู้เข้าใช้งาน
 
-                    let dateStr = row[cDate] || '';
+                // ข้ามแถวที่ 0 (หัวตาราง) แล้วเริ่มวนลูปตั้งแต่แถวที่ 1 เป็นต้นไป
+                for (let i = 1; i < rows.length; i++) {
+                    const row = rows[i];
+                    if (!row || row.every(cell => !cell)) continue; // ข้ามแถวว่าง
+
+                    let count = parseInt(row[IDX_COUNT] || 1);
+                    if(isNaN(count) || count <= 0) count = 1;
+                    total += count;
+
+                    let dateStr = row[IDX_DATE] || '';
                     if (dateStr) uniqueDates.add(dateStr);
 
-                    let job = row[cJob] || 'ไม่ระบุ';
+                    let job = row[IDX_JOB] || 'ไม่ระบุ';
                     if(job.includes('นักเรียน') || job.includes('นักศึกษา')) job = 'นักเรียน/นักศึกษา';
                     else if(job !== 'ไม่ระบุ') job = 'ประชาชน/ทั่วไป';
                     jobs[job] = (jobs[job] || 0) + count;
 
-                    let gender = row[cGender] || 'ไม่ระบุ';
+                    let gender = row[IDX_GENDER] || 'ไม่ระบุ';
                     if (gender.includes('ชาย')) gender = 'ชาย';
                     else if (gender.includes('หญิง')) gender = 'หญิง';
                     else gender = 'ไม่ระบุ';
                     genders[gender] = (genders[gender] || 0) + count;
 
-                    let timeStr = row[cTime] || '';
+                    let timeStr = row[IDX_TIME] || '';
                     let timeCat = 'ไม่ระบุ';
                     if (timeStr) {
                         let hour = parseInt(timeStr.split(/[:.]/)[0]);
@@ -357,11 +321,11 @@
                     }
                     times[timeCat] = (times[timeCat] || 0) + count;
 
-                    let grade = row[cGrade] || '';
+                    let grade = row[IDX_CLASS] || '';
                     if (!grade && job === 'ประชาชน/ทั่วไป') grade = 'บุคคลทั่วไป';
                     else if (!grade) grade = 'ไม่ระบุ';
                     grades[grade] = (grades[grade] || 0) + count;
-                });
+                }
 
                 document.getElementById('publicTotalUsers').innerText = total.toLocaleString();
                 let dayCount = uniqueDates.size > 0 ? uniqueDates.size : 1;
@@ -388,25 +352,22 @@
             const container = document.getElementById('landingActivityContainer');
             if (!container) return;
             try {
-                const data = await fetchCSV(CSV_GALLERY_URL);
-                
-                // กรองเอาเฉพาะแถวที่มีข้อมูลชื่อกิจกรรม (ป้องกันดึงแถวว่างมาแสดง)
-                const validData = data.filter(row => row['Name'] && String(row['Name']).trim() !== '');
-                
-                if(!validData || validData.length === 0) { 
+                const rows = await fetchCSVAsArray(CSV_GALLERY_URL);
+                if(!rows || rows.length <= 1) { 
                     container.innerHTML = '<div class="col-span-full text-center py-10 text-slate-400 font-medium">ยังไม่มีรูปภาพกิจกรรม</div>'; 
                     return; 
                 }
                 
                 let html = '';
-                // 🌟 ดึงข้อมูลจากบนสุด 3 อันดับแรก (ตัดแถวบน 3 แถว)
-                const latestActivities = validData.slice(0, 3);
+                // 🌟 ดึงข้อมูลจากบนสุด 3 อันดับแรก (แถวที่ 2, 3 และ 4 ใน Google Sheets) ข้ามแถวหัวตาราง (แถวที่ 0)
+                const validRows = rows.slice(1).filter(row => row[0] && String(row[0]).trim() !== '');
+                const latestActivities = validRows.slice(0, 3);
                 
                 latestActivities.forEach(row => {
-                    const coverId = row['CoverID'] || '';
-                    const date = row['Year'] || '-';
-                    const title = row['Name'] || '-';
-                    const desc = row['Details'] || '';
+                    const title = row[0] || '-';  // Name (Col A)
+                    const date = row[1] || '-';   // Year (Col B)
+                    const coverId = row[2] || ''; // CoverID (Col C)
+                    const desc = row[5] || '';    // Details (Col F)
                     
                     const imgUrl = coverId ? `https://drive.google.com/thumbnail?id=${coverId}&sz=w800` : '';
                     const img = imgUrl ? `<img src="${imgUrl}" class="w-full h-48 object-cover group-hover:scale-105 transition duration-700" referrerpolicy="no-referrer">` : `<div class="w-full h-48 bg-slate-50 flex items-center justify-center text-slate-300"><i class="ph ph-image text-4xl"></i></div>`;
