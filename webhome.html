@@ -1,1 +1,130 @@
-อยู่ระหว่างการพัฒนา
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ข่าวสารและกิจกรรม</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* เพิ่ม Transition นุ่มๆ เวลาเปลี่ยนหน้า */
+        .fade-in { animation: fadeIn 0.5s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans p-6 md:p-12">
+
+    <div class="max-w-6xl mx-auto">
+        <!-- Header -->
+        <div class="flex justify-between items-end mb-8 border-b pb-4 border-gray-200">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900">ข่าวสารและกิจกรรม</h1>
+                <p class="text-gray-500 mt-2">อัปเดตผลงานและกิจกรรมล่าสุดของศูนย์ดิจิทัลชุมชนและโรงเรียน</p>
+            </div>
+            <!-- ปุ่มเลือกปี (Mockup) -->
+            <select class="hidden md:block bg-white border border-gray-300 text-gray-700 py-2 px-4 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <option value="all">ทุกปี</option>
+                <option value="2026">2026</option>
+                <option value="2025">2025</option>
+            </select>
+        </div>
+
+        <!-- News Container -->
+        <div id="news-container" class="grid grid-cols-1 md:grid-cols-3 gap-6 min-h-[400px] align-top">
+            <!-- ข้อมูลจะถูก Render ผ่าน JavaScript ที่นี่ -->
+        </div>
+
+        <!-- Pagination Controls -->
+        <div class="flex justify-center items-center mt-12 space-x-2" id="pagination-controls">
+            <!-- ปุ่มเปลี่ยนหน้าจะถูก Render ผ่าน JavaScript ที่นี่ -->
+        </div>
+    </div>
+
+    <script>
+        // ข้อมูลจำลอง (Mock Data) เน้นงานวิชาการและศูนย์ดิจิทัลชุมชน
+        const activitiesData = [
+            { id: 1, date: "15 พฤษภาคม 2026", title: "ประชุมวิเคราะห์แนวโน้มจำนวนนักเรียน", desc: "ร่วมวางแผนและนำเสนอโมเดลวิเคราะห์ข้อมูลสถิติการรับสมัครนักเรียน เพื่อพัฒนาแผนยุทธศาสตร์ของโรงเรียน", category: "วิชาการ" },
+            { id: 2, date: "20 เมษายน 2026", title: "ปรับปรุงโครงสร้างพื้นฐานเครือข่าย", desc: "เดินสาย Fiber Optic และติดตั้ง Access Point ครอบคลุมพื้นที่อาคารเรียน เพื่อรองรับการใช้งานอินเทอร์เน็ตความเร็วสูง", category: "IT Support" },
+            { id: 3, date: "10 เมษายน 2026", title: "เปิดระบบฐานข้อมูลผลการเรียนออนไลน์", desc: "เปิดตัวระบบเช็คเกรดและข้อมูลนักเรียนผ่าน Web Application ช่วยอำนวยความสะดวกให้ครูและนักเรียน", category: "ระบบสารสนเทศ" },
+            { id: 4, date: "5 มีนาคม 2026", title: "อบรม Cybersecurity สำหรับเยาวชน", desc: "จัดกิจกรรมให้ความรู้เรื่องความปลอดภัยของรหัสผ่าน และการดูแลสุขภาพสายตา (20-20-20 Rule) ในการใช้คอมพิวเตอร์", category: "ศูนย์ดิจิทัลชุมชน" },
+            { id: 5, date: "18 กุมภาพันธ์ 2026", title: "ผลิตสื่อวีดีโอประชาสัมพันธ์ศูนย์ฯ", desc: "ถ่ายทำและตัดต่อสื่อวีดีโอแนะนำบริการต่างๆ เช่น ห้องประชุม และการใช้ Smart Board", category: "ประชาสัมพันธ์" },
+            { id: 6, date: "25 มกราคม 2026", title: "กิจกรรมถ่ายภาพงานปัจฉิมนิเทศ", desc: "ให้บริการบันทึกภาพความประทับใจของนักเรียนที่สำเร็จการศึกษา พร้อมตกแต่งภาพด้วยโปรแกรมคุณภาพสูง", category: "กิจกรรมโรงเรียน" },
+            { id: 7, date: "10 พฤศจิกายน 2025", title: "พัฒนาระบบจัดหมวดหมู่ข้อมูลอัตโนมัติ", desc: "นำสคริปต์มาประยุกต์ใช้ในการจัดหมวดหมู่และจัดการเอกสารงานธุรการให้เป็นระบบมากยิ่งขึ้น", category: "ระบบสารสนเทศ" }
+        ];
+
+        const itemsPerPage = 3;
+        let currentPage = 1;
+
+        function renderActivities(page) {
+            const container = document.getElementById('news-container');
+            container.innerHTML = ''; 
+
+            const startIndex = (page - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const paginatedItems = activitiesData.slice(startIndex, endIndex);
+
+            paginatedItems.forEach(item => {
+                const card = `
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow duration-300 fade-in flex flex-col">
+                        <div class="h-48 bg-gray-200 w-full flex items-center justify-center text-gray-400">
+                            <!-- Placeholder สำหรับรูปภาพ -->
+                            <span class="text-sm">[ ภาพประกอบกิจกรรม ]</span>
+                        </div>
+                        <div class="p-6 flex flex-col flex-grow">
+                            <div class="flex justify-between items-center mb-3">
+                                <span class="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-1 rounded-full">${item.category}</span>
+                                <span class="text-xs text-gray-400">${item.date}</span>
+                            </div>
+                            <h3 class="text-lg font-bold text-gray-800 mb-2 leading-tight">${item.title}</h3>
+                            <p class="text-gray-600 text-sm mb-4 flex-grow">${item.desc}</p>
+                            <button class="text-sm text-blue-600 font-medium hover:text-blue-800 self-start mt-auto flex items-center">
+                                อ่านเพิ่มเติม 
+                                <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += card;
+            });
+        }
+
+        function renderPagination() {
+            const totalPages = Math.ceil(activitiesData.length / itemsPerPage);
+            const controlsContainer = document.getElementById('pagination-controls');
+            controlsContainer.innerHTML = '';
+
+            // ปุ่มย้อนกลับ
+            const prevBtn = document.createElement('button');
+            prevBtn.innerHTML = '&laquo;';
+            prevBtn.className = `px-3 py-1 rounded-md border ${currentPage === 1 ? 'text-gray-400 border-gray-200 cursor-not-allowed' : 'text-gray-700 border-gray-300 hover:bg-gray-100'}`;
+            prevBtn.disabled = currentPage === 1;
+            prevBtn.onclick = () => { if (currentPage > 1) { currentPage--; updateUI(); } };
+            controlsContainer.appendChild(prevBtn);
+
+            // ปุ่มตัวเลขหน้า
+            for (let i = 1; i <= totalPages; i++) {
+                const pageBtn = document.createElement('button');
+                pageBtn.innerText = i;
+                pageBtn.className = `px-3 py-1 rounded-md border ${currentPage === i ? 'bg-gray-800 text-white border-gray-800' : 'text-gray-700 border-gray-300 hover:bg-gray-100'}`;
+                pageBtn.onclick = () => { currentPage = i; updateUI(); };
+                controlsContainer.appendChild(pageBtn);
+            }
+
+            // ปุ่มถัดไป
+            const nextBtn = document.createElement('button');
+            nextBtn.innerHTML = '&raquo;';
+            nextBtn.className = `px-3 py-1 rounded-md border ${currentPage === totalPages ? 'text-gray-400 border-gray-200 cursor-not-allowed' : 'text-gray-700 border-gray-300 hover:bg-gray-100'}`;
+            nextBtn.disabled = currentPage === totalPages;
+            nextBtn.onclick = () => { if (currentPage < totalPages) { currentPage++; updateUI(); } };
+            controlsContainer.appendChild(nextBtn);
+        }
+
+        function updateUI() {
+            renderActivities(currentPage);
+            renderPagination();
+        }
+
+        // เริ่มการทำงานครั้งแรก
+        updateUI();
+    </script>
+</body>
+</html>
