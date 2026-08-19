@@ -289,18 +289,28 @@
             }
         }
 
-        // แปลงเดือนเป็นภาษาไทย
+        // แปลงเดือนเป็นภาษาไทย (แก้บั๊กจับปีและเดือน)
         function getThaiMonthName(dateStr) {
             if(!dateStr) return '';
+            let d = dateStr.replace(/^'/, '').trim(); // ลบ Single Quote ถ้ามี
             const months = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
-            if(dateStr.includes('/')) {
-                const p = dateStr.split('/');
-                return `เดือน ${months[parseInt(p[1])-1]} พ.ศ. ${p[2]}`;
-            } else if(dateStr.includes('-')) {
-                const p = dateStr.split('-');
-                return `เดือน ${months[parseInt(p[1])-1]} พ.ศ. ${parseInt(p[0])+543}`;
+            
+            if(d.includes('/')) {
+                const p = d.split('/');
+                let m = parseInt(p[1]);
+                let y = parseInt(p[2]);
+                if(y < 100) y += 2000; // แก้บั๊กปี 26 -> 2026
+                if(y < 2500) y += 543; // แปลง ค.ศ. เป็น พ.ศ.
+                return `เดือน ${months[m-1]} พ.ศ. ${y}`;
+            } else if(d.includes('-')) {
+                const p = d.split('-');
+                let y = parseInt(p[0]);
+                let m = parseInt(p[1]);
+                if(y < 100) y += 2000;
+                if(y < 2500) y += 543;
+                return `เดือน ${months[m-1]} พ.ศ. ${y}`;
             }
-            return dateStr;
+            return d;
         }
 
         async function initDashboard() {
@@ -308,48 +318,63 @@
                 const rows = await fetchCSVAsArray(CSV_USAGE_URL); 
                 if(!rows || rows.length <= 1) return;
 
-                // 🌟 อ้างอิง Index 22 คอลัมน์ 
-                const IDX_DATE = 2;   // Col C: วันที่เข้าใช้บริการ
-                const IDX_TIME = 3;   // Col D: เวลาเข้าใช้บริการ
-                const IDX_JOB = 4;    // Col E: อาชีพ
-                const IDX_CLASS = 5;  // Col F: ระดับชั้น
-                const IDX_GENDER = 7; // Col H: เพศ
-                const IDX_CAT = 13;   // Col N: หมวดหมู่การใช้งาน
-                const IDX_COUNT = 20; // Col U: จำนวนคน
+                const IDX_DATE = 2;   // วันที่
+                const IDX_TIME = 3;   // เวลา
+                const IDX_JOB = 4;    // อาชีพ
+                const IDX_CLASS = 5;  // ระดับชั้น
+                const IDX_GENDER = 7; // เพศ
+                const IDX_CAT = 13;   // หมวดหมู่
+                const IDX_COUNT = 20; // จำนวนคน
 
-                // 1. หาวันที่ "ล่าสุด" (อยู่บนสุดของตาราง - แถวที่ 1)
+                // 1. หาวันที่ "ล่าสุด"
                 let latestDate = '';
                 for (let i = 1; i < rows.length; i++) {
                     if (rows[i][IDX_DATE]) {
-                        latestDate = String(rows[i][IDX_DATE]).trim();
+                        latestDate = String(rows[i][IDX_DATE]).replace(/^'/, '').trim();
                         break;
                     }
                 }
                 latestDateGlobal = latestDate;
 
-                // 2. ดึงรหัส "เดือน-ปี" ล่าสุด
-                let monthKey = latestDate;
+                // 2. สกัดเดือนและปีล่าสุดเพื่อใช้เป็นตัวกรอง
+                let latestM = -1, latestY = -1;
                 if(latestDate.includes('/')) {
-                    const p = latestDate.split('/');
-                    if(p.length >= 2) monthKey = '/' + p[1] + '/' + p[2];
+                    let p = latestDate.split('/');
+                    latestM = parseInt(p[1]); latestY = parseInt(p[2]);
+                    if(latestY < 100) latestY += 2000;
                 } else if (latestDate.includes('-')) {
-                    const p = latestDate.split('-');
-                    if(p.length >= 2) monthKey = p[0] + '-' + p[1];
+                    let p = latestDate.split('-');
+                    latestY = parseInt(p[0]); latestM = parseInt(p[1]);
+                    if(latestY < 100) latestY += 2000;
                 }
 
                 document.getElementById('currentMonthText').innerText = getThaiMonthName(latestDate);
                 document.getElementById('latestDateLabel').innerText = `วันที่: ${latestDate}`;
 
-                // 3. กรองและจัดเก็บข้อมูลเฉพาะ "เดือนปัจจุบัน" ลงตัวแปร
                 let catsSet = new Set();
                 let classSet = new Set();
+                globalMonthData = []; 
 
+                // 3. กรองและจัดเก็บข้อมูลเฉพาะ "เดือนปัจจุบัน"
                 for (let i = 1; i < rows.length; i++) {
                     const r = rows[i];
                     if (!r || r.every(cell => !cell)) continue;
 
-                    let d = String(r[IDX_DATE] || '').trim();
-                    if(!d.includes(monthKey)) continue; // ข้ามข้อมูลเดือนเก่า
+                    let dRaw = String(r[IDX_DATE] || '').replace(/^'/, '').trim();
+                    let rM = -1, rY = -1;
+                    
+                    if(dRaw.includes('/')) {
+                        let p = dRaw.split('/');
+                        rM = parseInt(p[1]); rY = parseInt(p[2]);
+                        if(rY < 100) rY += 2000;
+                    } else if (dRaw.includes('-')) {
+                        let p = dRaw.split('-');
+                        rY = parseInt(p[0]); rM = parseInt(p[1]);
+                        if(rY < 100) rY += 2000;
+                    }
+
+                    // ข้ามข้อมูลที่ไม่ใช่เดือนและปีล่าสุด
+                    if(rM !== latestM || rY !== latestY) continue; 
 
                     let count = parseInt(r[IDX_COUNT] || 1);
                     if(isNaN(count) || count <= 0) count = 1;
@@ -357,14 +382,13 @@
                     let job = String(r[IDX_JOB] || 'ไม่ระบุ').trim();
                     let grade = String(r[IDX_CLASS] || '').trim();
                     let finalClass = grade ? grade : (job === 'ไม่ระบุ' ? 'บุคคลทั่วไป' : job);
-
                     let cat = String(r[IDX_CAT] || 'อื่นๆ').trim();
 
                     catsSet.add(cat);
                     classSet.add(finalClass);
 
                     globalMonthData.push({
-                        date: d,
+                        date: dRaw,
                         time: String(r[IDX_TIME] || '').trim(),
                         gender: String(r[IDX_GENDER] || 'ไม่ระบุ').trim(),
                         category: cat,
@@ -373,27 +397,26 @@
                     });
                 }
 
-                // 4. นำตัวเลือกใส่ Dropdown
                 const selCat = document.getElementById('filterCategory');
+                selCat.innerHTML = '<option value="ALL">-- ทุกหมวดหมู่กิจกรรม --</option>';
                 catsSet.forEach(c => selCat.innerHTML += `<option value="${c}">${c}</option>`);
                 
                 const selClass = document.getElementById('filterClass');
+                selClass.innerHTML = '<option value="ALL">-- ทุกระดับชั้น / อาชีพ --</option>';
                 classSet.forEach(c => selClass.innerHTML += `<option value="${c}">${c}</option>`);
 
-                // 5. ประมวลผลและวาดกราฟ
                 applyFilters();
 
             } catch(e) { console.log("Error loading stats:", e); }
         }
 
-        // ฟังก์ชันเมื่อมีการเปลี่ยน Dropdown
+        // ฟังก์ชันอัปเดตกราฟ (เปลี่ยนกราฟแท่งเป็นกราฟเส้น)
         function applyFilters() {
             if(globalMonthData.length === 0) return;
 
             const selectedCat = document.getElementById('filterCategory').value;
             const selectedClass = document.getElementById('filterClass').value;
 
-            // กรองข้อมูลตามที่เลือก
             let filtered = globalMonthData.filter(item => {
                 let mCat = (selectedCat === 'ALL' || item.category === selectedCat);
                 let mClass = (selectedClass === 'ALL' || item.classJob === selectedClass);
@@ -401,28 +424,27 @@
             });
 
             let total = 0; let todayTotal = 0;
-            let cats = {}; let genders = {}; let times = {}; let grades = {};
+            let cats = {}; let genders = {}; let times = {}; 
             let uniqueDates = new Set();
+            let classesInFilter = new Set(); 
 
             filtered.forEach(row => {
                 total += row.count;
                 if(row.date === latestDateGlobal) todayTotal += row.count;
                 uniqueDates.add(row.date);
+                classesInFilter.add(row.classJob);
 
-                // นับหมวดหมู่กิจกรรม
                 cats[row.category] = (cats[row.category] || 0) + row.count;
 
-                // นับเพศ
                 let gender = row.gender;
                 if (gender.includes('ชาย')) gender = 'ชาย';
                 else if (gender.includes('หญิง')) gender = 'หญิง';
                 else gender = 'ไม่ระบุ';
                 genders[gender] = (genders[gender] || 0) + row.count;
 
-                // นับช่วงเวลา
                 let timeCat = 'ไม่ระบุ';
                 if (row.time) {
-                    let hour = parseInt(row.time.split(/[:.]/)[0]);
+                    let hour = parseInt(row.time.replace(/^'/, '').split(/[:.]/)[0]);
                     if (!isNaN(hour)) {
                         if (hour < 12) timeCat = 'ช่วงเช้า';
                         else if (hour >= 12 && hour <= 13) timeCat = 'ช่วงกลางวัน';
@@ -430,38 +452,81 @@
                     }
                 }
                 times[timeCat] = (times[timeCat] || 0) + row.count;
-
-                // นับชั้น/อาชีพ
-                grades[row.classJob] = (grades[row.classJob] || 0) + row.count;
             });
 
-            // อัปเดตตัวเลข
             document.getElementById('publicTotalUsers').innerText = total.toLocaleString();
             document.getElementById('publicTodayUsers').innerText = todayTotal.toLocaleString();
             
             let dayCount = uniqueDates.size > 0 ? uniqueDates.size : 1;
             document.getElementById('publicAvgUsers').innerText = Math.round(total / dayCount).toLocaleString();
 
-            // อัปเดตกราฟทั้งหมด
             Chart.defaults.color = '#94a3b8';
             Chart.defaults.borderColor = 'rgba(255,255,255,0.05)';
 
-            // 1. หมวดหมู่กิจกรรม
             if(publicCatChart) publicCatChart.destroy();
             publicCatChart = new Chart(document.getElementById('publicCatChart'), { type: 'doughnut', data: { labels: Object.keys(cats), datasets: [{ data: Object.values(cats), backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#8b5cf6', '#ec4899', '#64748b'], borderWidth: 0, hoverOffset: 8 }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '75%', plugins: { legend: { position: 'right', labels: { color: '#cbd5e1', font: {size: 11} } } } } });
 
-            // 2. เพศ
             if(publicGenderChart) publicGenderChart.destroy();
             publicGenderChart = new Chart(document.getElementById('publicGenderChart'), { type: 'doughnut', data: { labels: Object.keys(genders), datasets: [{ data: Object.values(genders), backgroundColor: ['#3b82f6', '#ec4899', '#94a3b8'], borderWidth: 0, hoverOffset: 8 }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '75%', plugins: { legend: { position: 'bottom', labels: { color: '#cbd5e1', padding: 15, font: {size: 11} } } } } });
 
-            // 3. ช่วงเวลา
             if(publicTimeChart) publicTimeChart.destroy();
             publicTimeChart = new Chart(document.getElementById('publicTimeChart'), { type: 'doughnut', data: { labels: Object.keys(times), datasets: [{ data: Object.values(times), backgroundColor: ['#fcd34d', '#f97316', '#8b5cf6', '#64748b'], borderWidth: 0, hoverOffset: 8 }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '75%', plugins: { legend: { position: 'bottom', labels: { color: '#cbd5e1', padding: 15, font: {size: 11} } } } } });
 
-            // 4. ระดับชั้น (แท่ง) - หั่นข้อความให้สั้นลงถ้ามีวงเล็บ
-            let gLabels = Object.keys(grades).map(l => l.split('(')[0].trim());
+            // 4. แก้ไขเป็นกราฟเส้น (Line Chart) ตามระดับชั้น แบบหุ้น
+            let sortedDates = Array.from(uniqueDates).sort((a,b) => {
+                let pa = a.split('/'); let pb = b.split('/');
+                if(pa.length===3 && pb.length===3) return parseInt(pa[0]) - parseInt(pb[0]); // เรียงตามวันที่
+                return a.localeCompare(b);
+            });
+            
+            let lineDatasets = [];
+            let colors = ['#10b981', '#3b82f6', '#f59e0b', '#8b5cf6', '#ec4899', '#ef4444', '#06b6d4', '#f97316'];
+            let colorIdx = 0;
+
+            classesInFilter.forEach(cls => {
+                let dataPoints = sortedDates.map(d => {
+                    return filtered.filter(r => r.date === d && r.classJob === cls).reduce((sum, r) => sum + r.count, 0);
+                });
+                
+                let shortLabel = cls.split('(')[0].trim(); // ตัดวงเล็บออกให้ป้ายชื่อสั้นลง
+                lineDatasets.push({
+                    label: shortLabel,
+                    data: dataPoints,
+                    borderColor: colors[colorIdx % colors.length],
+                    backgroundColor: colors[colorIdx % colors.length],
+                    tension: 0.3, // ทำให้เส้นมีความโค้งสมูท
+                    borderWidth: 2,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    fill: false
+                });
+                colorIdx++;
+            });
+
+            // ทำแกน X เป็นวันที่แบบสั้น เช่น 7/1
+            let xLabels = sortedDates.map(d => {
+                let p = d.split('/');
+                return p.length >= 2 ? `${p[0]}/${p[1]}` : d;
+            });
+
             if(publicGradeChart) publicGradeChart.destroy();
-            publicGradeChart = new Chart(document.getElementById('publicGradeChart'), { type: 'bar', data: { labels: gLabels, datasets: [{ label: 'จำนวน (คน)', data: Object.values(grades), backgroundColor: '#10b981', borderRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false }, ticks: { color: '#cbd5e1', maxRotation: 45, minRotation: 45, font: {size: 10} } }, y: { grid: { color: '#334155', borderDash: [5,5] }, beginAtZero: true, ticks: { color: '#94a3b8' } } } } });
+            publicGradeChart = new Chart(document.getElementById('publicGradeChart'), { 
+                type: 'line', 
+                data: { labels: xLabels, datasets: lineDatasets }, 
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: { 
+                        legend: { display: true, position: 'top', labels: { color: '#cbd5e1', font: {size: 11}, usePointStyle: true, boxWidth: 8 } },
+                        tooltip: { callbacks: { label: (ctx) => ctx.parsed.y === 0 ? null : `${ctx.dataset.label}: ${ctx.parsed.y} คน` } } // ซ่อน Tooltip ถ้ายอดเป็น 0
+                    }, 
+                    scales: { 
+                        x: { grid: { display: false }, ticks: { color: '#cbd5e1', font: {size: 10} } }, 
+                        y: { grid: { color: '#334155', borderDash: [5,5] }, beginAtZero: true, ticks: { color: '#94a3b8', stepSize: 1 } } 
+                    } 
+                } 
+            });
         }
 
         async function loadLandingActivities() {
