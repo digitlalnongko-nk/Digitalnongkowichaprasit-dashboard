@@ -482,7 +482,7 @@
         function handleDrop(e) { e.preventDefault(); document.getElementById('dropZone').classList.remove('bg-emerald-100'); processFile(e.dataTransfer.files[0]); }
         function handleFileSelect(e) { processFile(e.target.files[0]); }
 
-        // แทนที่ฟังก์ชัน processFile, validateData, executeImport เดิมด้วยโค้ดชุดนี้ครับ
+         // แทนที่ฟังก์ชัน processFile, validateData, executeImport เก่าทั้งหมดด้วยชุดนี้
         function processFile(file) {
             if(!file) return;
             const res = document.getElementById('validationResult');
@@ -496,7 +496,7 @@
                     const workbook = XLSX.read(data, {type: 'array'});
                     const worksheet = workbook.Sheets[workbook.SheetNames[0]];
                     
-                    // 🌟 อ่านเป็น 2D Array ป้องกันคอลัมน์เคลื่อน
+                    // อ่านเป็น 2D Array {header: 1} ทำให้ข้อมูลแต่ละแถวเป็น Array ย่อย
                     const rawData = XLSX.utils.sheet_to_json(worksheet, {header: 1, defval: ""});
                     
                     let cleanedData = [];
@@ -504,27 +504,53 @@
                         let row = rawData[i];
                         if(row.every(cell => !cell)) continue; // ข้ามแถวว่าง
                         
-                        // ข้ามแถวหัวตารางจากไฟล์ Excel (ถ้ามี)
+                        // ข้ามแถวหัวตารางจากไฟล์ Excel (เช็คจากข้อความ)
                         if(String(row[0]).includes('จังหวัด') || String(row[2]).includes('วันที่')) continue;
 
-                        // 🌟 แปลงวันที่ (คอลัมน์ C) จาก 46204 เป็น วัน/เดือน/ปี
-                        let rDate = row[2];
-                        if(!isNaN(parseFloat(rDate)) && parseFloat(rDate) > 30000) {
+                        // 🌟 จัดการวันที่ (คอลัมน์ C คือ Index 2) 🌟
+                        let rDate = String(row[2] || '').trim();
+                        
+                        // 1. เช็กว่าเป็นเลข Excel Serial (เช่น 46204)
+                        if(!isNaN(parseFloat(rDate)) && parseFloat(rDate) > 30000 && !rDate.includes('/') && !rDate.includes('-')) {
                             let d = new Date(Math.round((parseFloat(rDate) - 25569) * 86400 * 1000));
                             row[2] = `'${d.getDate().toString().padStart(2,'0')}/${(d.getMonth()+1).toString().padStart(2,'0')}/${d.getFullYear()+543}`;
+                        } 
+                        // 2. เช็กว่าเป็นรูปแบบ ปี ค.ศ. / เดือน / วัน (ตามข้อสังเกตของคุณ YYYY/MM/DD หรือ YYYY-MM-DD)
+                        else if (rDate.includes('/') || rDate.includes('-')) {
+                            let sep = rDate.includes('/') ? '/' : '-';
+                            let parts = rDate.split(' ')[0].split(sep); // เอาเฉพาะส่วนวันที่
+                            
+                            if (parts.length === 3 && parts[0].length === 4) { // ปีนำหน้า
+                                let y = parseInt(parts[0]);
+                                let m = parts[1].padStart(2, '0');
+                                let d = parts[2].padStart(2, '0');
+                                if (y < 2500) y += 543; // แปลง ค.ศ. เป็น พ.ศ.
+                                row[2] = `'${d}/${m}/${y}`;
+                            } else if (parts.length === 3 && parts[2].length === 4) { // ปีอยู่หลังปกติ
+                                let d = parts[0].padStart(2, '0');
+                                let m = parts[1].padStart(2, '0');
+                                let y = parseInt(parts[2]);
+                                if (y < 2500) y += 543;
+                                row[2] = `'${d}/${m}/${y}`;
+                            } else {
+                                row[2] = `'` + rDate;
+                            }
                         } else {
-                            row[2] = `'` + row[2]; // ใส่ ' นำหน้ากัน Sheets แปลงค่า
+                            row[2] = `'` + rDate;
                         }
 
-                        // 🌟 แปลงเวลา (คอลัมน์ D) จาก 0.5 เป็น 12:00
-                        let rTime = row[3];
-                        if(!isNaN(parseFloat(rTime)) && parseFloat(rTime) < 1) {
+                        // 🌟 จัดการเวลา (คอลัมน์ D คือ Index 3) 🌟
+                        let rTime = String(row[3] || '').trim();
+                        if(!isNaN(parseFloat(rTime)) && parseFloat(rTime) < 1 && !rTime.includes(':')) {
                             let totalSecs = Math.round(parseFloat(rTime) * 86400);
                             let h = Math.floor(totalSecs / 3600);
                             let m = Math.floor((totalSecs % 3600) / 60);
                             row[3] = `'${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}`;
+                        } else if (rTime.includes(':')) {
+                            let tParts = rTime.split(':');
+                            row[3] = `'${tParts[0].padStart(2,'0')}:${tParts[1].padStart(2,'0')}`;
                         } else {
-                            row[3] = `'` + row[3];
+                            row[3] = `'` + rTime;
                         }
                         
                         cleanedData.push(row);
@@ -539,52 +565,20 @@
 
         function validateData(data, fileName) {
             const res = document.getElementById('validationResult');
-            if(data.length === 0) { res.innerHTML = `<div class="bg-rose-50 border border-rose-200 p-4 rounded-xl text-sm"><p class="text-rose-700 font-medium"><i class="ph-fill ph-warning"></i> ไฟล์ไม่มีข้อมูล</p></div>`; return; }
-
-            readyToImportData = data;
-            res.innerHTML = `<div class="bg-emerald-50 rounded-2xl border border-emerald-200 shadow-sm p-5 flex flex-col sm:flex-row justify-between items-center gap-4"><div class="flex items-center gap-3"><i class="ph-fill ph-check-circle text-emerald-500 text-2xl"></i><div><h4 class="text-emerald-800 font-bold text-sm">ข้อมูลพร้อมนำเข้า</h4><p class="text-emerald-600 text-xs mt-0.5">พบข้อมูล <b>${data.length}</b> รายการ (ระบบจัดการวันที่/เวลาให้แล้ว)</p></div></div><button id="btnImport" onclick="executeImport()" class="w-full sm:w-auto px-6 py-2.5 bg-slate-800 text-white rounded-xl font-medium hover:bg-slate-900 transition shadow-sm text-sm font-kanit">ยืนยันนำเข้าข้อมูล</button></div>`;
-        }
-
-        async function executeImport() {
-            const btn = document.getElementById('btnImport');
-            if (!readyToImportData || readyToImportData.length === 0) return;
-
-            btn.innerHTML = '<div class="spinner"></div> กำลังนำเข้า...';
-            btn.disabled = true; btn.classList.add('opacity-70');
-
-            let successCount = 0; let failCount = 0;
-
-            for (let i = 0; i < readyToImportData.length; i++) {
-                const payload = { sheetName: "Usage", rowData: readyToImportData[i] };
-                try {
-                    const response = await fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) });
-                    const result = await response.json();
-                    if (result.status === 'success') successCount++; else failCount++;
-                } catch (err) { failCount++; }
-            }
-
-            if (failCount === 0) {
-                showSuccess(`นำเข้าสำเร็จ ${successCount} รายการ`);
-                document.getElementById('validationResult').classList.add('hidden');
-                document.getElementById('fileInput').value = '';
-                readyToImportData = [];
-            } else {
-                showError(`สำเร็จ ${successCount} ล้มเหลว ${failCount}`);
-                btn.disabled = false; btn.innerHTML = 'ลองใหม่อีกครั้ง'; btn.classList.remove('opacity-70');
-            }
-        }
-
-        function validateData(data, fileName) {
-            const res = document.getElementById('validationResult');
             let errors = [];
             if(data.length === 0) { res.innerHTML = `<div class="bg-rose-50 border border-rose-200 p-4 rounded-xl text-sm"><p class="text-rose-700 font-medium"><i class="ph-fill ph-warning"></i> ไฟล์ไม่มีข้อมูล</p></div>`; return; }
 
             data.forEach((row, index) => {
                 const rowNum = index + 2; 
-                if (!row['วันที่เข้าใช้บริการ']) errors.push(`แถว ${rowNum}: ขาด "วันที่เข้าใช้บริการ"`);
-                if (!row['เวลาเข้าใช้บริการ']) errors.push(`แถว ${rowNum}: ขาด "เวลาเข้าใช้บริการ"`);
-                let count = row['จำนวนผู้เข้าใช้งาน'];
-                if (!count || isNaN(count) || parseInt(count) <= 0) errors.push(`แถว ${rowNum}: "จำนวนผู้เข้าใช้งาน" ต้องระบุเป็นตัวเลข`);
+                // ✅ แก้บั๊ก: เข้าถึงข้อมูลผ่าน Index แทนชื่อคอลัมน์ (ตามโครงสร้าง Array)
+                // Index 2 = คอลัมน์ C (วันที่), Index 3 = คอลัมน์ D (เวลา), Index 20 = คอลัมน์ U (จำนวน)
+                let dateVal = String(row[2] || '').replace(/'/g, '').trim();
+                let timeVal = String(row[3] || '').replace(/'/g, '').trim();
+                let countVal = row[20];
+
+                if (!dateVal) errors.push(`แถว ${rowNum}: ขาด "วันที่เข้าใช้บริการ" (คอลัมน์ C)`);
+                if (!timeVal) errors.push(`แถว ${rowNum}: ขาด "เวลาเข้าใช้บริการ" (คอลัมน์ D)`);
+                if (!countVal || isNaN(countVal) || parseInt(countVal) <= 0) errors.push(`แถว ${rowNum}: "จำนวนผู้เข้าใช้งาน" ต้องระบุเป็นตัวเลข (คอลัมน์ U)`);
             });
 
             if (errors.length > 0) {
@@ -607,7 +601,8 @@
             let successCount = 0; let failCount = 0;
 
             for (let i = 0; i < readyToImportData.length; i++) {
-                const payload = { sheetName: "Usage", rowData: Object.values(readyToImportData[i]) };
+                // ✅ แก้บั๊ก: ส่ง rowData เป็น Array กลับไปยัง Google Script ได้โดยตรง
+                const payload = { sheetName: "Usage", rowData: readyToImportData[i] };
                 try {
                     const response = await fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) });
                     const result = await response.json();
