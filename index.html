@@ -262,15 +262,15 @@
         </footer>
     </div>
 
-    <script>
+<script>
         document.addEventListener('contextmenu', event => event.preventDefault());
 
         const CSV_USAGE_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRZZibUzzgdZ-lCiuC2r9LdaYrjHZKnbUdOYCxJLDaIF4qUmxw8LuKX1FlXr2ADxHPNknSsiWTkncqJ/pub?gid=0&single=true&output=csv";
         const CSV_GALLERY_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTOumFScq6lLZNOElqE0ATrEyN1B8jmPVBGEvVJ16Fgt8FZzOtr1o6eKNoJbXag2hvpfDZBrwYL5I0B/pub?output=csv";
 
         let publicCatChart, publicTimeChart, publicGradeChart, publicGenderChart;
-        let globalMonthData = []; // เก็บข้อมูลเฉพาะของเดือนปัจจุบันไว้สำหรับฟิลเตอร์
-        let latestDateGlobal = ''; // วันที่ล่าสุดของเดือน
+        let globalMonthData = []; 
+        let latestDateGlobal = ''; 
 
         Chart.defaults.font.family = "'Kanit', 'Prompt', sans-serif";
 
@@ -289,28 +289,31 @@
             }
         }
 
-        // แปลงเดือนเป็นภาษาไทย (แก้บั๊กจับปีและเดือน)
-        function getThaiMonthName(dateStr) {
-            if(!dateStr) return '';
-            let d = dateStr.replace(/^'/, '').trim(); // ลบ Single Quote ถ้ามี
-            const months = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
+        // ฟังก์ชันแปลงวันที่ให้เป็น Object ที่คำนวณได้ง่าย
+        function parseDateObj(dateStr) {
+            if(!dateStr) return null;
+            let str = String(dateStr).replace(/^'/, '').trim().split(' ')[0];
+            let d = -1, m = -1, y = -1;
             
-            if(d.includes('/')) {
-                const p = d.split('/');
-                let m = parseInt(p[1]);
-                let y = parseInt(p[2]);
-                if(y < 100) y += 2000; // แก้บั๊กปี 26 -> 2026
-                if(y < 2500) y += 543; // แปลง ค.ศ. เป็น พ.ศ.
-                return `เดือน ${months[m-1]} พ.ศ. ${y}`;
-            } else if(d.includes('-')) {
-                const p = d.split('-');
-                let y = parseInt(p[0]);
-                let m = parseInt(p[1]);
-                if(y < 100) y += 2000;
-                if(y < 2500) y += 543;
-                return `เดือน ${months[m-1]} พ.ศ. ${y}`;
-            }
-            return d;
+            if(str.includes('/')) {
+                let p = str.split('/');
+                d = parseInt(p[0], 10); m = parseInt(p[1], 10); y = parseInt(p[2], 10);
+            } else if(str.includes('-')) {
+                let p = str.split('-');
+                y = parseInt(p[0], 10); m = parseInt(p[1], 10); d = parseInt(p[2], 10);
+            } else { return null; }
+
+            // ปรับปีให้อยู่ในรูปแบบ พ.ศ. 25XX และ ค.ศ. สำหรับสร้าง Date Object
+            let ceYear = y, beYear = y;
+            if (y > 2400) { ceYear = y - 543; beYear = y; } 
+            else if (y < 100) { ceYear = y + 2000; beYear = y + 2543; } 
+            else { beYear = y + 543; }
+
+            return {
+                d: d, m: m, y_be: beYear, y_ce: ceYear,
+                dateObj: new Date(ceYear, m - 1, d), // ไว้ใช้เรียงลำดับ
+                display: `${d}/${m}/${beYear}`       // ไว้แสดงผล
+            };
         }
 
         async function initDashboard() {
@@ -318,84 +321,86 @@
                 const rows = await fetchCSVAsArray(CSV_USAGE_URL); 
                 if(!rows || rows.length <= 1) return;
 
-                const IDX_DATE = 2;   // วันที่
-                const IDX_TIME = 3;   // เวลา
-                const IDX_JOB = 4;    // อาชีพ
-                const IDX_CLASS = 5;  // ระดับชั้น
-                const IDX_GENDER = 7; // เพศ
-                const IDX_CAT = 13;   // หมวดหมู่
-                const IDX_COUNT = 20; // จำนวนคน
+                // 1. Auto-Detect Columns จับคู่คอลัมน์อัตโนมัติจาก Header
+                const headers = rows[0].map(h => String(h).trim());
+                const cDate = headers.findIndex(h => h.includes("วันที่เข้าใช้"));
+                const cTime = headers.findIndex(h => h.includes("เวลาเข้าใช้"));
+                const cClass = headers.findIndex(h => h.includes("ระดับชั้น"));
+                const cJob = headers.findIndex(h => h.includes("อาชีพ"));
+                const cGen = headers.findIndex(h => h === "เพศ");
+                const cCat = headers.findIndex(h => h.includes("หมวดหมู่"));
+                const cCount = headers.findIndex(h => h.includes("จำนวนผู้"));
 
-                // 1. หาวันที่ "ล่าสุด"
-                let latestDate = '';
+                const IDX_DATE = cDate !== -1 ? cDate : 2;
+                const IDX_TIME = cTime !== -1 ? cTime : 3;
+                const IDX_CLASS = cClass !== -1 ? cClass : 5;
+                const IDX_JOB = cJob !== -1 ? cJob : 4;
+                const IDX_GENDER = cGen !== -1 ? cGen : 7;
+                const IDX_CAT = cCat !== -1 ? cCat : 13;
+                const IDX_COUNT = cCount !== -1 ? cCount : 20;
+
+                let validRecords = [];
+                let maxDateObj = null;
+
+                // 2. ล้างข้อมูล คัดเฉพาะที่มีวันที่ และหาวันที่ "ล่าสุดที่สุด"
                 for (let i = 1; i < rows.length; i++) {
-                    if (rows[i][IDX_DATE]) {
-                        latestDate = String(rows[i][IDX_DATE]).replace(/^'/, '').trim();
-                        break;
-                    }
-                }
-                latestDateGlobal = latestDate;
+                    let r = rows[i];
+                    if(!r || r.length === 0 || !r[IDX_DATE]) continue;
 
-                // 2. สกัดเดือนและปีล่าสุดเพื่อใช้เป็นตัวกรอง
-                let latestM = -1, latestY = -1;
-                if(latestDate.includes('/')) {
-                    let p = latestDate.split('/');
-                    latestM = parseInt(p[1]); latestY = parseInt(p[2]);
-                    if(latestY < 100) latestY += 2000;
-                } else if (latestDate.includes('-')) {
-                    let p = latestDate.split('-');
-                    latestY = parseInt(p[0]); latestM = parseInt(p[1]);
-                    if(latestY < 100) latestY += 2000;
-                }
+                    let parsed = parseDateObj(r[IDX_DATE]);
+                    if(!parsed) continue;
 
-                document.getElementById('currentMonthText').innerText = getThaiMonthName(latestDate);
-                document.getElementById('latestDateLabel').innerText = `วันที่: ${latestDate}`;
-
-                let catsSet = new Set();
-                let classSet = new Set();
-                globalMonthData = []; 
-
-                // 3. กรองและจัดเก็บข้อมูลเฉพาะ "เดือนปัจจุบัน"
-                for (let i = 1; i < rows.length; i++) {
-                    const r = rows[i];
-                    if (!r || r.every(cell => !cell)) continue;
-
-                    let dRaw = String(r[IDX_DATE] || '').replace(/^'/, '').trim();
-                    let rM = -1, rY = -1;
-                    
-                    if(dRaw.includes('/')) {
-                        let p = dRaw.split('/');
-                        rM = parseInt(p[1]); rY = parseInt(p[2]);
-                        if(rY < 100) rY += 2000;
-                    } else if (dRaw.includes('-')) {
-                        let p = dRaw.split('-');
-                        rY = parseInt(p[0]); rM = parseInt(p[1]);
-                        if(rY < 100) rY += 2000;
+                    // หาวันที่ล่าสุด
+                    if(!maxDateObj || parsed.dateObj > maxDateObj.dateObj) {
+                        maxDateObj = parsed;
                     }
 
-                    // ข้ามข้อมูลที่ไม่ใช่เดือนและปีล่าสุด
-                    if(rM !== latestM || rY !== latestY) continue; 
-
-                    let count = parseInt(r[IDX_COUNT] || 1);
+                    let count = parseInt(r[IDX_COUNT], 10);
                     if(isNaN(count) || count <= 0) count = 1;
 
-                    let job = String(r[IDX_JOB] || 'ไม่ระบุ').trim();
+                    let timeStr = String(r[IDX_TIME] || '').replace(/^'/, '').trim();
+                    let job = String(r[IDX_JOB] || '').trim();
                     let grade = String(r[IDX_CLASS] || '').trim();
-                    let finalClass = grade ? grade : (job === 'ไม่ระบุ' ? 'บุคคลทั่วไป' : job);
+                    let gen = String(r[IDX_GENDER] || 'ไม่ระบุ').trim();
                     let cat = String(r[IDX_CAT] || 'อื่นๆ').trim();
 
-                    catsSet.add(cat);
-                    classSet.add(finalClass);
+                    if(!cat) cat = "อื่นๆ";
+                    let finalClass = grade ? grade : (job && job !== 'ไม่ระบุ' ? job : 'บุคคลทั่วไป');
 
-                    globalMonthData.push({
-                        date: dRaw,
-                        time: String(r[IDX_TIME] || '').trim(),
-                        gender: String(r[IDX_GENDER] || 'ไม่ระบุ').trim(),
+                    validRecords.push({
+                        parsedDate: parsed,
+                        time: timeStr,
+                        gender: gen,
                         category: cat,
                         classJob: finalClass,
                         count: count
                     });
                 }
+
+                if(!maxDateObj) {
+                    document.getElementById('currentMonthText').innerText = "ไม่พบข้อมูล";
+                    return;
+                }
+
+                // 3. กรองให้เหลือแค่ "เดือนปัจจุบัน" (เดือนเดียวกับวันที่ล่าสุด)
+                let targetMonth = maxDateObj.m;
+                let targetYear = maxDateObj.y_be;
+                latestDateGlobal = maxDateObj.display;
+
+                globalMonthData = validRecords.filter(r => r.parsedDate.m === targetMonth && r.parsedDate.y_be === targetYear);
+
+                // อัปเดตข้อความบนจอ
+                const monthsTh = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
+                document.getElementById('currentMonthText').innerText = `เดือน ${monthsTh[targetMonth - 1]} พ.ศ. ${targetYear}`;
+                document.getElementById('latestDateLabel').innerText = `วันที่: ${maxDateObj.display}`;
+
+                // 4. สกัดตัวเลือกหมวดหมู่และระดับชั้นสำหรับ Dropdown
+                let catsSet = new Set();
+                let classSet = new Set();
+                globalMonthData.forEach(r => {
+                    catsSet.add(r.category);
+                    classSet.add(r.classJob);
+                });
 
                 const selCat = document.getElementById('filterCategory');
                 selCat.innerHTML = '<option value="ALL">-- ทุกหมวดหมู่กิจกรรม --</option>';
@@ -405,18 +410,19 @@
                 selClass.innerHTML = '<option value="ALL">-- ทุกระดับชั้น / อาชีพ --</option>';
                 classSet.forEach(c => selClass.innerHTML += `<option value="${c}">${c}</option>`);
 
+                // สั่งวาดกราฟ
                 applyFilters();
 
             } catch(e) { console.log("Error loading stats:", e); }
         }
 
-        // ฟังก์ชันอัปเดตกราฟ (เปลี่ยนกราฟแท่งเป็นกราฟเส้น)
         function applyFilters() {
             if(globalMonthData.length === 0) return;
 
             const selectedCat = document.getElementById('filterCategory').value;
             const selectedClass = document.getElementById('filterClass').value;
 
+            // กรองตาม Dropdown
             let filtered = globalMonthData.filter(item => {
                 let mCat = (selectedCat === 'ALL' || item.category === selectedCat);
                 let mClass = (selectedClass === 'ALL' || item.classJob === selectedClass);
@@ -425,14 +431,22 @@
 
             let total = 0; let todayTotal = 0;
             let cats = {}; let genders = {}; let times = {}; 
-            let uniqueDates = new Set();
+            
+            let uniqueDatesObj = [];
+            let uniqueDatesSet = new Set();
             let classesInFilter = new Set(); 
 
             filtered.forEach(row => {
                 total += row.count;
-                if(row.date === latestDateGlobal) todayTotal += row.count;
-                uniqueDates.add(row.date);
+                if(row.parsedDate.display === latestDateGlobal) todayTotal += row.count;
+                
                 classesInFilter.add(row.classJob);
+
+                let dKey = row.parsedDate.dateObj.getTime();
+                if(!uniqueDatesSet.has(dKey)) {
+                    uniqueDatesSet.add(dKey);
+                    uniqueDatesObj.push(row.parsedDate);
+                }
 
                 cats[row.category] = (cats[row.category] || 0) + row.count;
 
@@ -444,7 +458,7 @@
 
                 let timeCat = 'ไม่ระบุ';
                 if (row.time) {
-                    let hour = parseInt(row.time.replace(/^'/, '').split(/[:.]/)[0]);
+                    let hour = parseInt(row.time.split(/[:.]/)[0]);
                     if (!isNaN(hour)) {
                         if (hour < 12) timeCat = 'ช่วงเช้า';
                         else if (hour >= 12 && hour <= 13) timeCat = 'ช่วงกลางวัน';
@@ -454,15 +468,16 @@
                 times[timeCat] = (times[timeCat] || 0) + row.count;
             });
 
+            // อัปเดตตัวเลข
             document.getElementById('publicTotalUsers').innerText = total.toLocaleString();
             document.getElementById('publicTodayUsers').innerText = todayTotal.toLocaleString();
-            
-            let dayCount = uniqueDates.size > 0 ? uniqueDates.size : 1;
+            let dayCount = uniqueDatesObj.length > 0 ? uniqueDatesObj.length : 1;
             document.getElementById('publicAvgUsers').innerText = Math.round(total / dayCount).toLocaleString();
 
             Chart.defaults.color = '#94a3b8';
             Chart.defaults.borderColor = 'rgba(255,255,255,0.05)';
 
+            // วาดกราฟวงกลม
             if(publicCatChart) publicCatChart.destroy();
             publicCatChart = new Chart(document.getElementById('publicCatChart'), { type: 'doughnut', data: { labels: Object.keys(cats), datasets: [{ data: Object.values(cats), backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#8b5cf6', '#ec4899', '#64748b'], borderWidth: 0, hoverOffset: 8 }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '75%', plugins: { legend: { position: 'right', labels: { color: '#cbd5e1', font: {size: 11} } } } } });
 
@@ -472,29 +487,25 @@
             if(publicTimeChart) publicTimeChart.destroy();
             publicTimeChart = new Chart(document.getElementById('publicTimeChart'), { type: 'doughnut', data: { labels: Object.keys(times), datasets: [{ data: Object.values(times), backgroundColor: ['#fcd34d', '#f97316', '#8b5cf6', '#64748b'], borderWidth: 0, hoverOffset: 8 }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '75%', plugins: { legend: { position: 'bottom', labels: { color: '#cbd5e1', padding: 15, font: {size: 11} } } } } });
 
-            // 4. แก้ไขเป็นกราฟเส้น (Line Chart) ตามระดับชั้น แบบหุ้น
-            let sortedDates = Array.from(uniqueDates).sort((a,b) => {
-                let pa = a.split('/'); let pb = b.split('/');
-                if(pa.length===3 && pb.length===3) return parseInt(pa[0]) - parseInt(pb[0]); // เรียงตามวันที่
-                return a.localeCompare(b);
-            });
+            // สร้างกราฟเส้น (Line Chart) เรียงวันที่ตามปฏิทิน
+            uniqueDatesObj.sort((a,b) => a.dateObj - b.dateObj); // เรียงจากเก่าไปใหม่
             
             let lineDatasets = [];
             let colors = ['#10b981', '#3b82f6', '#f59e0b', '#8b5cf6', '#ec4899', '#ef4444', '#06b6d4', '#f97316'];
             let colorIdx = 0;
 
             classesInFilter.forEach(cls => {
-                let dataPoints = sortedDates.map(d => {
-                    return filtered.filter(r => r.date === d && r.classJob === cls).reduce((sum, r) => sum + r.count, 0);
+                let dataPoints = uniqueDatesObj.map(dateObj => {
+                    return filtered.filter(r => r.parsedDate.display === dateObj.display && r.classJob === cls).reduce((sum, r) => sum + r.count, 0);
                 });
                 
-                let shortLabel = cls.split('(')[0].trim(); // ตัดวงเล็บออกให้ป้ายชื่อสั้นลง
+                let shortLabel = cls.split('(')[0].trim();
                 lineDatasets.push({
                     label: shortLabel,
                     data: dataPoints,
                     borderColor: colors[colorIdx % colors.length],
                     backgroundColor: colors[colorIdx % colors.length],
-                    tension: 0.3, // ทำให้เส้นมีความโค้งสมูท
+                    tension: 0.3,
                     borderWidth: 2,
                     pointRadius: 4,
                     pointHoverRadius: 6,
@@ -503,11 +514,7 @@
                 colorIdx++;
             });
 
-            // ทำแกน X เป็นวันที่แบบสั้น เช่น 7/1
-            let xLabels = sortedDates.map(d => {
-                let p = d.split('/');
-                return p.length >= 2 ? `${p[0]}/${p[1]}` : d;
-            });
+            let xLabels = uniqueDatesObj.map(obj => `${obj.d}/${obj.m}`);
 
             if(publicGradeChart) publicGradeChart.destroy();
             publicGradeChart = new Chart(document.getElementById('publicGradeChart'), { 
@@ -519,7 +526,7 @@
                     interaction: { mode: 'index', intersect: false },
                     plugins: { 
                         legend: { display: true, position: 'top', labels: { color: '#cbd5e1', font: {size: 11}, usePointStyle: true, boxWidth: 8 } },
-                        tooltip: { callbacks: { label: (ctx) => ctx.parsed.y === 0 ? null : `${ctx.dataset.label}: ${ctx.parsed.y} คน` } } // ซ่อน Tooltip ถ้ายอดเป็น 0
+                        tooltip: { callbacks: { label: (ctx) => ctx.parsed.y === 0 ? null : `${ctx.dataset.label}: ${ctx.parsed.y} คน` } } 
                     }, 
                     scales: { 
                         x: { grid: { display: false }, ticks: { color: '#cbd5e1', font: {size: 10} } }, 
@@ -540,7 +547,6 @@
                 }
                 
                 let html = '';
-                // 🌟 ดึงข้อมูลจากบนสุด 3 อันดับแรก (แถวที่ 2, 3 และ 4)
                 const validRows = rows.slice(1).filter(row => row[0] && String(row[0]).trim() !== '');
                 const latestActivities = validRows.slice(0, 3);
                 
@@ -585,10 +591,11 @@
                 }, 500); 
             }, 4000); 
         }
+        
         document.addEventListener("DOMContentLoaded", () => {
             initDashboard();
             startHeroSlider(); 
-            loadLandingActivities(); // <-- เพิ่มบรรทัดนี้เพื่อให้ฟังก์ชันดึงรูปภาพทำงาน
+            loadLandingActivities(); 
         });
     </script>
 </body>
