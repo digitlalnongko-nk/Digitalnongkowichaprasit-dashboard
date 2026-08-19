@@ -21,7 +21,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&family=Kanit:wght@400;500;600&family=Sarabun:wght@400;500;600&display=swap" rel="stylesheet">
     
-    <style> 
+   <style> 
         body { 
             font-family: 'Prompt', sans-serif; 
             background-color: #F8FAFC; 
@@ -41,6 +41,14 @@
         }
         .animate-blob { animation: blob 7s infinite; }
         .animation-delay-2000 { animation-delay: 2s; }
+
+        /* ✅ เพิ่มส่วนนี้เพื่อบังคับสี Dropdown ให้มองเห็นชัดเจน */
+        select option {
+            background-color: #1e293b; /* พื้นหลังสีเข้ม */
+            color: #f8fafc; /* ข้อความสีสว่าง */
+            font-family: 'Sarabun', sans-serif;
+            padding: 8px;
+        }
     </style>
 </head>
 
@@ -262,7 +270,7 @@
         </footer>
     </div>
 
-<script>
+    <script>
         document.addEventListener('contextmenu', event => event.preventDefault());
 
         const CSV_USAGE_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRZZibUzzgdZ-lCiuC2r9LdaYrjHZKnbUdOYCxJLDaIF4qUmxw8LuKX1FlXr2ADxHPNknSsiWTkncqJ/pub?gid=0&single=true&output=csv";
