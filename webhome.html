@@ -1,1 +1,337 @@
-อยู่ระหว่างการพัฒนาระบบการให้บริการ ท่านสามารถรับข่าวสารได้ที่หน้าหลักก่อนเข้า เว็บไซต์
+<!DOCTYPE html>
+<html lang="th" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>หน้าหลัก - ศูนย์ดิจิทัลชุมชน รร.หนองโกวิชาประสิทธิ์พิทยาคม</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&family=Kanit:wght@400;500;600&family=Sarabun:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <style> 
+        body { 
+            font-family: 'Prompt', sans-serif; 
+            background-color: #fdfdfd; 
+            color: #334155; 
+        }
+        /* Glass Navbar ที่ดูคลีนกว่าเดิม */
+        .nav-blur {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+        /* เอฟเฟกต์การ์ดข่าว */
+        .news-card { transition: transform 0.3s ease, box-shadow 0.3s ease; }
+        .news-card:hover { transform: translateY(-5px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); }
+        /* Animation ตอนเปลี่ยนหน้าข่าว */
+        .fade-in { animation: fadeIn 0.4s ease-in-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- Navbar -->
+    <nav class="nav-blur fixed top-0 w-full z-50 px-6 py-4 transition-all duration-300">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-emerald-600 rounded-xl flex items-center justify-center text-white text-xl shadow-lg shadow-emerald-600/20">
+                    <i class="ph-bold ph-graduation-cap"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-slate-800 text-lg leading-none font-kanit">Digital Nongko</h1>
+                    <p class="text-[10px] text-emerald-600 font-bold tracking-wider">LEARNING HUB</p>
+                </div>
+            </div>
+            <div class="hidden md:flex items-center gap-8 text-sm font-medium text-slate-600 font-sarabun">
+                <a href="#hero" class="hover:text-emerald-600 transition">หน้าแรก</a>
+                <a href="#news-section" class="hover:text-emerald-600 transition">ข่าวสารและกิจกรรม</a>
+                <a href="#about-section" class="hover:text-emerald-600 transition">ติดต่อโรงเรียน</a>
+            </div>
+            <div>
+                <a href="index.html" class="bg-slate-100 text-slate-700 border border-slate-200 px-5 py-2.5 rounded-full hover:bg-slate-200 transition font-kanit text-sm flex items-center gap-2 font-bold">
+                    <i class="ph-bold ph-chart-bar"></i> ดูสถิติศูนย์ฯ
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section (มินิมอล โล่งสบายตา) -->
+    <section id="hero" class="pt-40 pb-24 px-6 relative flex flex-col items-center justify-center text-center min-h-[70vh]">
+        <!-- BG Elements -->
+        <div class="absolute inset-0 overflow-hidden pointer-events-none -z-10">
+            <div class="absolute -top-[20%] -left-[10%] w-[50%] h-[80%] rounded-full bg-gradient-to-br from-emerald-50 to-teal-50 blur-3xl opacity-70"></div>
+            <div class="absolute top-[20%] -right-[10%] w-[40%] h-[60%] rounded-full bg-gradient-to-tl from-blue-50 to-indigo-50 blur-3xl opacity-70"></div>
+        </div>
+
+        <span class="px-4 py-1.5 rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold font-kanit tracking-widest mb-6 border border-emerald-200 inline-block shadow-sm">
+            ยินดีต้อนรับสู่แหล่งเรียนรู้
+        </span>
+        <h2 class="text-5xl md:text-7xl font-extrabold text-slate-900 mb-6 font-kanit tracking-tight leading-tight">
+            ศูนย์ดิจิทัลชุมชน <br class="hidden md:block" />
+            <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-500">รร.หนองโกวิชาประสิทธิ์ฯ</span>
+        </h2>
+        <p class="text-lg md:text-xl text-slate-500 max-w-2xl mx-auto font-sarabun leading-relaxed mb-10">
+            ส่งเสริมทักษะเทคโนโลยี ลดความเหลื่อมล้ำทางดิจิทัล ให้บริการคอมพิวเตอร์ อินเทอร์เน็ต และพื้นที่สร้างสรรค์สำหรับนักเรียนและทุกคนในชุมชน
+        </p>
+        <a href="#news-section" class="bg-emerald-600 text-white px-8 py-4 rounded-full font-bold shadow-xl shadow-emerald-600/30 hover:bg-emerald-700 hover:shadow-emerald-600/40 hover:-translate-y-1 transition-all flex items-center gap-2 font-kanit text-lg">
+            ติดตามผลงานของเรา <i class="ph-bold ph-arrow-down"></i>
+        </a>
+    </section>
+
+    <!-- News & Activities Section (มี Pagination) -->
+    <section id="news-section" class="py-24 px-6 bg-slate-50 border-t border-slate-100">
+        <div class="max-w-7xl mx-auto">
+            
+            <!-- Header & Filter -->
+            <div class="flex flex-col md:flex-row justify-between items-center mb-12 gap-6">
+                <div class="text-center md:text-left">
+                    <h3 class="text-3xl font-bold text-slate-900 font-kanit mb-2">ข่าวสารและกิจกรรม</h3>
+                    <p class="text-slate-500 font-sarabun">ประมวลภาพบรรยากาศและการดำเนินงานของศูนย์ฯ</p>
+                </div>
+                <div>
+                    <div class="flex items-center gap-3 bg-white px-4 py-2 rounded-xl border border-slate-200 shadow-sm">
+                        <i class="ph-bold ph-calendar-blank text-emerald-600"></i>
+                        <select id="yearFilter" onchange="filterNews()" class="bg-transparent border-none text-slate-700 font-kanit font-medium outline-none cursor-pointer">
+                            <option value="ALL">ดูทุกปีการศึกษา</option>
+                            <!-- ตัวเลือกปีจะถูกสร้างอัตโนมัติด้วย JS -->
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- News Grid -->
+            <div id="newsContainer" class="grid grid-cols-1 md:grid-cols-3 gap-8 min-h-[400px] items-start">
+                <!-- Skeleton Loading -->
+                <div class="animate-pulse bg-white rounded-[24px] h-96 border border-slate-100 shadow-sm"></div>
+                <div class="animate-pulse bg-white rounded-[24px] h-96 border border-slate-100 shadow-sm"></div>
+                <div class="animate-pulse bg-white rounded-[24px] h-96 border border-slate-100 shadow-sm"></div>
+            </div>
+
+            <!-- Pagination Controls -->
+            <div id="paginationControls" class="flex justify-center items-center gap-2 mt-16 font-kanit">
+                <!-- ปุ่มเปลี่ยนหน้าจะถูกสร้างอัตโนมัติ -->
+            </div>
+
+        </div>
+    </section>
+
+    <!-- About School & Facebook Widget -->
+    <section id="about-section" class="py-24 px-6 bg-slate-900 text-white relative">
+        <div class="absolute inset-0 overflow-hidden pointer-events-none">
+            <div class="absolute top-0 right-0 w-96 h-96 bg-emerald-500/20 rounded-full blur-[100px]"></div>
+        </div>
+
+        <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center relative z-10">
+            <!-- ข้อมูลโรงเรียน -->
+            <div>
+                <span class="inline-block px-3 py-1 bg-slate-800 text-emerald-400 rounded-full text-xs font-bold tracking-widest font-kanit mb-6 border border-slate-700">CONTACT US</span>
+                <h3 class="text-4xl font-bold font-kanit mb-6 leading-tight">โรงเรียนหนองโกวิชาประสิทธิ์พิทยาคม</h3>
+                <p class="text-slate-400 font-sarabun leading-relaxed mb-8 text-lg">
+                    มุ่งมั่นพัฒนาวิชาการ ควบคู่คุณธรรม ส่งเสริมการใช้เทคโนโลยีเพื่อยกระดับคุณภาพการศึกษา ศูนย์ดิจิทัลชุมชนแห่งนี้เป็นส่วนหนึ่งในการกระจายโอกาสการเรียนรู้สู่ชุมชนอย่างยั่งยืน
+                </p>
+                <div class="space-y-5 font-sarabun text-slate-300">
+                    <div class="flex items-start gap-4">
+                        <div class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-emerald-400 shrink-0"><i class="ph-fill ph-map-pin text-xl"></i></div>
+                        <p class="pt-2">ต.หนองโก อ.บรบือ จ.มหาสารคาม 44130</p>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-emerald-400 shrink-0"><i class="ph-fill ph-phone text-xl"></i></div>
+                        <p>043-xxx-xxx</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Facebook Page -->
+            <div class="w-full flex justify-center lg:justify-end">
+                <div class="bg-white p-2 rounded-3xl shadow-2xl w-full max-w-[500px]">
+                    <div class="bg-slate-100 rounded-2xl overflow-hidden min-h-[400px] flex items-center justify-center relative">
+                        <!-- ใส่ Link เพจโรงเรียนตรง href=... ด้านล่างนี้ -->
+                        <iframe src="https://www.facebook.com/plugins/page.php?href=https%3A%2F%2Fwww.facebook.com%2Ffacebook&tabs=timeline&width=500&height=400&small_header=false&adapt_container_width=true&hide_cover=false&show_facepile=true&appId" width="100%" height="400" style="border:none;overflow:hidden" scrolling="no" frameborder="0" allowfullscreen="true" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"></iframe>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-slate-950 py-8 px-6 text-center border-t border-slate-800">
+        <p class="text-slate-500 text-sm font-sarabun">
+            &copy; 2026 ศูนย์ดิจิทัลชุมชน โรงเรียนหนองโกวิชาประสิทธิ์พิทยาคม<br class="md:hidden"/> พัฒนาโดย ศรัณ ทัพขวา
+        </p>
+    </footer>
+
+    <!-- Logic ควบคุมข่าวสารและการแบ่งหน้า -->
+    <script>
+        const CSV_GALLERY_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTOumFScq6lLZNOElqE0ATrEyN1B8jmPVBGEvVJ16Fgt8FZzOtr1o6eKNoJbXag2hvpfDZBrwYL5I0B/pub?output=csv";
+
+        let allNewsData = [];      // เก็บข้อมูลข่าวทั้งหมด
+        let filteredNews = [];     // เก็บข้อมูลที่ถูกกรองตามปี
+        let currentPage = 1;       // หน้าปัจจุบัน
+        const itemsPerPage = 3;    // จำนวนข่าวต่อ 1 หน้า
+
+        // 1. โหลดข้อมูลจาก CSV
+        async function fetchNewsData() {
+            try {
+                const res = await fetch(CSV_GALLERY_URL);
+                const arrayBuffer = await res.arrayBuffer();
+                const decoder = new TextDecoder('utf-8');
+                const csvText = decoder.decode(arrayBuffer);
+                const workbook = XLSX.read(csvText, {type: 'string'});
+                const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+                const rows = XLSX.utils.sheet_to_json(worksheet, {header: 1, defval: "", raw: false});
+                
+                processData(rows);
+            } catch (err) {
+                document.getElementById('newsContainer').innerHTML = `<div class="col-span-full text-center py-10 text-rose-500 font-sarabun">ไม่สามารถเชื่อมต่อฐานข้อมูลได้</div>`;
+            }
+        }
+
+        // 2. จัดระเบียบข้อมูล
+        function processData(rows) {
+            if (!rows || rows.length <= 1) return;
+            
+            let yearsSet = new Set();
+            allNewsData = [];
+
+            // เริ่มอ่านจากแถวที่ 1 (ข้าม Header)
+            // โครงสร้าง (อ้างอิงจาก Dashboard): 0=Title, 1=Year/Date, 2=CoverID, 4=Theme, 5=Details
+            for (let i = 1; i < rows.length; i++) {
+                let r = rows[i];
+                if (!r[0] || String(r[0]).trim() === '') continue; // ข้ามบรรทัดว่าง
+
+                let title = String(r[0]).trim();
+                let dateYear = String(r[1]).trim() || 'ไม่ระบุ';
+                let coverId = String(r[2]).trim();
+                let category = String(r[4]).trim() || 'กิจกรรมทั่วไป';
+                let desc = String(r[5]).trim() || 'ไม่มีรายละเอียดเพิ่มเติม';
+
+                // เก็บปีลงใน Set เพื่อทำ Dropdown (สมมติให้ใช้ปีหรือวันที่เป็นตัวกรอง)
+                let yearOnly = dateYear.length > 4 ? dateYear.substring(dateYear.length - 4) : dateYear;
+                if(yearOnly && !isNaN(yearOnly)) yearsSet.add(yearOnly);
+
+                allNewsData.push({
+                    title: title,
+                    date: dateYear,
+                    yearStr: yearOnly,
+                    coverUrl: coverId ? `https://drive.google.com/thumbnail?id=${coverId}&sz=w800` : '',
+                    category: category,
+                    desc: desc
+                });
+            }
+
+            // สร้าง Dropdown ปี
+            const yearSelect = document.getElementById('yearFilter');
+            let sortedYears = Array.from(yearsSet).sort((a,b) => b - a); // เรียงปีล่าสุดขึ้นก่อน
+            sortedYears.forEach(y => {
+                yearSelect.innerHTML += `<option value="${y}">ปีการศึกษา ${y}</option>`;
+            });
+
+            // ค่าเริ่มต้นเมื่อโหลดเสร็จ
+            filteredNews = [...allNewsData];
+            renderNewsPage(1);
+        }
+
+        // 3. ฟังก์ชันกรองข่าวตามปี
+        function filterNews() {
+            const selectedYear = document.getElementById('yearFilter').value;
+            if (selectedYear === 'ALL') {
+                filteredNews = [...allNewsData];
+            } else {
+                filteredNews = allNewsData.filter(news => news.yearStr === selectedYear);
+            }
+            currentPage = 1; // กลับไปหน้าแรกเสมอเมื่อเปลี่ยนตัวกรอง
+            renderNewsPage(currentPage);
+        }
+
+        // 4. แสดงผลข่าวตามหน้า (Pagination Render)
+        function renderNewsPage(page) {
+            currentPage = page;
+            const container = document.getElementById('newsContainer');
+            container.innerHTML = '';
+
+            if (filteredNews.length === 0) {
+                container.innerHTML = `<div class="col-span-full text-center py-10 text-slate-500 font-sarabun">ไม่พบข้อมูลกิจกรรมในปีที่เลือก</div>`;
+                document.getElementById('paginationControls').innerHTML = '';
+                return;
+            }
+
+            // คำนวณ Index ข่าวที่จะแสดง
+            const startIndex = (page - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const newsToShow = filteredNews.slice(startIndex, endIndex);
+
+            // สร้าง Card ข่าว
+            newsToShow.forEach((news, index) => {
+                const imgTag = news.coverUrl 
+                    ? `<img src="${news.coverUrl}" class="w-full h-56 object-cover group-hover:scale-105 transition duration-500" alt="Cover" referrerpolicy="no-referrer">`
+                    : `<div class="w-full h-56 bg-slate-100 flex items-center justify-center text-slate-300"><i class="ph ph-image text-5xl"></i></div>`;
+
+                const cardHTML = `
+                    <div class="news-card bg-white rounded-[24px] shadow-sm border border-slate-100 overflow-hidden flex flex-col h-full fade-in" style="animation-delay: ${index * 0.1}s">
+                        <div class="relative overflow-hidden group">
+                            ${imgTag}
+                            <div class="absolute top-4 left-4 bg-white/90 backdrop-blur text-slate-800 text-[10px] font-bold px-3 py-1 rounded-full font-kanit shadow-sm">
+                                ${news.date}
+                            </div>
+                        </div>
+                        <div class="p-6 flex flex-col flex-grow">
+                            <h4 class="text-lg font-bold text-slate-900 mb-2 font-kanit line-clamp-2 leading-snug">${news.title}</h4>
+                            <p class="text-sm text-slate-500 font-sarabun line-clamp-3 mb-6 flex-grow leading-relaxed">${news.desc}</p>
+                            <div class="mt-auto pt-4 border-t border-slate-50 flex justify-between items-center">
+                                <span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full font-kanit">${news.category}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += cardHTML;
+            });
+
+            renderPaginationControls();
+        }
+
+        // 5. สร้างปุ่มเปลี่ยนหน้า
+        function renderPaginationControls() {
+            const controls = document.getElementById('paginationControls');
+            controls.innerHTML = '';
+            
+            const totalPages = Math.ceil(filteredNews.length / itemsPerPage);
+            if (totalPages <= 1) return; // ถ้ามีหน้าเดียวไม่ต้องแสดงปุ่ม
+
+            // ปุ่ม Previous
+            const btnPrev = document.createElement('button');
+            btnPrev.innerHTML = '<i class="ph-bold ph-caret-left"></i>';
+            btnPrev.className = `w-10 h-10 rounded-full flex items-center justify-center border transition ${currentPage === 1 ? 'border-slate-200 text-slate-300 cursor-not-allowed' : 'border-slate-300 text-slate-700 hover:bg-slate-100'}`;
+            btnPrev.disabled = currentPage === 1;
+            btnPrev.onclick = () => renderNewsPage(currentPage - 1);
+            controls.appendChild(btnPrev);
+
+            // ปุ่มตัวเลข
+            for (let i = 1; i <= totalPages; i++) {
+                const btnPage = document.createElement('button');
+                btnPage.innerText = i;
+                if (currentPage === i) {
+                    btnPage.className = 'w-10 h-10 rounded-full bg-emerald-600 text-white font-bold shadow-md';
+                } else {
+                    btnPage.className = 'w-10 h-10 rounded-full border border-slate-300 text-slate-700 font-medium hover:bg-slate-100 transition';
+                    btnPage.onclick = () => renderNewsPage(i);
+                }
+                controls.appendChild(btnPage);
+            }
+
+            // ปุ่ม Next
+            const btnNext = document.createElement('button');
+            btnNext.innerHTML = '<i class="ph-bold ph-caret-right"></i>';
+            btnNext.className = `w-10 h-10 rounded-full flex items-center justify-center border transition ${currentPage === totalPages ? 'border-slate-200 text-slate-300 cursor-not-allowed' : 'border-slate-300 text-slate-700 hover:bg-slate-100'}`;
+            btnNext.disabled = currentPage === totalPages;
+            btnNext.onclick = () => renderNewsPage(currentPage + 1);
+            controls.appendChild(btnNext);
+        }
+
+        // สั่งทำงานเมื่อโหลดหน้าเว็บเสร็จ
+        document.addEventListener('DOMContentLoaded', fetchNewsData);
+
+    </script>
+</body>
+</html>
