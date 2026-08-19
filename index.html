@@ -295,24 +295,35 @@
             let str = String(dateStr).replace(/^'/, '').trim().split(' ')[0];
             let d = -1, m = -1, y = -1;
             
-            if(str.includes('/')) {
+            if(!isNaN(str) && !str.includes('/') && !str.includes('-')) {
+                let serial = parseFloat(str);
+                if(serial > 30000) {
+                    let dObj = new Date(Math.round((serial - 25569) * 86400 * 1000));
+                    d = dObj.getDate(); m = dObj.getMonth() + 1; y = dObj.getFullYear();
+                } else return null;
+            } else if(str.includes('/')) {
                 let p = str.split('/');
                 d = parseInt(p[0], 10); m = parseInt(p[1], 10); y = parseInt(p[2], 10);
             } else if(str.includes('-')) {
                 let p = str.split('-');
-                y = parseInt(p[0], 10); m = parseInt(p[1], 10); d = parseInt(p[2], 10);
+                if(p[0].length === 4) { y = parseInt(p[0], 10); m = parseInt(p[1], 10); d = parseInt(p[2], 10); }
+                else { d = parseInt(p[0], 10); m = parseInt(p[1], 10); y = parseInt(p[2], 10); }
             } else { return null; }
 
-            // ปรับปีให้อยู่ในรูปแบบ พ.ศ. 25XX และ ค.ศ. สำหรับสร้าง Date Object
+            if(isNaN(d) || isNaN(m) || isNaN(y)) return null;
+
+            // จัดการปีแบบรัดกุม (รองรับทั้ง 2569, 2026, 69, 26) ป้องกันบั๊กปี 2612
             let ceYear = y, beYear = y;
-            if (y > 2400) { ceYear = y - 543; beYear = y; } 
-            else if (y < 100) { ceYear = y + 2000; beYear = y + 2543; } 
-            else { beYear = y + 543; }
+            if (y >= 2400) { beYear = y; ceYear = y - 543; } 
+            else if (y >= 2000 && y < 2400) { ceYear = y; beYear = y + 543; } 
+            else if (y >= 60 && y <= 99) { beYear = 2500 + y; ceYear = beYear - 543; } 
+            else if (y >= 10 && y <= 59) { ceYear = 2000 + y; beYear = ceYear + 543; } 
+            else { beYear = y + 543; ceYear = y; }
 
             return {
                 d: d, m: m, y_be: beYear, y_ce: ceYear,
                 dateObj: new Date(ceYear, m - 1, d), // ไว้ใช้เรียงลำดับ
-                display: `${d}/${m}/${beYear}`       // ไว้แสดงผล
+                display: `${d.toString().padStart(2,'0')}/${m.toString().padStart(2,'0')}/${beYear}`
             };
         }
 
@@ -321,7 +332,7 @@
                 const rows = await fetchCSVAsArray(CSV_USAGE_URL); 
                 if(!rows || rows.length <= 1) return;
 
-                // 1. Auto-Detect Columns จับคู่คอลัมน์อัตโนมัติจาก Header
+                // 1. Auto-Detect Columns จับคู่คอลัมน์อัตโนมัติจาก Header แถวแรกสุด
                 const headers = rows[0].map(h => String(h).trim());
                 const cDate = headers.findIndex(h => h.includes("วันที่เข้าใช้"));
                 const cTime = headers.findIndex(h => h.includes("เวลาเข้าใช้"));
@@ -331,29 +342,33 @@
                 const cCat = headers.findIndex(h => h.includes("หมวดหมู่"));
                 const cCount = headers.findIndex(h => h.includes("จำนวนผู้"));
 
+                // หากหาชื่อไม่เจอ จะใช้ค่าเริ่มต้นตามโครงสร้างไฟล์ 22 คอลัมน์ที่ถูกต้อง
                 const IDX_DATE = cDate !== -1 ? cDate : 2;
                 const IDX_TIME = cTime !== -1 ? cTime : 3;
                 const IDX_CLASS = cClass !== -1 ? cClass : 5;
-                const IDX_JOB = cJob !== -1 ? cJob : 4;
+                const IDX_JOB = cJob !== -1 ? cJob : 11;    // แก้ไข Index คอลัมน์อาชีพ
                 const IDX_GENDER = cGen !== -1 ? cGen : 7;
-                const IDX_CAT = cCat !== -1 ? cCat : 13;
+                const IDX_CAT = cCat !== -1 ? cCat : 14;    // แก้ไข Index คอลัมน์หมวดหมู่ (O)
                 const IDX_COUNT = cCount !== -1 ? cCount : 20;
 
-                let validRecords = [];
-                let maxDateObj = null;
+                // กำหนดวันที่ "ปัจจุบัน" จากระบบเพื่อล็อกเดือน
+                let now = new Date();
+                let currentM = now.getMonth() + 1; // 1-12
+                let currentY_CE = now.getFullYear();
+                let currentY_BE = currentY_CE + 543;
+                
+                // ล็อกวันที่ไม่เกินวันนี้ ป้องกันแถวหลุดอนาคต
+                let todayDateOnly = new Date(currentY_CE, currentM - 1, now.getDate());
 
-                // 2. ล้างข้อมูล คัดเฉพาะที่มีวันที่ และหาวันที่ "ล่าสุดที่สุด"
+                let validRecords = [];
+
+                // 2. แปลงข้อมูลทั้งหมด
                 for (let i = 1; i < rows.length; i++) {
                     let r = rows[i];
                     if(!r || r.length === 0 || !r[IDX_DATE]) continue;
 
                     let parsed = parseDateObj(r[IDX_DATE]);
                     if(!parsed) continue;
-
-                    // หาวันที่ล่าสุด
-                    if(!maxDateObj || parsed.dateObj > maxDateObj.dateObj) {
-                        maxDateObj = parsed;
-                    }
 
                     let count = parseInt(r[IDX_COUNT], 10);
                     if(isNaN(count) || count <= 0) count = 1;
@@ -362,7 +377,7 @@
                     let job = String(r[IDX_JOB] || '').trim();
                     let grade = String(r[IDX_CLASS] || '').trim();
                     let gen = String(r[IDX_GENDER] || 'ไม่ระบุ').trim();
-                    let cat = String(r[IDX_CAT] || 'อื่นๆ').trim();
+                    let cat = String(r[IDX_CAT] || '').trim();
 
                     if(!cat) cat = "อื่นๆ";
                     let finalClass = grade ? grade : (job && job !== 'ไม่ระบุ' ? job : 'บุคคลทั่วไป');
@@ -377,24 +392,32 @@
                     });
                 }
 
-                if(!maxDateObj) {
-                    document.getElementById('currentMonthText').innerText = "ไม่พบข้อมูล";
-                    return;
-                }
+                // 3. กรองเอาเฉพาะ "เดือนปัจจุบัน" และ "ต้องไม่เกินวันที่ปัจจุบัน"
+                globalMonthData = validRecords.filter(r => {
+                    return r.parsedDate.m === currentM && 
+                           r.parsedDate.y_be === currentY_BE &&
+                           r.parsedDate.dateObj <= todayDateOnly;
+                });
 
-                // 3. กรองให้เหลือแค่ "เดือนปัจจุบัน" (เดือนเดียวกับวันที่ล่าสุด)
-                let targetMonth = maxDateObj.m;
-                let targetYear = maxDateObj.y_be;
+                // 4. หาวันที่ล่าสุดจากข้อมูลที่ถูกกรองแล้วเท่านั้น!
+                let maxDateObj = null;
+                globalMonthData.forEach(r => {
+                    if (!maxDateObj || r.parsedDate.dateObj > maxDateObj.dateObj) {
+                        maxDateObj = r.parsedDate;
+                    }
+                });
+
+                if (!maxDateObj) {
+                    maxDateObj = { display: `${now.getDate().toString().padStart(2,'0')}/${currentM.toString().padStart(2,'0')}/${currentY_BE}` };
+                }
                 latestDateGlobal = maxDateObj.display;
 
-                globalMonthData = validRecords.filter(r => r.parsedDate.m === targetMonth && r.parsedDate.y_be === targetYear);
-
-                // อัปเดตข้อความบนจอ
+                // อัปเดตข้อความบนจอให้เป็นเดือนปัจจุบันเสมอ
                 const monthsTh = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
-                document.getElementById('currentMonthText').innerText = `เดือน ${monthsTh[targetMonth - 1]} พ.ศ. ${targetYear}`;
-                document.getElementById('latestDateLabel').innerText = `วันที่: ${maxDateObj.display}`;
+                document.getElementById('currentMonthText').innerText = `เดือน ${monthsTh[currentM - 1]} พ.ศ. ${currentY_BE}`;
+                document.getElementById('latestDateLabel').innerText = `วันที่: ${latestDateGlobal}`;
 
-                // 4. สกัดตัวเลือกหมวดหมู่และระดับชั้นสำหรับ Dropdown
+                // 5. สกัดตัวเลือกหมวดหมู่และระดับชั้นสำหรับ Dropdown
                 let catsSet = new Set();
                 let classSet = new Set();
                 globalMonthData.forEach(r => {
@@ -416,6 +439,7 @@
             } catch(e) { console.log("Error loading stats:", e); }
         }
 
+        // ฟังก์ชันวาดกราฟและตัวเลขทั้งหมด
         function applyFilters() {
             if(globalMonthData.length === 0) return;
 
@@ -458,7 +482,8 @@
 
                 let timeCat = 'ไม่ระบุ';
                 if (row.time) {
-                    let hour = parseInt(row.time.split(/[:.]/)[0]);
+                    let hourStr = row.time.replace(/^'/, '').split(/[:.]/)[0];
+                    let hour = parseInt(hourStr, 10);
                     if (!isNaN(hour)) {
                         if (hour < 12) timeCat = 'ช่วงเช้า';
                         else if (hour >= 12 && hour <= 13) timeCat = 'ช่วงกลางวัน';
@@ -477,7 +502,7 @@
             Chart.defaults.color = '#94a3b8';
             Chart.defaults.borderColor = 'rgba(255,255,255,0.05)';
 
-            // วาดกราฟวงกลม
+            // วาดกราฟโดนัท 3 อัน
             if(publicCatChart) publicCatChart.destroy();
             publicCatChart = new Chart(document.getElementById('publicCatChart'), { type: 'doughnut', data: { labels: Object.keys(cats), datasets: [{ data: Object.values(cats), backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#8b5cf6', '#ec4899', '#64748b'], borderWidth: 0, hoverOffset: 8 }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '75%', plugins: { legend: { position: 'right', labels: { color: '#cbd5e1', font: {size: 11} } } } } });
 
@@ -598,5 +623,6 @@
             loadLandingActivities(); 
         });
     </script>
+
 </body>
 </html>
