@@ -301,22 +301,19 @@
                     </form>
                 </div>
 
+                <!-- 🔥 ฟอร์ม Gallery ที่อัปเดตใหม่ 🔥 -->
                 <div id="form-gallery" class="form-section">
                     <h2 class="text-lg font-medium text-slate-800 font-kanit mb-4 border-b border-slate-100 pb-3 flex items-center gap-2"><i class="ph-fill ph-folder-star text-pink-500 text-xl"></i> บันทึกแกลอรีภาพ (Gallery)</h2>
-                    <form onsubmit="submitData(event, 'Gallery', ['g_name', 'g_year', 'g_cover', 'g_folder', 'g_theme', 'g_details'], 'btn-gallery')">
+                    <form onsubmit="submitData(event, 'Gallery', ['g_name', 'g_year', 'g_cover', 'g_folder', 'g_details'], 'btn-gallery')">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6 font-sarabun">
-                            <div class="md:col-span-2"><label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wide">ชื่ออัลบั้ม (Name) *</label><input type="text" id="g_name" required class="input-field font-medium text-slate-800"></div>
-                            <div><label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wide">พ.ศ. (Year) *</label><input type="text" id="g_year" required placeholder="2569" class="input-field"></div>
-                            <div>
-                                <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wide">สีธีม (Hex) *</label>
-                                <div class="flex items-center gap-2">
-                                    <input type="color" id="g_theme_picker" class="h-10 w-12 rounded cursor-pointer border-0 p-0 shadow-sm bg-white" value="#FFD1E4" onchange="document.getElementById('g_theme').value = this.value.toUpperCase()">
-                                    <input type="text" id="g_theme" required value="#FFD1E4" class="input-field flex-1 font-mono uppercase text-sm" oninput="document.getElementById('g_theme_picker').value = this.value">
-                                </div>
-                            </div>
-                            <div><label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wide">Google Drive Cover ID *</label><input type="text" id="g_cover" required class="input-field font-mono text-sm"></div>
-                            <div><label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wide">Google Drive Folder ID *</label><input type="text" id="g_folder" required class="input-field font-mono text-sm"></div>
-                            <div class="md:col-span-2"><label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wide">รายละเอียด</label><input type="text" id="g_details" class="input-field"></div>
+                            <div class="md:col-span-2"><label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wide">ชื่ออัลบั้ม (Name) *</label><input type="text" id="g_name" required placeholder="เช่น กิจกรรมเข้าค่ายลูกเสือ" class="input-field font-medium text-slate-800"></div>
+                            
+                            <div class="md:col-span-2"><label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wide">ปีการศึกษา (Year) *</label><input type="text" id="g_year" required placeholder="เช่น 2569" class="input-field"></div>
+                            
+                            <div><label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wide">ลิงก์ภาพหน้าปก (Cover Link) *</label><input type="text" id="g_cover" required placeholder="วางลิงก์ภาพจาก Google Drive..." class="input-field font-mono text-[11px]"></div>
+                            <div><label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wide">ลิงก์โฟลเดอร์รูป (Folder Link) *</label><input type="text" id="g_folder" required placeholder="วางลิงก์โฟลเดอร์จาก Google Drive..." class="input-field font-mono text-[11px]"></div>
+                            
+                            <div class="md:col-span-2"><label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wide">รายละเอียดเพิ่มเติม</label><input type="text" id="g_details" placeholder="อธิบายกิจกรรมคร่าวๆ (ถ้ามี)" class="input-field"></div>
                         </div>
                         <button type="submit" id="btn-gallery" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-medium py-3 rounded-xl transition flex items-center justify-center shadow-md font-kanit"><i class="ph-bold ph-paper-plane-tilt mr-2"></i> บันทึกข้อมูล</button>
                     </form>
@@ -428,8 +425,8 @@
         // 🔒 Security & Init
         document.addEventListener('contextmenu', event => event.preventDefault());
         
-        // 🌟 URLs สำหรับเชื่อมต่อ (ใช้ของที่คุณให้มา)
-        const GAS_URL = "https://script.google.com/macros/s/AKfycbwnu_wHUys0gK1cv8YmPb39ziTCa_TbTFBXm-DIpIDzViFpJC0fSkHg_a_30841p_pRFQ/exec"; 
+        // 🔥 เปลี่ยนเป็น URL ใหม่ของคุณแล้ว 🔥
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbxFZa0lqQBLFqaUkyAgi9K1OTzeokQjJtNP2zmTsuO_UrmVL8GCEggqKMC5g6Mczjsm/exec"; 
         const EQ_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRZZibUzzgdZ-lCiuC2r9LdaYrjHZKnbUdOYCxJLDaIF4qUmxw8LuKX1FlXr2ADxHPNknSsiWTkncqJ/pub?gid=850126798&single=true&output=csv";
         
         let adminEqData = []; 
@@ -482,7 +479,6 @@
         function handleDrop(e) { e.preventDefault(); document.getElementById('dropZone').classList.remove('bg-emerald-100'); processFile(e.dataTransfer.files[0]); }
         function handleFileSelect(e) { processFile(e.target.files[0]); }
 
-         // แทนที่ฟังก์ชัน processFile, validateData, executeImport เก่าทั้งหมดด้วยชุดนี้
         function processFile(file) {
             if(!file) return;
             const res = document.getElementById('validationResult');
@@ -496,37 +492,31 @@
                     const workbook = XLSX.read(data, {type: 'array'});
                     const worksheet = workbook.Sheets[workbook.SheetNames[0]];
                     
-                    // อ่านเป็น 2D Array {header: 1} ทำให้ข้อมูลแต่ละแถวเป็น Array ย่อย
                     const rawData = XLSX.utils.sheet_to_json(worksheet, {header: 1, defval: ""});
                     
                     let cleanedData = [];
                     for(let i=0; i<rawData.length; i++) {
                         let row = rawData[i];
-                        if(row.every(cell => !cell)) continue; // ข้ามแถวว่าง
+                        if(row.every(cell => !cell)) continue;
                         
-                        // ข้ามแถวหัวตารางจากไฟล์ Excel (เช็คจากข้อความ)
                         if(String(row[0]).includes('จังหวัด') || String(row[2]).includes('วันที่')) continue;
 
-                        // 🌟 จัดการวันที่ (คอลัมน์ C คือ Index 2) 🌟
                         let rDate = String(row[2] || '').trim();
-                        
-                        // 1. เช็กว่าเป็นเลข Excel Serial (เช่น 46204)
                         if(!isNaN(parseFloat(rDate)) && parseFloat(rDate) > 30000 && !rDate.includes('/') && !rDate.includes('-')) {
                             let d = new Date(Math.round((parseFloat(rDate) - 25569) * 86400 * 1000));
                             row[2] = `'${d.getDate().toString().padStart(2,'0')}/${(d.getMonth()+1).toString().padStart(2,'0')}/${d.getFullYear()+543}`;
                         } 
-                        // 2. เช็กว่าเป็นรูปแบบ ปี ค.ศ. / เดือน / วัน (ตามข้อสังเกตของคุณ YYYY/MM/DD หรือ YYYY-MM-DD)
                         else if (rDate.includes('/') || rDate.includes('-')) {
                             let sep = rDate.includes('/') ? '/' : '-';
-                            let parts = rDate.split(' ')[0].split(sep); // เอาเฉพาะส่วนวันที่
+                            let parts = rDate.split(' ')[0].split(sep); 
                             
-                            if (parts.length === 3 && parts[0].length === 4) { // ปีนำหน้า
+                            if (parts.length === 3 && parts[0].length === 4) { 
                                 let y = parseInt(parts[0]);
                                 let m = parts[1].padStart(2, '0');
                                 let d = parts[2].padStart(2, '0');
-                                if (y < 2500) y += 543; // แปลง ค.ศ. เป็น พ.ศ.
+                                if (y < 2500) y += 543; 
                                 row[2] = `'${d}/${m}/${y}`;
-                            } else if (parts.length === 3 && parts[2].length === 4) { // ปีอยู่หลังปกติ
+                            } else if (parts.length === 3 && parts[2].length === 4) { 
                                 let d = parts[0].padStart(2, '0');
                                 let m = parts[1].padStart(2, '0');
                                 let y = parseInt(parts[2]);
@@ -539,7 +529,6 @@
                             row[2] = `'` + rDate;
                         }
 
-                        // 🌟 จัดการเวลา (คอลัมน์ D คือ Index 3) 🌟
                         let rTime = String(row[3] || '').trim();
                         if(!isNaN(parseFloat(rTime)) && parseFloat(rTime) < 1 && !rTime.includes(':')) {
                             let totalSecs = Math.round(parseFloat(rTime) * 86400);
@@ -570,8 +559,6 @@
 
             data.forEach((row, index) => {
                 const rowNum = index + 2; 
-                // ✅ แก้บั๊ก: เข้าถึงข้อมูลผ่าน Index แทนชื่อคอลัมน์ (ตามโครงสร้าง Array)
-                // Index 2 = คอลัมน์ C (วันที่), Index 3 = คอลัมน์ D (เวลา), Index 20 = คอลัมน์ U (จำนวน)
                 let dateVal = String(row[2] || '').replace(/'/g, '').trim();
                 let timeVal = String(row[3] || '').replace(/'/g, '').trim();
                 let countVal = row[20];
@@ -601,7 +588,6 @@
             let successCount = 0; let failCount = 0;
 
             for (let i = 0; i < readyToImportData.length; i++) {
-                // ✅ แก้บั๊ก: ส่ง rowData เป็น Array กลับไปยัง Google Script ได้โดยตรง
                 const payload = { sheetName: "Usage", rowData: readyToImportData[i] };
                 try {
                     const response = await fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) });
@@ -622,14 +608,32 @@
         }
 
         // ==========================================
-        // ⚡ 2. SUBMIT DATA (FORMS)
+        // ⚡ 2. SUBMIT DATA (FORMS) 
         // ==========================================
+        // 🔥 ฟังก์ชันอัจฉริยะสำหรับดึงเฉพาะ ID จากลิงก์ Google Drive 🔥
+        function extractDriveId(url) {
+            if (!url) return "";
+            let match = url.match(/\/d\/(.+?)\/|\/folders\/(.+?)(?:\/|\?|$)|\?id=(.+?)(?:&|$)/);
+            if (match) {
+                return match[1] || match[2] || match[3];
+            }
+            return url.trim();
+        }
+
         async function submitData(e, sheetName, inputIds, btnId) {
             e.preventDefault(); 
             const btn = document.getElementById(btnId);
             const origHtml = btn.innerHTML;
             
             if (sheetName === 'Electric') updateEDate();
+
+            // สกัด ID ออกจากลิงก์อัตโนมัติก่อนบันทึก
+            if (sheetName === 'Gallery') {
+                const coverInput = document.getElementById('g_cover');
+                const folderInput = document.getElementById('g_folder');
+                coverInput.value = extractDriveId(coverInput.value);
+                folderInput.value = extractDriveId(folderInput.value);
+            }
             
             const rowData = inputIds.map(id => document.getElementById(id).value);
             let payload = { sheetName: sheetName, rowData: rowData };
@@ -657,7 +661,6 @@
                 const result = await response.json();
                 if(result.status === 'success') {
                     showSuccess('บันทึกสำเร็จ'); e.target.reset(); 
-                    if(sheetName === 'Gallery') document.getElementById('g_theme_picker').value = '#FFD1E4'; 
                     if(sheetName === 'Electric') {
                         document.getElementById('e_preview_rate').innerText = '-';
                         document.getElementById('e_preview_room_units').innerText = '0 หน่วย';
