@@ -26,13 +26,16 @@
             --accent: #059669; 
             --accent-hover: #047857; 
             --accent-light: #ecfdf5; 
-            --bg: #ffffff; /* เปลี่ยนพื้นฐานเป็นขาวล้วนแบบ Pixieset */
+            --bg: #ffffff; 
             --bg-card: #ffffff; 
             --text-main: #1e293b; 
             --text-sub: #64748b; 
             --border-color: #f1f5f9; 
             --icon-dark: #94a3b8; 
         }
+
+        /* เปิดใช้งาน Smooth Scrolling ทั้งเอกสาร */
+        html { scroll-behavior: smooth; }
 
         body { 
             font-family: 'Prompt', sans-serif; 
@@ -48,6 +51,15 @@
 
         .container { width: 100%; max-width: 100%; margin: 0 auto; padding: 20px 4vw; box-sizing: border-box; }
         @media (max-width: 768px) { .container { padding: 15px 4vw; } }
+
+        /* แอนิเมชันตอนสลับหน้า (Fade In + Slide Up เบาๆ) */
+        .page-transition {
+            animation: pageFadeIn 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+        }
+        @keyframes pageFadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
 
         /* =======================================================
            1. หน้าแรกรวมอัลบั้ม (Home View)
@@ -75,36 +87,46 @@
         .search-input:focus { border-color: var(--icon-dark); background: white; }
         .search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 18px !important;}
         
-        .nav-bar { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; margin-bottom: 20px; font-weight: 400; color: var(--text-sub); font-size: 13px; transition: 0.3s; letter-spacing: 1px;}
-        .nav-bar:hover { color: var(--text-main); }
+        /* 🔥 ปุ่มนำทางหน้าหลัก (ปรับให้สมูทและเห็นชัด) */
+        .nav-bar { 
+            display: inline-flex; align-items: center; gap: 10px; cursor: pointer; margin-bottom: 25px; 
+            font-weight: 500; color: var(--text-main); font-size: 14px; 
+            padding: 8px 20px; background: white; border: 1px solid var(--border-color); 
+            border-radius: 50px; box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+            transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        .nav-bar:hover { 
+            transform: translateX(-5px); /* เลื่อนถอยหลังนิดๆ ดึงดูดสายตา */
+            color: var(--accent); 
+            border-color: var(--accent-light);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.05);
+        }
 
         /* =======================================================
-           2. หน้าข้างในอัลบั้ม (สไตล์ PIXIESET แบบใหม่)
+           2. หน้าข้างในอัลบั้ม (สไตล์ PIXIESET)
            ======================================================= */
         
         /* หน้าปกใหญ่เต็มจอ กว้างสุดขอบ */
         .pixieset-hero {
             position: relative;
             width: 100vw;
-            height: 75vh; /* สูง 75% ของจอ */
+            height: 75vh;
             min-height: 400px;
-            margin-left: calc(-50vw + 50%); /* เทคนิคดันให้ทะลุ padding ออกไปสุดจอ */
+            margin-left: calc(-50vw + 50%);
             background-size: cover;
             background-position: center;
             display: flex;
-            align-items: flex-end; /* ให้เนื้อหาอยู่ด้านล่าง */
+            align-items: flex-end;
             margin-top: -20px;
             margin-bottom: 0;
         }
         
-        /* ไล่สีดำแค่ข้างล่าง เพื่อให้ตัวหนังสือสีขาวลอยเด่นขึ้นมา */
         .pixieset-overlay-bottom {
             position: absolute; inset: 0;
             background: linear-gradient(to top, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0) 30%);
             z-index: 1;
         }
 
-        /* คอนเทนเนอร์คุม Layout ด้านล่างของรูปปก */
         .hero-bottom-container {
             position: relative;
             z-index: 2;
@@ -118,13 +140,11 @@
             gap: 20px;
         }
 
-        .pixieset-content { text-align: left; animation: fadeIn 1s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        .pixieset-content { text-align: left; }
         
-        /* ชื่ออัลบั้มบนรูปปก (มุมซ้ายล่าง) */
         .pixieset-content h1 {
             font-size: clamp(24px, 4vw, 42px);
-            font-weight: 300; /* ฟอนต์บาง เรียบหรู */
+            font-weight: 300; 
             margin: 0;
             color: white;
             letter-spacing: 1px;
@@ -132,7 +152,6 @@
             font-family: 'Prompt', sans-serif;
         }
 
-        /* ปุ่ม VIEW GALLERY (มุมขวาล่าง) */
         .btn-view-gallery {
             display: inline-block; 
             padding: 10px 24px; 
@@ -150,25 +169,34 @@
         }
         .btn-view-gallery:hover { background: white; color: black; border-color: white;}
 
-        /* ปุ่มย้อนกลับ ลอยอยู่มุมซ้ายบน */
+        /* 🔥 ปุ่มย้อนกลับแบบลอยบนรูป (แก้ใหม่ให้ชัดมากกขึ้น) */
         .btn-back-float {
             position: absolute;
-            top: 25px;
+            top: 30px;
             left: 4vw;
             z-index: 10;
             display: inline-flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
+            background: rgba(0, 0, 0, 0.45); /* สีดำโปร่งแสง */
+            backdrop-filter: blur(8px); /* เบลอฉากหลังนิดๆ */
             color: white;
+            padding: 10px 22px;
+            border-radius: 50px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
             cursor: pointer;
             font-size: 14px;
-            font-weight: 300;
-            transition: 0.3s;
-            text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+            font-weight: 400;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
         }
-        .btn-back-float:hover { opacity: 0.7; }
+        .btn-back-float:hover { 
+            background: rgba(0, 0, 0, 0.75); 
+            transform: translateX(-5px); /* เลื่อนซ้ายนิดนึง */
+            border-color: rgba(255, 255, 255, 0.3);
+        }
 
-        /* แถบสีขาวแสดงข้อมูล & แถบเครื่องมือ (ใต้รูปปก) */
+        /* แถบสีขาวแสดงข้อมูล & แถบเครื่องมือ */
         .info-toolbar-section {
             display: flex;
             justify-content: space-between;
@@ -195,11 +223,7 @@
             font-weight: 300;
         }
 
-        .pixieset-toolbar {
-            display: flex;
-            gap: 25px;
-            align-items: center;
-        }
+        .pixieset-toolbar { display: flex; gap: 25px; align-items: center; }
         .pixieset-toolbar .action-btn {
             display: flex; align-items: center; gap: 6px;
             background: transparent; border: none;
@@ -209,15 +233,15 @@
         }
         .pixieset-toolbar .action-btn:hover { color: var(--text-main); }
 
-        /* 🔥 รูปแบบ Masonry Grid (เรียง 3 คอลัมน์) 🔥 */
+        /* รูปแบบ Masonry Grid */
         .masonry-grid {
-            column-count: 3; /* แถวละ 3 รูป */
-            column-gap: 8px; /* ระยะห่างระหว่างคอลัมน์แนวนอน */
+            column-count: 3; 
+            column-gap: 8px; 
             padding-bottom: 60px;
         }
         .masonry-item {
             break-inside: avoid;
-            margin-bottom: 8px; /* ระยะห่างระหว่างรูปแนวตั้ง */
+            margin-bottom: 8px; 
             position: relative;
             overflow: hidden;
             cursor: pointer;
@@ -236,21 +260,17 @@
         .mini-btn { background: rgba(255,255,255,0.9); color: var(--text-main); width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; }
         .mini-btn:hover { background: white; color: black; transform: scale(1.1); }
 
-        /* การปรับย่อขยายบนหน้าจอต่างๆ */
-        @media (max-width: 1024px) { 
-            .masonry-grid { column-count: 3; } /* แท็บเล็ตยังคง 3 รูป */
-        }
+        @media (max-width: 1024px) { .masonry-grid { column-count: 3; } }
         @media (max-width: 768px) {
-            .masonry-grid { column-count: 2; column-gap: 4px; } /* มือถือแนวนอนเหลือ 2 รูป */
+            .masonry-grid { column-count: 2; column-gap: 4px; } 
             .masonry-item { margin-bottom: 4px; }
             .pixieset-hero { height: 50vh; min-height: 300px; }
+            .btn-back-float { top: 15px; left: 15px; font-size: 12px; padding: 8px 16px; }
             .hero-bottom-container { padding: 20px 4vw; flex-direction: column; align-items: flex-start; gap: 15px;}
             .info-toolbar-section { flex-direction: column; align-items: flex-start; gap: 15px; padding: 20px 0; }
             .pixieset-toolbar { flex-wrap: wrap; gap: 15px; }
         }
-        @media (max-width: 480px) {
-            .masonry-grid { column-count: 2; } /* มือถือแนวตั้งเหลือ 2 รูปเพื่อความสวยงาม */
-        }
+        @media (max-width: 480px) { .masonry-grid { column-count: 2; } }
 
         /* =======================================================
            3. Modal / Lightbox / Skeletons
@@ -293,9 +313,9 @@
     </button>
 
     <!-- หน้า 1: รวมอัลบั้ม -->
-    <div id="home-view" class="container">
+    <div id="home-view" class="container page-transition">
         <a href="index.html" style="text-decoration: none; display: inline-block;">
-            <div class="nav-bar"><span class="material-icons-outlined" style="font-size:16px;">west</span> กลับหน้าหลัก</div>
+            <div class="nav-bar"><span class="material-icons-outlined" style="font-size:18px;">west</span> กลับหน้าหลัก</div>
         </a>
         
         <div class="header-row">
@@ -314,13 +334,17 @@
     </div>
 
     <!-- หน้า 2: ดูอัลบั้ม (แบบ Pixieset) -->
-    <div id="album-view" class="container" style="display: none; padding-top: 0;">
+    <div id="album-view" class="container page-transition" style="display: none; padding-top: 0;">
         
         <!-- รูปหน้าปกกว้างเต็มจอ -->
         <div class="pixieset-hero" id="hero-bg">
             <div class="pixieset-overlay-bottom"></div>
-            <!-- ปุ่มกดกลับแบบลอย -->
-            <div class="btn-back-float" onclick="showHome()"><span class="material-icons-outlined" style="font-size:18px;">west</span></div>
+            
+            <!-- 🔥 ปุ่มกดกลับแบบลอย (ดีไซน์ใหม่ ชัดเจน) -->
+            <div class="btn-back-float" onclick="showHome()">
+                <span class="material-icons-outlined" style="font-size:18px;">west</span>
+                ย้อนกลับ
+            </div>
             
             <div class="hero-bottom-container">
                 <!-- ฝั่งซ้าย: ชื่อกิจกรรมตัวใหญ่ -->
@@ -430,7 +454,7 @@
                     list.appendChild(card);
                 });
 
-                // ตรวจสอบ Parameter เผื่อถูกส่งมาจากหน้า index
+                // ตรวจสอบ Parameter
                 const urlParams = new URLSearchParams(window.location.search);
                 const targetAlbumName = urlParams.get('album');
 
@@ -452,17 +476,23 @@
         }
 
         async function openAlbum(album) {
-            document.getElementById('home-view').style.display = 'none'; 
-            document.getElementById('album-view').style.display = 'block';
-            window.scrollTo(0,0);
+            const homeView = document.getElementById('home-view');
+            const albumView = document.getElementById('album-view');
+            
+            homeView.style.display = 'none'; 
+            
+            // รีเฟรชแอนิเมชันให้ไหลขึ้นมาแบบสมูท
+            albumView.style.display = 'block';
+            albumView.style.animation = 'none';
+            void albumView.offsetWidth; 
+            albumView.style.animation = null;
+            
+            window.scrollTo({ top: 0, behavior: 'smooth' });
             
             // กำหนดข้อมูลลงในหน้าปก
             document.getElementById('hero-text').innerText = album.name; 
-            
-            // กำหนดข้อมูลลงแถบสีขาวด้านล่างหน้าปก
             document.getElementById('meta-title').innerText = album.name; 
             
-            // นำวันที่และรายละเอียดมารวมเป็น Subtitle ด้านล่าง
             let subtitleText = "";
             if(album.date) subtitleText += `DATE : ${album.date}  |  `;
             if(album.details) subtitleText += album.details;
@@ -473,7 +503,6 @@
             const container = document.getElementById('photo-container');
             container.innerHTML = ''; 
             
-            // สร้างโครง Skeletons แบบสุ่มความสูงให้คล้าย Masonry
             for(let i=0; i<9; i++) { 
                 let h = Math.floor(Math.random() * 150) + 150; 
                 container.innerHTML += `<div class="skeleton masonry-item" style="height: ${h}px;"></div>`; 
@@ -505,6 +534,21 @@
             } catch (err) {
                 container.innerHTML = '<p style="column-span: all; text-align:center; color:#ef4444; padding:50px;">ไม่สามารถโหลดรูปภาพได้</p>';
             }
+        }
+
+        // 🔥 ฟังก์ชันโฮมที่แก้ให้สมูทขึ้น
+        function showHome() { 
+            const homeView = document.getElementById('home-view');
+            const albumView = document.getElementById('album-view');
+
+            albumView.style.display = 'none'; 
+            homeView.style.display = 'block'; 
+            
+            homeView.style.animation = 'none';
+            void homeView.offsetWidth; 
+            homeView.style.animation = null;
+
+            window.scrollTo({ top: 0, behavior: 'smooth' }); 
         }
 
         function filterAlbums(q) { 
@@ -596,7 +640,6 @@
             });
         }
 
-        function showHome() { document.getElementById('home-view').style.display = 'block'; document.getElementById('album-view').style.display = 'none'; window.scrollTo(0,0); }
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
         function showToast(m) { const t = document.getElementById('toast'); t.innerText = m; t.classList.add("show"); setTimeout(() => t.classList.remove("show"), 3000); }
 
