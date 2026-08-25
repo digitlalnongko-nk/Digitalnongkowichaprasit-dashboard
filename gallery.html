@@ -372,6 +372,30 @@
                         </div>`;
                     list.appendChild(card);
                 });
+
+                // ==========================================
+                // 🔥 ระบบดักจับ URL Parameter อัตโนมัติ 🔥
+                // ==========================================
+                const urlParams = new URLSearchParams(window.location.search);
+                const targetAlbumName = urlParams.get('album');
+
+                if (targetAlbumName) {
+                    // ค้นหาชื่ออัลบั้มแบบไม่สนตัวพิมพ์เล็ก/ใหญ่ และตัดช่องว่างออกเพื่อให้เจอง่ายขึ้น
+                    const cleanTarget = targetAlbumName.toLowerCase().trim();
+                    const matchedAlbum = albums.find(a => a.name.toLowerCase().trim() === cleanTarget);
+                    
+                    if (matchedAlbum) {
+                        // ถ้าพบข้อมูลอัลบั้มตรงกัน สั่งเปิดเลยทันที
+                        openAlbum(matchedAlbum);
+                        
+                        // ลบ Parameter คืนค่า URL ให้สะอาด (ป้องกันบัคเวลากดปุ่มกลับ)
+                        window.history.replaceState({}, document.title, window.location.pathname);
+                    } else {
+                         // ถ้าไม่เจอชื่อที่ระบุ ให้โชว์หน้าอัลบั้มรวมตามปกติ
+                         showToast('ไม่พบกิจกรรมที่เลือก หรือกิจกรรมอาจถูกลบไปแล้ว');
+                    }
+                }
+
             } catch (err) {
                 console.error("Error fetching albums:", err);
                 list.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color:#ef4444; padding:50px;">ไม่สามารถดึงข้อมูลได้ โปรดตรวจสอบการตั้งค่า Google Apps Script (API)</p>';
