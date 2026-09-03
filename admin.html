@@ -559,6 +559,7 @@
                 res.innerHTML = `<div class="bg-emerald-50 rounded-2xl border border-emerald-200 shadow-sm p-6 flex flex-col sm:flex-row justify-between items-center gap-5"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm"><i class="ph-fill ph-check-circle text-emerald-500 text-3xl"></i></div><div><h4 class="text-emerald-800 font-bold text-base">ข้อมูลถูกต้อง 100%</h4><p class="text-emerald-600 text-sm mt-0.5">พร้อมนำเข้าข้อมูล <b>${data.length}</b> รายการ</p></div></div><button id="btnImport" onclick="executeImport()" class="w-full sm:w-auto px-8 py-3 bg-emerald-600 text-white rounded-full font-bold hover:bg-emerald-700 transition shadow-md shadow-emerald-600/30 text-sm font-kanit">ยืนยันนำเข้าข้อมูล</button></div>`;
             }
         }
+        
 
         async function executeImport() {
             const btn = document.getElementById('btnImport');
@@ -569,14 +570,15 @@
 
             let successCount = 0; let failCount = 0;
 
-            for (let i = 0; i < readyToImportData.length; i++) {
-                const payload = { sheetName: "Usage", rowData: readyToImportData[i] };
-                try {
-                    const response = await fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) });
-                    const result = await response.json();
-                    if (result.status === 'success') successCount++; else failCount++;
-                } catch (err) { failCount++; }
-            }
+              for (let i = 0; i < readyToImportData.length; i++) {
+    const payload = { sheetName: "Usage", rowData: readyToImportData[i] };
+    try {
+        const response = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
+        const result = await response.json();
+        if (result.status === 'success') successCount++; else failCount++;
+    } catch (err) { failCount++; }
+    await new Promise(res => setTimeout(res, 400));
+    }
 
             if (failCount === 0) {
                 showSuccess(`นำเข้าสำเร็จ ${successCount} รายการ`);
