@@ -569,6 +569,7 @@
 
             let successCount = 0; 
             let failCount = 0;
+            let errorDetail = "";
             const total = readyToImportData.length;
 
             for (let i = 0; i < total; i++) {
@@ -578,9 +579,30 @@
                 const payload = { sheetName: "Usage", rowData: readyToImportData[i] };
                 try {
                     const response = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
-                    const result = await response.json();
-                    if (result.status === 'success') successCount++; else failCount++;
-                } catch (err) { failCount++; }
+                    
+                    // อ่านค่าที่ Google ตอบกลับมาเป็นข้อความก่อน เพื่อจับ Error
+                    const textResult = await response.text(); 
+                    
+                    try {
+                        const result = JSON.parse(textResult);
+                        if (result.status === 'success') {
+                            successCount++; 
+                        } else { 
+                            failCount++;
+                            errorDetail = result.message; // แจ้งเตือนข้อผิดพลาดจากโค้ดหลังบ้าน
+                        }
+                    } catch (parseErr) {
+                        failCount++;
+                        // กรณีที่ Google ไม่ตอบเป็น JSON แปลว่าติดสิทธิ์การเข้าถึง (401/403) หรือสคริปต์พัง
+                        errorDetail = "Google บล็อกการเข้าถึง (ตรวจสอบการตั้งค่า Deploy เป็น 'ทุกคน/Anyone' หรือยัง?)";
+                        break; // หยุดทำรายการทันที จะได้ไม่ต้องรอครบ 117 รอบ
+                    }
+
+                } catch (err) { 
+                    failCount++;
+                    errorDetail = "ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ (ตรวจสอบ Internet หรือ URL ของ GAS)";
+                    break; 
+                }
                 
                 // หน่วงเวลา 400ms ต่อแถว
                 await new Promise(res => setTimeout(res, 400));
@@ -592,10 +614,14 @@
                 document.getElementById('fileInput').value = '';
                 readyToImportData = [];
             } else {
-                showError(`สำเร็จ ${successCount} ล้มเหลว ${failCount}`);
-                btn.disabled = false; 
-                btn.innerHTML = 'ลองใหม่อีกครั้ง'; 
-                btn.classList.remove('opacity-70');
+                // 🌟 ระบบจะแจ้ง Error ที่แท้จริงออกมาบนหน้าจอ
+                Swal.fire({
+                    icon: 'error',
+                    title: `ระบบขัดข้อง! (สำเร็จ ${successCount}/${total})`,
+                    html: `<p class="text-rose-600 font-bold mb-2">สาเหตุ:</p><p class="text-sm bg-rose-50 p-3 rounded-lg border border-rose-200">${errorDetail}</p>`,
+                    confirmButtonColor: '#0f172a'
+                });
+                btn.disabled = false; btn.innerHTML = 'ลองใหม่อีกครั้ง'; btn.classList.remove('opacity-70');
             }
         }
 
