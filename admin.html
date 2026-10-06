@@ -72,8 +72,22 @@
         .tab-btn.active { background: #ecfdf5; color: var(--theme-primary); border-color: #a7f3d0; box-shadow: none; }
         .tab-btn:hover:not(.active) { background: #f1f5f9; color: #334155; }
 
+        /* ปุ่มย่อยสำหรับ Dashboard Type */
+        .dash-type-btn { padding: 8px 16px; border-radius: 12px; font-size: 13px; font-weight: 500; transition: all 0.2s; color: #64748b; background: #f8fafc; border: 1px solid #e2e8f0; font-family: 'Kanit'; }
+        .dash-type-btn.active { background: #6366f1; color: white; border-color: #4f46e5; box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.2); }
+        .dash-type-btn:hover:not(.active) { background: #e2e8f0; color: #334155; }
+
+        /* ปุ่มย่อยสำหรับ Time Filter */
+        .time-filter-btn { padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 500; transition: all 0.2s; color: #64748b; background: transparent; border: 1px solid transparent; font-family: 'Kanit'; }
+        .time-filter-btn.active { background: #f1f5f9; color: #0f172a; border-color: #cbd5e1; }
+        .time-filter-btn:hover:not(.active) { color: #334155; }
+
         .form-section { display: none; animation: fadeIn 0.4s ease-out; }
         .form-section.active { display: block; }
+        
+        /* Dashboard Views */
+        .dash-view { display: none; animation: fadeIn 0.3s ease-out; }
+        .dash-view.active { display: block; }
         
         .custom-scrollbar::-webkit-scrollbar { height: 6px; width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
@@ -159,7 +173,7 @@
                 </div>
             </div>
 
-            <!-- TAB MENU (เพิ่มแท็บแดชบอร์ดเข้ามาด้านหน้าสุด) -->
+            <!-- TAB MENU -->
             <div class="flex overflow-x-auto gap-3 pb-4 hide-scrollbar mt-4">
                 <button class="tab-btn active flex items-center gap-2" onclick="switchTab('dashboard', this)"><i class="ph-fill ph-chart-pie-slice text-indigo-500 text-lg"></i> แดชบอร์ด</button>
                 <button class="tab-btn flex items-center gap-2" onclick="switchTab('import', this)"><i class="ph-fill ph-file-xls text-emerald-500 text-lg"></i> นำเข้า Usage</button>
@@ -173,106 +187,158 @@
 
             <div class="minimal-card p-6 md:p-8 relative overflow-hidden bg-white">
                 
-                <!-- 🆕 เพิ่ม Sction DASHBOARD ที่นี่ -->
+                <!-- 📊 DASHBOARD SECTION -->
                 <div id="form-dashboard" class="form-section active">
-                    <div class="flex items-center gap-3 mb-6 border-b border-slate-100 pb-4">
-                        <div class="w-10 h-10 bg-indigo-50 text-indigo-500 rounded-xl flex items-center justify-center text-xl"><i class="ph-fill ph-chart-pie-slice"></i></div>
-                        <div>
-                            <h2 class="text-xl font-bold text-slate-800 font-kanit">ภาพรวมระบบ (Overview)</h2>
+                    
+                    <!-- ส่วนหัว Dashboard และปุ่มเลือกประเภท -->
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 border-b border-slate-100 pb-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-indigo-50 text-indigo-500 rounded-xl flex items-center justify-center text-xl"><i class="ph-fill ph-chart-pie-slice"></i></div>
+                            <h2 class="text-xl font-bold text-slate-800 font-kanit">Analytics Dashboard</h2>
+                        </div>
+                        
+                        <!-- 1. ปุ่มเลือกประเภท Dashboard -->
+                        <div class="flex flex-wrap gap-2">
+                            <button class="dash-type-btn active" onclick="switchDashboardView('overview', this)"><i class="ph-fill ph-squares-four mr-1"></i> ภาพรวม</button>
+                            <button class="dash-type-btn" onclick="switchDashboardView('usage', this)"><i class="ph-fill ph-users mr-1"></i> ผู้ใช้งาน</button>
+                            <button class="dash-type-btn" onclick="switchDashboardView('electric', this)"><i class="ph-fill ph-lightning mr-1"></i> ไฟฟ้า</button>
+                            <button class="dash-type-btn" onclick="switchDashboardView('equipment', this)"><i class="ph-fill ph-desktop mr-1"></i> อุปกรณ์</button>
                         </div>
                     </div>
 
-                    <!-- Summary Cards -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8 font-kanit">
-                        <div class="bg-slate-50 border border-slate-100 p-5 rounded-2xl flex items-center gap-4 hover:shadow-md transition">
-                            <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center text-2xl"><i class="ph-fill ph-users"></i></div>
-                            <div>
-                                <p class="text-[11px] text-slate-500 font-bold uppercase tracking-wide mb-0.5">ผู้ใช้งานสัปดาห์นี้</p>
-                                <h4 class="text-2xl font-bold text-slate-800 leading-none">1,284 <span class="text-sm font-normal text-slate-500">คน</span></h4>
+                    <!-- 2. ตัวกรองเวลา (Time Filter) -->
+                    <div class="flex justify-end mb-6">
+                        <div class="bg-white border border-slate-200 rounded-xl p-1 inline-flex shadow-sm">
+                            <button class="time-filter-btn" onclick="updateTimeFilter('1m', this)">1 เดือน</button>
+                            <button class="time-filter-btn" onclick="updateTimeFilter('3m', this)">3 เดือน</button>
+                            <button class="time-filter-btn active" onclick="updateTimeFilter('6m', this)">6 เดือน</button>
+                            <button class="time-filter-btn" onclick="updateTimeFilter('1y', this)">1 ปี</button>
+                            <button class="time-filter-btn" onclick="updateTimeFilter('all', this)">ทั้งหมด</button>
+                        </div>
+                    </div>
+
+                    <!-- ===================================== -->
+                    <!-- VIEW: ภาพรวม (Overview) -->
+                    <!-- ===================================== -->
+                    <div id="dash-view-overview" class="dash-view active">
+                        <!-- Summary Cards -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8 font-kanit">
+                            <div class="bg-slate-50 border border-slate-100 p-5 rounded-2xl flex items-center gap-4">
+                                <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center text-2xl"><i class="ph-fill ph-users"></i></div>
+                                <div>
+                                    <p class="text-[11px] text-slate-500 font-bold uppercase tracking-wide mb-0.5">ผู้ใช้สะสม (<span class="filter-label">6 เดือน</span>)</p>
+                                    <h4 id="ov-users" class="text-2xl font-bold text-slate-800 leading-none">0 <span class="text-sm font-normal text-slate-500">คน</span></h4>
+                                </div>
+                            </div>
+                            <div class="bg-slate-50 border border-slate-100 p-5 rounded-2xl flex items-center gap-4">
+                                <div class="w-12 h-12 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center text-2xl"><i class="ph-fill ph-archive"></i></div>
+                                <div>
+                                    <p class="text-[11px] text-slate-500 font-bold uppercase tracking-wide mb-0.5">ถูกยืมขณะนี้</p>
+                                    <h4 id="ov-borrow" class="text-2xl font-bold text-slate-800 leading-none">0 <span class="text-sm font-normal text-slate-500">ชิ้น</span></h4>
+                                </div>
+                            </div>
+                            <div class="bg-slate-50 border border-slate-100 p-5 rounded-2xl flex items-center gap-4">
+                                <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-2xl"><i class="ph-fill ph-lightning"></i></div>
+                                <div>
+                                    <p class="text-[11px] text-slate-500 font-bold uppercase tracking-wide mb-0.5">ค่าไฟสะสม (<span class="filter-label">6 เดือน</span>)</p>
+                                    <h4 id="ov-power" class="text-2xl font-bold text-slate-800 leading-none">0 <span class="text-sm font-normal text-slate-500">บาท</span></h4>
+                                </div>
+                            </div>
+                            <div class="bg-slate-50 border border-slate-100 p-5 rounded-2xl flex items-center gap-4">
+                                <div class="w-12 h-12 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center text-2xl"><i class="ph-fill ph-wrench"></i></div>
+                                <div>
+                                    <p class="text-[11px] text-slate-500 font-bold uppercase tracking-wide mb-0.5">อุปกรณ์ส่งซ่อม/ชำรุด</p>
+                                    <h4 id="ov-broken" class="text-2xl font-bold text-slate-800 leading-none">0 <span class="text-sm font-normal text-slate-500">รายการ</span></h4>
+                                </div>
                             </div>
                         </div>
-                        <div class="bg-slate-50 border border-slate-100 p-5 rounded-2xl flex items-center gap-4 hover:shadow-md transition">
-                            <div class="w-12 h-12 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center text-2xl"><i class="ph-fill ph-archive"></i></div>
-                            <div>
-                                <p class="text-[11px] text-slate-500 font-bold uppercase tracking-wide mb-0.5">อุปกรณ์ถูกยืม (ยังไม่คืน)</p>
-                                <h4 class="text-2xl font-bold text-slate-800 leading-none">12 <span class="text-sm font-normal text-slate-500">รายการ</span></h4>
+
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 font-sarabun">
+                            <!-- กราฟเส้นเปรียบเทียบแนวโน้ม -->
+                            <div class="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm">
+                                <h3 class="text-base font-bold text-slate-700 font-kanit mb-4 flex items-center gap-2"><i class="ph-fill ph-trend-up text-indigo-500 text-xl"></i> แนวโน้มการเข้าใช้งานศูนย์ฯ</h3>
+                                <div class="relative h-[300px] w-full"><canvas id="chartOverviewLine"></canvas></div>
                             </div>
-                        </div>
-                        <div class="bg-slate-50 border border-slate-100 p-5 rounded-2xl flex items-center gap-4 hover:shadow-md transition">
-                            <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-2xl"><i class="ph-fill ph-lightning"></i></div>
-                            <div>
-                                <p class="text-[11px] text-slate-500 font-bold uppercase tracking-wide mb-0.5">ค่าไฟส่วนศูนย์ฯ ล่าสุด</p>
-                                <h4 class="text-2xl font-bold text-slate-800 leading-none">4,520 <span class="text-sm font-normal text-slate-500">บาท</span></h4>
-                            </div>
-                        </div>
-                        <div class="bg-slate-50 border border-slate-100 p-5 rounded-2xl flex items-center gap-4 hover:shadow-md transition">
-                            <div class="w-12 h-12 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center text-2xl"><i class="ph-fill ph-wrench"></i></div>
-                            <div>
-                                <p class="text-[11px] text-slate-500 font-bold uppercase tracking-wide mb-0.5">พัสดุชำรุด / ส่งซ่อม</p>
-                                <h4 class="text-2xl font-bold text-slate-800 leading-none">3 <span class="text-sm font-normal text-slate-500">รายการ</span></h4>
+                            <!-- กราฟแท่งค่าไฟ -->
+                            <div class="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm">
+                                <h3 class="text-base font-bold text-slate-700 font-kanit mb-4 flex items-center gap-2"><i class="ph-fill ph-lightning text-blue-500 text-xl"></i> สรุปค่าไฟฟ้าศูนย์ฯรายเดือน</h3>
+                                <div class="relative h-[300px] w-full"><canvas id="chartOverviewPower"></canvas></div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Charts & Tables Section -->
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 font-sarabun">
-                        <!-- Chart 1 (Bar) -->
-                        <div class="lg:col-span-2 bg-white border border-slate-200 p-6 rounded-2xl shadow-sm">
-                            <h3 class="text-base font-bold text-slate-700 font-kanit mb-4 flex items-center gap-2"><i class="ph-fill ph-chart-bar text-emerald-500 text-xl"></i> สถิติการใช้งานย้อนหลัง 6 เดือน</h3>
-                            <div class="relative h-[250px] w-full">
-                                <canvas id="usageChart"></canvas>
+                    <!-- ===================================== -->
+                    <!-- VIEW: ผู้ใช้งาน (Usage) -->
+                    <!-- ===================================== -->
+                    <div id="dash-view-usage" class="dash-view">
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 font-sarabun mb-6">
+                            <!-- กราฟแท่งแยกประเภทผู้ใช้ -->
+                            <div class="lg:col-span-2 bg-white border border-slate-200 p-6 rounded-2xl shadow-sm">
+                                <h3 class="text-base font-bold text-slate-700 font-kanit mb-4 flex items-center gap-2"><i class="ph-fill ph-users-three text-emerald-500 text-xl"></i> สถิติการใช้งานแยกตามประเภท</h3>
+                                <div class="relative h-[300px] w-full"><canvas id="chartUsageBar"></canvas></div>
                             </div>
-                        </div>
-                        <!-- Chart 2 (Doughnut) -->
-                        <div class="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm">
-                            <h3 class="text-base font-bold text-slate-700 font-kanit mb-4 flex items-center gap-2"><i class="ph-fill ph-chart-pie-slice text-amber-500 text-xl"></i> สถานะอุปกรณ์ทั้งหมด</h3>
-                            <div class="relative h-[250px] w-full flex justify-center">
-                                <canvas id="eqStatusChart"></canvas>
-                            </div>
-                        </div>
-                        <!-- Recent Activity Table -->
-                        <div class="lg:col-span-3 bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden mt-2">
-                            <div class="p-5 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
-                                <h3 class="text-base font-bold text-slate-700 font-kanit"><i class="ph-fill ph-clock-counter-clockwise mr-2 text-slate-400"></i> การทำรายการล่าสุด</h3>
-                                <button class="text-xs font-bold text-emerald-600 hover:text-emerald-700">ดูทั้งหมด <i class="ph-bold ph-caret-right"></i></button>
-                            </div>
-                            <div class="overflow-x-auto">
-                                <table class="w-full text-left text-sm whitespace-nowrap">
-                                    <thead>
-                                        <tr class="text-slate-500 text-[11px] uppercase tracking-wider bg-white border-b border-slate-100">
-                                            <th class="p-4 font-bold">วันที่/เวลา</th>
-                                            <th class="p-4 font-bold">รายการ</th>
-                                            <th class="p-4 font-bold">เจ้าหน้าที่</th>
-                                            <th class="p-4 font-bold text-center">สถานะ</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody class="divide-y divide-slate-50 text-slate-600">
-                                        <tr class="hover:bg-slate-50 transition">
-                                            <td class="p-4">10 ต.ค. 2569 13:30</td>
-                                            <td class="p-4 font-medium text-slate-800">นำเข้าข้อมูล Usage จำนวน 45 รายการ</td>
-                                            <td class="p-4">สรัล ทัพขวา</td>
-                                            <td class="p-4 text-center"><span class="bg-emerald-100 text-emerald-700 px-2.5 py-1 rounded-md text-[10px] font-bold">สำเร็จ</span></td>
-                                        </tr>
-                                        <tr class="hover:bg-slate-50 transition">
-                                            <td class="p-4">09 ต.ค. 2569 09:15</td>
-                                            <td class="p-4 font-medium text-slate-800">ยืมอุปกรณ์: โน้ตบุ๊ก หมายเลข 3</td>
-                                            <td class="p-4">สมชาย ใจดี</td>
-                                            <td class="p-4 text-center"><span class="bg-amber-100 text-amber-700 px-2.5 py-1 rounded-md text-[10px] font-bold">กำลังยืม</span></td>
-                                        </tr>
-                                        <tr class="hover:bg-slate-50 transition">
-                                            <td class="p-4">08 ต.ค. 2569 16:45</td>
-                                            <td class="p-4 font-medium text-slate-800">บันทึกค่าไฟประจำเดือน กันยายน 2569</td>
-                                            <td class="p-4">สรัล ทัพขวา</td>
-                                            <td class="p-4 text-center"><span class="bg-emerald-100 text-emerald-700 px-2.5 py-1 rounded-md text-[10px] font-bold">สำเร็จ</span></td>
-                                        </tr>
-                                    </tbody>
-                                </table>
+                            <!-- สัดส่วนประเภทผู้ใช้ -->
+                            <div class="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm">
+                                <h3 class="text-base font-bold text-slate-700 font-kanit mb-4 flex items-center gap-2"><i class="ph-fill ph-chart-pie-slice text-emerald-500 text-xl"></i> สัดส่วนผู้ใช้งาน</h3>
+                                <div class="relative h-[250px] w-full flex justify-center"><canvas id="chartUsagePie"></canvas></div>
                             </div>
                         </div>
                     </div>
+
+                    <!-- ===================================== -->
+                    <!-- VIEW: ไฟฟ้า (Electric) -->
+                    <!-- ===================================== -->
+                    <div id="dash-view-electric" class="dash-view">
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 font-sarabun mb-6">
+                            <!-- กราฟเส้นเปรียบเทียบหน่วยกับเงิน -->
+                            <div class="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm">
+                                <h3 class="text-base font-bold text-slate-700 font-kanit mb-4 flex items-center gap-2"><i class="ph-fill ph-plug-charging text-blue-500 text-xl"></i> ปริมาณการใช้ไฟฟ้า (หน่วย)</h3>
+                                <div class="relative h-[300px] w-full"><canvas id="chartElecUnit"></canvas></div>
+                            </div>
+                            <div class="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm">
+                                <h3 class="text-base font-bold text-slate-700 font-kanit mb-4 flex items-center gap-2"><i class="ph-fill ph-money text-amber-500 text-xl"></i> อัตราค่าไฟเฉลี่ยต่อหน่วย</h3>
+                                <div class="relative h-[300px] w-full"><canvas id="chartElecRate"></canvas></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ===================================== -->
+                    <!-- VIEW: อุปกรณ์ (Equipment) -->
+                    <!-- ===================================== -->
+                    <div id="dash-view-equipment" class="dash-view">
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 font-sarabun mb-6">
+                            <!-- กราฟโดนัท สถานะปัจจุบัน -->
+                            <div class="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm">
+                                <h3 class="text-base font-bold text-slate-700 font-kanit mb-4 flex items-center gap-2"><i class="ph-fill ph-desktop text-teal-500 text-xl"></i> สถานะครุภัณฑ์ปัจจุบัน</h3>
+                                <div class="relative h-[250px] w-full flex justify-center"><canvas id="chartEqStatus"></canvas></div>
+                            </div>
+                            <!-- ตารางยืมคืน -->
+                            <div class="lg:col-span-2 bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+                                <div class="p-5 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
+                                    <h3 class="text-base font-bold text-slate-700 font-kanit"><i class="ph-fill ph-archive text-amber-500 mr-2"></i> รายการอุปกรณ์ที่ถูกยืมอยู่</h3>
+                                </div>
+                                <div class="overflow-y-auto max-h-[250px] custom-scrollbar">
+                                    <table class="w-full text-left text-sm whitespace-nowrap">
+                                        <thead class="sticky top-0 bg-white shadow-sm z-10">
+                                            <tr class="text-slate-500 text-[11px] uppercase tracking-wider border-b border-slate-100">
+                                                <th class="p-4 font-bold">วันที่ยืม</th>
+                                                <th class="p-4 font-bold">อุปกรณ์</th>
+                                                <th class="p-4 font-bold">ผู้ยืม</th>
+                                                <th class="p-4 font-bold text-center">สถานะ</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="dashBorrowTable" class="divide-y divide-slate-50 text-slate-600">
+                                            <tr><td colspan="4" class="text-center py-8">ไม่มีอุปกรณ์ที่ถูกยืม</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
+                <!-- ============================ -->
 
-                <!-- (ดึง active ออก เปลี่ยนให้เป็นฟอร์มซ่อนเริ่มต้น) -->
                 <div id="form-import" class="form-section">
                     <div class="flex items-center gap-3 mb-2">
                         <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center text-2xl border border-emerald-100"><i class="ph-fill ph-microsoft-excel-logo"></i></div>
@@ -537,7 +603,55 @@
         
         let adminEqData = []; 
         let readyToImportData = [];
-        let dashboardChartsInit = false; // ตรวจสอบว่าเรนเดอร์กราฟหรือยัง
+        
+        // ตัวแปรสำหรับ Dashboard
+        let currentDashView = 'overview';
+        let currentTimeFilter = '6m';
+        let chartsObj = {}; // เก็บ object ของ chart ไว้ทำลายและสร้างใหม่เวลาเปลี่ยนข้อมูล
+
+        // --- Mock Data สำหรับแสดงผลกราฟใน Dashboard ---
+        const MOCK_DATA = {
+            '1m': {
+                labels: ['สัปดาห์ 1', 'สัปดาห์ 2', 'สัปดาห์ 3', 'สัปดาห์ 4'],
+                usage: [120, 150, 180, 200],
+                powerUnit: [300, 310, 290, 320],
+                powerCost: [1200, 1250, 1150, 1300],
+                userTypes: [300, 150, 200], // นร, ปชช, ครู
+                summary: { users: 650, borrow: 5, power: 4900, broken: 1 }
+            },
+            '3m': {
+                labels: ['เดือน 1', 'เดือน 2', 'เดือน 3'],
+                usage: [650, 720, 810],
+                powerUnit: [1200, 1250, 1300],
+                powerCost: [4800, 5000, 5200],
+                userTypes: [1200, 450, 530],
+                summary: { users: 2180, borrow: 8, power: 15000, broken: 2 }
+            },
+            '6m': {
+                labels: ['เดือน 1', 'เดือน 2', 'เดือน 3', 'เดือน 4', 'เดือน 5', 'เดือน 6'],
+                usage: [500, 650, 720, 810, 950, 1020],
+                powerUnit: [1100, 1200, 1250, 1300, 1400, 1450],
+                powerCost: [4400, 4800, 5000, 5200, 5600, 5800],
+                userTypes: [2500, 1100, 1050],
+                summary: { users: 4650, borrow: 12, power: 30800, broken: 3 }
+            },
+            '1y': {
+                labels: ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'],
+                usage: [400, 450, 500, 650, 720, 810, 850, 900, 950, 1020, 1100, 1150],
+                powerUnit: [1000, 1050, 1100, 1200, 1250, 1300, 1350, 1400, 1400, 1450, 1500, 1550],
+                powerCost: [4000, 4200, 4400, 4800, 5000, 5200, 5400, 5600, 5600, 5800, 6000, 6200],
+                userTypes: [5200, 2100, 2200],
+                summary: { users: 9500, borrow: 15, power: 62200, broken: 5 }
+            },
+            'all': {
+                labels: ['2567', '2568', '2569'],
+                usage: [5000, 8500, 9500],
+                powerUnit: [12000, 14500, 15500],
+                powerCost: [48000, 58000, 62200],
+                userTypes: [12000, 5500, 5500],
+                summary: { users: 23000, borrow: 15, power: 168200, broken: 5 }
+            }
+        };
 
         // 🔐 Login System
         function login() {
@@ -550,11 +664,8 @@
                 document.getElementById('password').value = '';
                 document.getElementById('errorMsg').classList.add('hidden');
 
-                // โหลดกราฟตอนล็อกอินสำเร็จ
-                if (!dashboardChartsInit) {
-                    initDashboardCharts();
-                    dashboardChartsInit = true;
-                }
+                // โหลดหน้า Dashboard เป็นค่าเริ่มต้น
+                refreshDashboard();
             } else {
                 const err = document.getElementById('errorMsg');
                 err.classList.remove('hidden');
@@ -577,76 +688,131 @@
 
             if (tabId === 'electric') updateEDate(); 
             if (tabId === 'equipment') loadAdminEquipment();
+            if (tabId === 'dashboard') refreshDashboard();
+        }
 
-            // เรนเดอร์กราฟแดชบอร์ดถ้ายังไม่ได้โหลด
-            if (tabId === 'dashboard' && !dashboardChartsInit) {
-                initDashboardCharts();
-                dashboardChartsInit = true;
+        // ==========================================
+        // 📊 DASHBOARD SYSTEMS
+        // ==========================================
+        
+        // สลับประเภทย่อยของ Dashboard
+        function switchDashboardView(viewId, btnElement) {
+            currentDashView = viewId;
+            document.querySelectorAll('.dash-view').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.dash-type-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('dash-view-' + viewId).classList.add('active');
+            btnElement.classList.add('active');
+            
+            refreshDashboard();
+        }
+
+        // เลือกช่วงเวลาตัวกรอง
+        function updateTimeFilter(timeVal, btnElement) {
+            currentTimeFilter = timeVal;
+            document.querySelectorAll('.time-filter-btn').forEach(btn => btn.classList.remove('active'));
+            btnElement.classList.add('active');
+            
+            // อัปเดต Label บนการ์ด
+            let labelText = btnElement.innerText;
+            document.querySelectorAll('.filter-label').forEach(el => el.innerText = labelText);
+            
+            refreshDashboard();
+        }
+
+        // รีเฟรชและวาดกราฟใหม่
+        function refreshDashboard() {
+            const data = MOCK_DATA[currentTimeFilter];
+            
+            // 1. อัปเดตตัวเลข Summary Cards (แสดงเฉพาะในหน้า Overview)
+            if (currentDashView === 'overview') {
+                animateValue('ov-users', data.summary.users, 'คน');
+                animateValue('ov-borrow', data.summary.borrow, 'ชิ้น');
+                animateValue('ov-power', data.summary.power, 'บาท');
+                animateValue('ov-broken', data.summary.broken, 'รายการ');
+                
+                renderChart('chartOverviewLine', 'line', data.labels, [{ label: 'จำนวนผู้เข้าใช้งาน', data: data.usage, borderColor: '#6366f1', backgroundColor: 'rgba(99, 102, 241, 0.1)', fill: true, tension: 0.4 }]);
+                renderChart('chartOverviewPower', 'bar', data.labels, [{ label: 'ค่าไฟฟ้า (บาท)', data: data.powerCost, backgroundColor: '#3b82f6', borderRadius: 6 }]);
+            }
+            
+            else if (currentDashView === 'usage') {
+                renderChart('chartUsageBar', 'bar', data.labels, [{ label: 'ผู้ใช้สะสมช่วงนี้', data: data.usage, backgroundColor: '#10b981', borderRadius: 6 }]);
+                renderChart('chartUsagePie', 'doughnut', ['นักเรียน', 'ประชาชนทั่วไป', 'ครู/บุคลากร'], [{ data: data.userTypes, backgroundColor: ['#10b981', '#f59e0b', '#3b82f6'], borderWidth: 0 }], true);
+            }
+            
+            else if (currentDashView === 'electric') {
+                renderChart('chartElecUnit', 'line', data.labels, [{ label: 'หน่วยไฟฟ้า (Unit)', data: data.powerUnit, borderColor: '#f59e0b', backgroundColor: 'rgba(245, 158, 11, 0.1)', fill: true, tension: 0.4 }]);
+                
+                // คำนวณเรตค่าไฟเฉลี่ย
+                let rates = [];
+                for(let i=0; i<data.powerUnit.length; i++) {
+                    rates.push((data.powerCost[i] / data.powerUnit[i]).toFixed(2));
+                }
+                renderChart('chartElecRate', 'line', data.labels, [{ label: 'อัตราค่าไฟ (บาท/หน่วย)', data: rates, borderColor: '#ef4444', backgroundColor: 'transparent', tension: 0.1, borderDash: [5, 5] }]);
+            }
+            
+            else if (currentDashView === 'equipment') {
+                // กราฟอุปกรณ์ ดึงค่าสมมติให้ดูสมจริง
+                const eqStatusData = [85, data.summary.broken, 2]; // ปกติ, ส่งซ่อม, แทงจำหน่าย
+                renderChart('chartEqStatus', 'pie', ['ใช้งานได้ปกติ', 'ส่งซ่อม/ชำรุด', 'แทงจำหน่าย'], [{ data: eqStatusData, backgroundColor: ['#10b981', '#f59e0b', '#f43f5e'], borderWidth: 0 }], true);
+                
+                // ตารางสมมติ
+                document.getElementById('dashBorrowTable').innerHTML = `
+                    <tr class="hover:bg-slate-50"><td class="p-4">12 ต.ค. 2569</td><td class="p-4 font-bold">โน้ตบุ๊ก 1</td><td class="p-4">ด.ช.เอ</td><td class="p-4 text-center"><span class="bg-amber-100 text-amber-700 px-2 py-1 rounded text-[10px] font-bold">กำลังยืม</span></td></tr>
+                    <tr class="hover:bg-slate-50"><td class="p-4">10 ต.ค. 2569</td><td class="p-4 font-bold">แท็บเล็ต 3</td><td class="p-4">ด.ญ.บี</td><td class="p-4 text-center"><span class="bg-amber-100 text-amber-700 px-2 py-1 rounded text-[10px] font-bold">กำลังยืม</span></td></tr>
+                `;
             }
         }
 
-        // 📊 ฟังก์ชันสร้างกราฟ Dashboard
-        function initDashboardCharts() {
-            // กราฟ 1: สถิติการใช้งาน Bar Chart
-            const ctxUsage = document.getElementById('usageChart');
-            if (ctxUsage) {
-                new Chart(ctxUsage.getContext('2d'), {
-                    type: 'bar',
-                    data: {
-                        labels: ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.'],
-                        datasets: [{
-                            label: 'จำนวนผู้เข้าใช้งาน (คน)',
-                            data: [420, 560, 480, 890, 1284, 0],
-                            backgroundColor: '#10b981',
-                            borderRadius: 6,
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: { legend: { display: false } },
-                        scales: { 
-                            y: { beginAtZero: true, grid: { borderDash: [5, 5] } },
-                            x: { grid: { display: false } }
-                        }
-                    }
-                });
-            }
+        function renderChart(canvasId, type, labels, datasets, isPie = false) {
+            const ctx = document.getElementById(canvasId);
+            if (!ctx) return;
+            
+            // ทำลายกราฟเก่าถ้ามี เพื่อป้องกันกราฟซ้อนกัน
+            if (chartsObj[canvasId]) chartsObj[canvasId].destroy();
+            
+            let options = {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: isPie, position: 'bottom', labels: { usePointStyle: true, font: { family: 'Prompt' } } } }
+            };
 
-            // กราฟ 2: สถานะอุปกรณ์ Doughnut Chart
-            const ctxEq = document.getElementById('eqStatusChart');
-            if (ctxEq) {
-                new Chart(ctxEq.getContext('2d'), {
-                    type: 'doughnut',
-                    data: {
-                        labels: ['ใช้งานได้ปกติ', 'ส่งซ่อม', 'ชำรุด'],
-                        datasets: [{
-                            data: [45, 3, 2],
-                            backgroundColor: ['#10b981', '#f59e0b', '#f43f5e'],
-                            borderWidth: 0,
-                            hoverOffset: 4
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        cutout: '70%',
-                        plugins: { 
-                            legend: { position: 'bottom', labels: { usePointStyle: true, font: { family: 'Prompt' } } }
-                        }
-                    }
-                });
-            }
+            if (!isPie) {
+                options.scales = { 
+                    y: { beginAtZero: true, grid: { borderDash: [5, 5], color: '#f1f5f9' } },
+                    x: { grid: { display: false } }
+                };
+            } else { options.cutout = type === 'doughnut' ? '70%' : '0%'; }
+
+            chartsObj[canvasId] = new Chart(ctx.getContext('2d'), { type: type, data: { labels: labels, datasets: datasets }, options: options });
         }
 
+        // อนิเมชั่นตัวเลขวิ่ง
+        function animateValue(id, end, unit) {
+            let startTimestamp = null;
+            const duration = 500;
+            const obj = document.getElementById(id);
+            if(!obj) return;
+            
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                const current = Math.floor(progress * end);
+                obj.innerHTML = current.toLocaleString() + ` <span class="text-sm font-normal text-slate-500">${unit}</span>`;
+                if (progress < 1) { window.requestAnimationFrame(step); }
+                else { obj.innerHTML = end.toLocaleString() + ` <span class="text-sm font-normal text-slate-500">${unit}</span>`; }
+            };
+            window.requestAnimationFrame(step);
+        }
+
+        // ==========================================
+        // ฟังก์ชันระบบเดิมทั้งหมด (คงไว้ไม่ตัดออก)
+        // ==========================================
+        
         function showLoading(msg) { Swal.fire({ title: msg, allowOutsideClick: false, didOpen: () => Swal.showLoading() }); }
         function closeLoading() { Swal.close(); }
         function showSuccess(msg) { Swal.fire({ icon: 'success', title: 'สำเร็จ', text: msg, timer: 2000, showConfirmButton: false, confirmButtonColor: '#059669' }); }
         function showError(msg) { Swal.fire({ icon: 'error', title: 'ผิดพลาด', text: msg, confirmButtonColor: '#0f172a' }); }
 
-        // ==========================================
-        // 📊 1. SMART IMPORT
-        // ==========================================
         function handleDragOver(e) { e.preventDefault(); document.getElementById('dropZone').classList.add('bg-emerald-100', 'border-emerald-400'); }
         function handleDrop(e) { e.preventDefault(); document.getElementById('dropZone').classList.remove('bg-emerald-100', 'border-emerald-400'); processFile(e.dataTransfer.files[0]); }
         function handleFileSelect(e) { processFile(e.target.files[0]); }
@@ -764,13 +930,11 @@
                         errorDetail = "Google บล็อกการเข้าถึง (ตรวจสอบการตั้งค่า Deploy เป็น 'ทุกคน/Anyone' หรือยัง?)";
                         break; 
                     }
-
                 } catch (err) { 
                     failCount++;
                     errorDetail = "ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ (ตรวจสอบ Internet หรือ URL ของ GAS)";
                     break; 
                 }
-                
                 await new Promise(res => setTimeout(res, 400));
             }
 
@@ -790,9 +954,6 @@
             }
         }
 
-        // ==========================================
-        // ⚡ 2. SUBMIT DATA
-        // ==========================================
         function extractDriveId(url) {
             if (!url) return "";
             let match = url.match(/\/d\/(.+?)\/|\/folders\/(.+?)(?:\/|\?|$)|\?id=(.+?)(?:&|$)/);
@@ -857,9 +1018,6 @@
             });
         }
 
-        // ==========================================
-        // 🤖 3. AI BILL SCANNER
-        // ==========================================
         async function processAIBillScan(input, event) {
             if (!input.files || input.files.length === 0) return;
             event.stopPropagation();
@@ -929,9 +1087,6 @@
             }
         }
 
-        // ==========================================
-        // 🔌 4. ELECTRIC CALCULATION
-        // ==========================================
         function updateEDate() {
             const m = document.getElementById('e_month').value; const y = document.getElementById('e_year').value;
             if (m && y) document.getElementById('e_date').value = m + " " + y;
@@ -978,9 +1133,6 @@
             linkInput.disabled = false; linkInput.placeholder = 'หรือวางลิงก์ที่นี่...'; linkInput.classList.remove('bg-slate-100');
         }
 
-        // ==========================================
-        // 💻 5. EQUIPMENT TABLE
-        // ==========================================
         async function loadAdminEquipment() {
             const tbody = document.getElementById('adminEqTableBody');
             tbody.innerHTML = '<tr><td colspan="5" class="text-center py-12"><div class="spinner text-emerald-500 border-t-emerald-500"></div></td></tr>';
@@ -1041,7 +1193,6 @@
 
         function exportAdminPDF() { window.print(); }
 
-        // Modal Update
         function openEqModal(idx) {
             const r = adminEqData[idx];
             const d = new Date(); document.getElementById('upd_date').value = `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
