@@ -201,7 +201,7 @@
                         <div class="flex flex-wrap gap-2">
                             <button class="dash-type-btn active" onclick="switchDashboardView('overview', this)"><i class="ph-fill ph-squares-four mr-1"></i> ภาพรวม</button>
                             <button class="dash-type-btn" onclick="switchDashboardView('usage', this)"><i class="ph-fill ph-users mr-1"></i> ผู้ใช้งาน</button>
-                            <button class="dash-type-btn" onclick="switchDashboardView('electric', this)"><i class="ph-fill ph-lightning mr-1"></i> ไฟฟ้า</button>
+                            <button class="dash-type-btn" onclick="switchDashboardView('electric', this)"><i class="ph-fill ph-lightning mr-1"></i> ไฟฟ้าห้องศูนย์ฯ</button>
                             <button class="dash-type-btn" onclick="switchDashboardView('equipment', this)"><i class="ph-fill ph-desktop mr-1"></i> อุปกรณ์</button>
                         </div>
                     </div>
@@ -233,15 +233,15 @@
                             <div class="bg-slate-50 border border-slate-100 p-5 rounded-2xl flex items-center gap-4">
                                 <div class="w-12 h-12 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center text-2xl"><i class="ph-fill ph-archive"></i></div>
                                 <div>
-                                    <p class="text-[11px] text-slate-500 font-bold uppercase tracking-wide mb-0.5">ถูกยืมขณะนี้</p>
+                                    <p class="text-[11px] text-slate-500 font-bold uppercase tracking-wide mb-0.5">สถานะยืมปัจจุบัน</p>
                                     <h4 id="ov-borrow" class="text-2xl font-bold text-slate-800 leading-none">0 <span class="text-sm font-normal text-slate-500">ชิ้น</span></h4>
                                 </div>
                             </div>
                             <div class="bg-slate-50 border border-slate-100 p-5 rounded-2xl flex items-center gap-4">
                                 <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-2xl"><i class="ph-fill ph-lightning"></i></div>
                                 <div>
-                                    <p class="text-[11px] text-slate-500 font-bold uppercase tracking-wide mb-0.5">ค่าไฟสะสม (<span class="filter-label">6 เดือน</span>)</p>
-                                    <h4 id="ov-power" class="text-2xl font-bold text-slate-800 leading-none">0 <span class="text-sm font-normal text-slate-500">บาท</span></h4>
+                                    <p class="text-[11px] text-slate-500 font-bold uppercase tracking-wide mb-0.5">ค่าไฟห้องศูนย์ (<span class="filter-label">6 เดือน</span>)</p>
+                                    <h4 id="ov-power" class="text-xl font-bold text-slate-800 leading-none">0.00 <span class="text-sm font-normal text-slate-500">บาท</span></h4>
                                 </div>
                             </div>
                             <div class="bg-slate-50 border border-slate-100 p-5 rounded-2xl flex items-center gap-4">
@@ -261,7 +261,7 @@
                             </div>
                             <!-- กราฟแท่งค่าไฟ -->
                             <div class="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm">
-                                <h3 class="text-base font-bold text-slate-700 font-kanit mb-4 flex items-center gap-2"><i class="ph-fill ph-lightning text-blue-500 text-xl"></i> สรุปค่าไฟฟ้าศูนย์ฯรายเดือน</h3>
+                                <h3 class="text-base font-bold text-slate-700 font-kanit mb-4 flex items-center gap-2"><i class="ph-fill ph-lightning text-blue-500 text-xl"></i> ค่าไฟฟ้าห้องศูนย์ฯ (เรต 15A)</h3>
                                 <div class="relative h-[300px] w-full"><canvas id="chartOverviewPower"></canvas></div>
                             </div>
                         </div>
@@ -274,7 +274,7 @@
                         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 font-sarabun mb-6">
                             <!-- กราฟแท่งแยกประเภทผู้ใช้ -->
                             <div class="lg:col-span-2 bg-white border border-slate-200 p-6 rounded-2xl shadow-sm">
-                                <h3 class="text-base font-bold text-slate-700 font-kanit mb-4 flex items-center gap-2"><i class="ph-fill ph-users-three text-emerald-500 text-xl"></i> สถิติการใช้งานแยกตามประเภท</h3>
+                                <h3 class="text-base font-bold text-slate-700 font-kanit mb-4 flex items-center gap-2"><i class="ph-fill ph-users-three text-emerald-500 text-xl"></i> สถิติการใช้งานรายเดือน</h3>
                                 <div class="relative h-[300px] w-full"><canvas id="chartUsageBar"></canvas></div>
                             </div>
                             <!-- สัดส่วนประเภทผู้ใช้ -->
@@ -292,12 +292,12 @@
                         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 font-sarabun mb-6">
                             <!-- กราฟเส้นเปรียบเทียบหน่วยกับเงิน -->
                             <div class="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm">
-                                <h3 class="text-base font-bold text-slate-700 font-kanit mb-4 flex items-center gap-2"><i class="ph-fill ph-plug-charging text-blue-500 text-xl"></i> ปริมาณการใช้ไฟฟ้า (หน่วย)</h3>
+                                <h3 class="text-base font-bold text-slate-700 font-kanit mb-4 flex items-center gap-2"><i class="ph-fill ph-plug-charging text-amber-500 text-xl"></i> ปริมาณหน่วยที่ใช้ในห้องศูนย์ฯ (H ลบ G)</h3>
                                 <div class="relative h-[300px] w-full"><canvas id="chartElecUnit"></canvas></div>
                             </div>
                             <div class="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm">
-                                <h3 class="text-base font-bold text-slate-700 font-kanit mb-4 flex items-center gap-2"><i class="ph-fill ph-money text-amber-500 text-xl"></i> อัตราค่าไฟเฉลี่ยต่อหน่วย</h3>
-                                <div class="relative h-[300px] w-full"><canvas id="chartElecRate"></canvas></div>
+                                <h3 class="text-base font-bold text-slate-700 font-kanit mb-4 flex items-center gap-2"><i class="ph-fill ph-money text-blue-500 text-xl"></i> ค่าไฟฟ้าห้องศูนย์ฯ (เรต กฟภ. 15A)</h3>
+                                <div class="relative h-[300px] w-full"><canvas id="chartElecCost"></canvas></div>
                             </div>
                         </div>
                     </div>
@@ -309,21 +309,21 @@
                         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 font-sarabun mb-6">
                             <!-- กราฟโดนัท สถานะปัจจุบัน -->
                             <div class="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm">
-                                <h3 class="text-base font-bold text-slate-700 font-kanit mb-4 flex items-center gap-2"><i class="ph-fill ph-desktop text-teal-500 text-xl"></i> สถานะครุภัณฑ์ปัจจุบัน</h3>
+                                <h3 class="text-base font-bold text-slate-700 font-kanit mb-4 flex items-center gap-2"><i class="ph-fill ph-desktop text-teal-500 text-xl"></i> สถานะครุภัณฑ์ทั้งหมด</h3>
                                 <div class="relative h-[250px] w-full flex justify-center"><canvas id="chartEqStatus"></canvas></div>
                             </div>
                             <!-- ตารางยืมคืน -->
                             <div class="lg:col-span-2 bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
                                 <div class="p-5 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
-                                    <h3 class="text-base font-bold text-slate-700 font-kanit"><i class="ph-fill ph-archive text-amber-500 mr-2"></i> รายการอุปกรณ์ที่ถูกยืมอยู่</h3>
+                                    <h3 class="text-base font-bold text-slate-700 font-kanit"><i class="ph-fill ph-archive text-amber-500 mr-2"></i> ประวัติการยืม-คืนล่าสุด</h3>
                                 </div>
                                 <div class="overflow-y-auto max-h-[250px] custom-scrollbar">
                                     <table class="w-full text-left text-sm whitespace-nowrap">
                                         <thead class="sticky top-0 bg-white shadow-sm z-10">
                                             <tr class="text-slate-500 text-[11px] uppercase tracking-wider border-b border-slate-100">
-                                                <th class="p-4 font-bold">วันที่ยืม</th>
-                                                <th class="p-4 font-bold">อุปกรณ์</th>
-                                                <th class="p-4 font-bold">ผู้ยืม</th>
+                                                <th class="p-4 font-bold">วันที่รายการ</th>
+                                                <th class="p-4 font-bold">ชื่ออุปกรณ์</th>
+                                                <th class="p-4 font-bold">ผู้ทำรายการ</th>
                                                 <th class="p-4 font-bold text-center">สถานะ</th>
                                             </tr>
                                         </thead>
@@ -339,7 +339,6 @@
                 </div>
                 <!-- ============================ -->
 
-                <!-- (ฟอร์มเดิมต่างๆ ไม่ได้ตัดออก) -->
                 <div id="form-import" class="form-section">
                     <div class="flex items-center gap-3 mb-2">
                         <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center text-2xl border border-emerald-100"><i class="ph-fill ph-microsoft-excel-logo"></i></div>
@@ -488,7 +487,7 @@
                             
                             <div class="md:col-span-2 mt-2"><label class="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wide">รายละเอียดเพิ่มเติม (แสดงในหน้าดูรูป)</label><input type="text" id="g_details" placeholder="อธิบายกิจกรรมคร่าวๆ (ถ้ามี)" class="input-field"></div>
                         </div>
-                        <button type="submit" id="btn-gallery" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-3.5 rounded-xl transition flex items-center justify-center shadow-md font-kanit text-lg"><i class="ph-bold ph-paper-plane-tilt mr-2"></i> สร้างอัลบั้มใหม่</button>
+                        <button type="submit" id="btn-gallery" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-3.5 rounded-xl transition flex items-center justify-center shadow-md font-kanit text-lg"><i class="ph-bold ph-folder-plus mr-2"></i> สร้างอัลบั้มใหม่</button>
                     </form>
                 </div>
 
@@ -651,30 +650,26 @@
         async function loadAllDatabases() {
             showLoading('กำลังซิงค์ฐานข้อมูล...');
             try {
-                // โหลดอุปกรณ์ (มี URL แน่นอน)
                 if(EQ_CSV_URL) {
                     let res = await fetch(EQ_CSV_URL);
                     realDB.equipment = parseCSVData(await res.text());
                     adminEqData = realDB.equipment; 
                 }
-                // โหลดยืม-คืน
                 if(BORROW_CSV_URL) {
                     let res = await fetch(BORROW_CSV_URL);
                     realDB.borrow = parseCSVData(await res.text());
                 }
-                // โหลดไฟฟ้า
                 if(ELECTRIC_CSV_URL) {
                     let res = await fetch(ELECTRIC_CSV_URL);
                     realDB.electric = parseCSVData(await res.text());
                 }
-                // โหลดผู้ใช้
                 if(USAGE_CSV_URL) {
                     let res = await fetch(USAGE_CSV_URL);
                     realDB.usage = parseCSVData(await res.text());
                 }
             } catch(e) { console.error("Database Load Error", e); }
             closeLoading();
-            renderAdminEqTable(adminEqData); // เตรียมตารางพัสดุไว้เลย
+            renderAdminEqTable(adminEqData);
         }
 
         // 🗂️ Tabs System
@@ -737,97 +732,112 @@
             } else { normalEq=45; repairEq=3; brokenEq=2; } // Fallback
 
             // ---------------------------------
-            // 2. ประมวลผล Borrow (ของจริง) - แก้ไขตามที่คุณระบุว่ามีแค่ 6 ครั้ง
+            // 2. ประมวลผล Borrow (ดึงการยืมมาแสดง 6 รายการตามตารางจริง)
             // ---------------------------------
             let borrowedCount = 0; let borrowListHTML = '';
             if(realDB.borrow.length > 0) {
-                // กรองเฉพาะที่ 'สถานะ' มีคำว่า 'ยืม' (ยังไม่คืน)
-                let borrowing = realDB.borrow.filter(b => (b['สถานะ'] || '').includes('ยืม'));
-                borrowedCount = borrowing.length; // ควรจะนับได้ตามจริงที่มีในชีต
+                // หาจำนวนที่สถานะยัง "ยืม" อยู่ เพื่อโชว์บนการ์ดด้านบน
+                let borrowing = realDB.borrow.filter(b => {
+                    let st = String(b['สถานะ'] || b['e_status'] || Object.values(b)[3] || '').trim();
+                    return st.includes('ยืม');
+                });
+                borrowedCount = borrowing.length; 
                 
-                // ดึงรายการล่าสุดมาแสดง 6 รายการ
-                let recent = borrowing.slice(-6).reverse();
+                // ดึงข้อมูล 6 รายการล่าสุดมาแสดงในตาราง (จะคืนแล้วหรือยังยืมอยู่ก็แสดง)
+                let recent = realDB.borrow.slice(-6).reverse();
                 recent.forEach(b => {
-                    borrowListHTML += `<tr class="hover:bg-slate-50 border-b border-slate-100"><td class="p-4 text-xs">${b['วันที่ทำรายการ']||'-'}</td><td class="p-4 font-bold text-slate-800">${b['ชื่ออุปกรณ์']||'-'}</td><td class="p-4 text-slate-600">${b['ผู้ยืม']||'-'}</td><td class="p-4 text-center"><span class="bg-amber-100 text-amber-700 px-2 py-1 rounded text-[10px] font-bold">กำลังยืม</span></td></tr>`;
+                    let d = (b['วันที่ทำรายการ'] || b['e_date'] || Object.values(b)[0] || '-').replace(/'/g, '');
+                    let item = b['ชื่ออุปกรณ์'] || b['e_item'] || Object.values(b)[1] || '-';
+                    let user = b['ผู้ยืม'] || b['e_user'] || Object.values(b)[2] || '-';
+                    let status = (b['สถานะ'] || b['e_status'] || Object.values(b)[3] || '').trim();
+                    
+                    let stBadge = status.includes('ยืม') ? `<span class="bg-amber-100 text-amber-700 px-2 py-1 rounded text-[10px] font-bold">กำลังยืม</span>` : 
+                                  (status.includes('คืน') ? `<span class="bg-emerald-100 text-emerald-700 px-2 py-1 rounded text-[10px] font-bold">คืนแล้ว</span>` : 
+                                  `<span class="bg-rose-100 text-rose-700 px-2 py-1 rounded text-[10px] font-bold">${status}</span>`);
+
+                    borrowListHTML += `<tr class="hover:bg-slate-50 border-b border-slate-100"><td class="p-4 text-xs">${d}</td><td class="p-4 font-bold text-slate-800">${item}</td><td class="p-4 text-slate-600">${user}</td><td class="p-4 text-center">${stBadge}</td></tr>`;
                 });
             } else { 
-                // ค่า Dummy หากยังไม่มี URL
                 borrowedCount = 6; 
                 borrowListHTML = `
                     <tr class="hover:bg-slate-50 border-b border-slate-100"><td class="p-4 text-xs">01/10/2569</td><td class="p-4 font-bold text-slate-800">โน้ตบุ๊ก 1</td><td class="p-4 text-slate-600">ด.ช.เอ</td><td class="p-4 text-center"><span class="bg-amber-100 text-amber-700 px-2 py-1 rounded text-[10px] font-bold">กำลังยืม</span></td></tr>
                     <tr class="hover:bg-slate-50 border-b border-slate-100"><td class="p-4 text-xs">05/10/2569</td><td class="p-4 font-bold text-slate-800">แท็บเล็ต 3</td><td class="p-4 text-slate-600">ด.ญ.บี</td><td class="p-4 text-center"><span class="bg-amber-100 text-amber-700 px-2 py-1 rounded text-[10px] font-bold">กำลังยืม</span></td></tr>
                     <tr class="hover:bg-slate-50 border-b border-slate-100"><td class="p-4 text-xs">10/10/2569</td><td class="p-4 font-bold text-slate-800">โปรเจคเตอร์</td><td class="p-4 text-slate-600">ครูสมศรี</td><td class="p-4 text-center"><span class="bg-amber-100 text-amber-700 px-2 py-1 rounded text-[10px] font-bold">กำลังยืม</span></td></tr>
-                    <tr class="hover:bg-slate-50 border-b border-slate-100"><td class="p-4 text-xs">12/10/2569</td><td class="p-4 font-bold text-slate-800">ปลั๊กพ่วง 5M</td><td class="p-4 text-slate-600">นายสมชาย</td><td class="p-4 text-center"><span class="bg-amber-100 text-amber-700 px-2 py-1 rounded text-[10px] font-bold">กำลังยืม</span></td></tr>
-                    <tr class="hover:bg-slate-50 border-b border-slate-100"><td class="p-4 text-xs">15/10/2569</td><td class="p-4 font-bold text-slate-800">ไมค์ลอย</td><td class="p-4 text-slate-600">ครูสมศักดิ์</td><td class="p-4 text-center"><span class="bg-amber-100 text-amber-700 px-2 py-1 rounded text-[10px] font-bold">กำลังยืม</span></td></tr>
+                    <tr class="hover:bg-slate-50 border-b border-slate-100"><td class="p-4 text-xs">12/10/2569</td><td class="p-4 font-bold text-slate-800">ปลั๊กพ่วง 5M</td><td class="p-4 text-slate-600">นายสมชาย</td><td class="p-4 text-center"><span class="bg-emerald-100 text-emerald-700 px-2 py-1 rounded text-[10px] font-bold">คืนแล้ว</span></td></tr>
+                    <tr class="hover:bg-slate-50 border-b border-slate-100"><td class="p-4 text-xs">15/10/2569</td><td class="p-4 font-bold text-slate-800">ไมค์ลอย</td><td class="p-4 text-slate-600">ครูสมศักดิ์</td><td class="p-4 text-center"><span class="bg-emerald-100 text-emerald-700 px-2 py-1 rounded text-[10px] font-bold">คืนแล้ว</span></td></tr>
                     <tr class="hover:bg-slate-50 border-b border-slate-100"><td class="p-4 text-xs">18/10/2569</td><td class="p-4 font-bold text-slate-800">กล้อง DSLR</td><td class="p-4 text-slate-600">น.ส.ซี</td><td class="p-4 text-center"><span class="bg-amber-100 text-amber-700 px-2 py-1 rounded text-[10px] font-bold">กำลังยืม</span></td></tr>
                 `;
             }
-            if(!borrowListHTML) borrowListHTML = `<tr><td colspan="4" class="text-center py-8 text-slate-400">ไม่มีอุปกรณ์ที่ถูกยืม</td></tr>`;
+            if(!borrowListHTML) borrowListHTML = `<tr><td colspan="4" class="text-center py-8 text-slate-400">ไม่มีประวัติการทำรายการ</td></tr>`;
 
             // ---------------------------------
-            // 3. ประมวลผล Electric (ของจริง) - แก้ไขการดึงหน่วยไฟห้อง (Column G และ H)
+            // 3. ประมวลผล Electric (คำนวณตามเรต กฟภ. 15A ของห้องโดยเฉพาะ)
             // ---------------------------------
             let eLabels = [], eRoomUnits = [], eRoomCosts = [], eRates = [], totalRoomPowerCost = 0;
             if(realDB.electric.length > 0) {
-                // ดึงข้อมูลย้อนหลังตามจำนวนเดือนที่ระบุ (limit)
                 let list = realDB.electric.slice(-monthsLimit);
                 
                 list.forEach(e => {
-                    eLabels.push(e['รอบบิลประจำเดือน'] || e['รอบบิล'] || '-');
+                    let monthStr = e['รอบบิลประจำเดือน'] || e['รอบบิล'] || e['e_month'] || Object.values(e)[0] || '-';
+                    monthStr = monthStr.replace(/'/g, '').trim();
+                    eLabels.push(monthStr);
                     
-                    // คำนวณเรตค่าไฟรวมของโรงเรียน เพื่อเอามาคิดเงินห้องศูนย์ฯ
-                    let schUnit = parseFloat(e['หน่วย รร. (Unit)'] || e['หน่วย'] || 0);
-                    let schCost = parseFloat(e['ยอดรวม รร. (บาท)'] || e['ยอดรวม'] || 0);
-                    let avgRate = schUnit > 0 ? (schCost / schUnit) : 0;
+                    // ดึงค่ามิเตอร์ก่อนจด (Column G) และหลังจด (Column H) เพื่อมาลบกันหาหน่วยห้อง
+                    let roomPrev = parseFloat(e['เลขมิเตอร์ ครั้งก่อน'] || e['e_room_meter_prev'] || Object.values(e)[6] || 0);
+                    let roomCurr = parseFloat(e['เลขมิเตอร์ หลังจด'] || e['e_room_meter_curr'] || Object.values(e)[7] || 0);
                     
-                    // ดึงค่ามิเตอร์ห้องศูนย์ (Column G: เลขมิเตอร์ ครั้งก่อน, Column H: เลขมิเตอร์ หลังจด)
-                    // (ตรวจสอบชื่อคอลัมน์ให้ตรงกับชีตของคุณ หากไม่ตรง ให้แก้ที่ชื่อคีย์ '...' ด้านล่างนี้)
-                    let roomPrev = parseFloat(e['เลขมิเตอร์ ครั้งก่อน'] || e['เลขมิเตอร์ครั้งก่อน'] || 0);
-                    let roomCurr = parseFloat(e['เลขมิเตอร์ หลังจด'] || e['เลขมิเตอร์หลังจด'] || 0);
-                    
-                    // คำนวณหน่วยที่ใช้ในห้อง และค่าไฟของห้อง
+                    // หน่วยที่ใช้จริงของห้อง (H - G)
                     let rUnit = roomCurr > roomPrev ? (roomCurr - roomPrev) : 0;
-                    let rCost = rUnit * avgRate;
+                    
+                    // คำนวณค่าไฟห้องตามเรต กฟภ. 15A (ประเภท 1.1.2)
+                    let rCost = 0;
+                    if(rUnit > 0) {
+                        let base = 0;
+                        if(rUnit <= 150) base = rUnit * 3.2484;
+                        else if(rUnit <= 400) base = (150 * 3.2484) + ((rUnit - 150) * 4.2218);
+                        else base = (150 * 3.2484) + (250 * 4.2218) + ((rUnit - 400) * 4.4217);
+                        
+                        let service = 38.22;
+                        let ft = rUnit * 0.3972; // ค่า Ft ปัจจุบันเฉลี่ย
+                        rCost = (base + service + ft) * 1.07; // รวม VAT 7%
+                    }
 
                     eRoomUnits.push(rUnit); 
                     eRoomCosts.push(rCost); 
-                    eRates.push(avgRate.toFixed(2));
+                    eRates.push(rUnit > 0 ? (rCost/rUnit).toFixed(2) : 0);
                     totalRoomPowerCost += rCost;
                 });
             } else {
-                // Fallback จำลองถ้าไม่มีลิงก์
-                eLabels = ['ก.ค.', 'ส.ค.', 'ก.ย.']; eRoomUnits = [120, 150, 140]; eRoomCosts = [480, 600, 560]; eRates = [4, 4, 4]; totalRoomPowerCost = 1640;
+                eLabels = ['ก.ค.', 'ส.ค.', 'ก.ย.']; eRoomUnits = [120, 150, 140]; eRoomCosts = [560, 710, 650]; eRates = [4.6, 4.7, 4.6]; totalRoomPowerCost = 1920;
             }
 
             // ---------------------------------
-            // 4. ประมวลผล Usage (ของจริง) - จัดกลุ่มและนับจำนวนให้ถูกต้องตามเดือน
+            // 4. ประมวลผล Usage (นับแยกประเภทและรายเดือนอย่างถูกต้อง)
             // ---------------------------------
             let uLabels = [], uCounts = [], totalUsers = 0, uPie = [0,0,0];
             
             if(realDB.usage.length > 0) {
-                // 4.1 จัดกลุ่มจำนวนผู้ใช้งานรายเดือน
                 let monthlyData = {};
                 
                 realDB.usage.forEach(u => {
-                    // ดึงวันที่เข้าใช้ (สมมติ Column C ชื่อ "วันที่เข้าใช้บริการ")
-                    let dateStr = u['วันที่เข้าใช้บริการ'] || u['วันที่'] || '';
-                    // หาจำนวนผู้ใช้งานในรอบนั้น (สมมติ Column U ชื่อ "จำนวนผู้เข้าใช้งาน")
-                    let count = parseInt(u['จำนวนผู้เข้าใช้งาน'] || u['จำนวน'] || 1) || 1;
-                    
-                    // แยกประเภทผู้ใช้ (สมมติ Column E หรือ F ที่ระบุประเภท) -> ตัวอย่าง: ดึงจากชื่อสกุลเบื้องต้นหรือประเภทถ้ามี
-                    let userType = u['ประเภทผู้ใช้งาน'] || u['ประเภทผู้รับบริการ'] || u['ประเภท'] || 'ประชาชนทั่วไป';
+                    let vals = Object.values(u);
+                    // Col วันที่เข้าใช้
+                    let dateStr = (u['วันที่เข้าใช้บริการ'] || u['วันที่'] || vals[2] || '').replace(/'/g, '').trim();
+                    // Col จำนวนผู้ใช้
+                    let count = parseInt(u['จำนวนผู้เข้าใช้งาน'] || u['จำนวน'] || vals[20] || 1) || 1;
+                    // Col ประเภทผู้ใช้
+                    let userType = String(u['ประเภทผู้ใช้งาน'] || u['ประเภทผู้รับบริการ'] || u['ประเภท'] || vals[4] || vals[5] || 'ประชาชนทั่วไป');
                     
                     if (userType.includes('นักเรียน') || userType.includes('เด็ก')) uPie[0] += count;
                     else if (userType.includes('ครู') || userType.includes('บุคลากร')) uPie[2] += count;
-                    else uPie[1] += count; // ประชาชนทั่วไป
+                    else uPie[1] += count;
 
                     if(dateStr) {
-                        // แยกเดือน/ปี (สมมติ format: DD/MM/YYYY)
                         let parts = dateStr.split('/');
                         if(parts.length >= 2) {
                             let m = parts[1].padStart(2, '0');
-                            let y = parts[2] ? parts[2].substring(2,4) : ''; // เอาแค่ 2 หลักท้าย
-                            let monthKey = `${m}/${y}`;
+                            let y = parts[2] ? parts[2].substring(2,4) : ''; 
+                            let monthKey = `${y}-${m}`; 
                             
                             if(!monthlyData[monthKey]) monthlyData[monthKey] = 0;
                             monthlyData[monthKey] += count;
@@ -836,21 +846,17 @@
                     totalUsers += count;
                 });
 
-                // เรียงคีย์และตัดเฉพาะจำนวนเดือนที่กำหนด (limit)
                 let sortedKeys = Object.keys(monthlyData).sort();
                 let limitedKeys = sortedKeys.slice(-monthsLimit);
                 
                 limitedKeys.forEach(k => {
-                    // แปลง 01/69 เป็น ม.ค. 69
                     let mNames = ["", "ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
-                    let m = parseInt(k.split('/')[0]);
-                    let y = k.split('/')[1];
+                    let parts = k.split('-');
+                    let y = parts[0]; let m = parseInt(parts[1]);
                     uLabels.push(`${mNames[m]} ${y}`);
                     uCounts.push(monthlyData[k]);
                 });
-
             } else {
-                // Fallback จำลองถ้าไม่มีลิงก์
                 uLabels = ['ก.ค. 69', 'ส.ค. 69', 'ก.ย. 69']; uCounts = [120, 350, 410]; totalUsers = 880; uPie = [500, 280, 100];
             }
 
@@ -863,7 +869,7 @@
                 animateValue('ov-broken', repairEq + brokenEq, 'รายการ');
                 
                 renderChart('chartOverviewLine', 'line', uLabels, [{ label: 'จำนวนผู้ใช้งาน', data: uCounts, borderColor: '#6366f1', backgroundColor: 'rgba(99, 102, 241, 0.1)', fill: true, tension: 0.4 }]);
-                // แสดงค่าไฟศูนย์ฯ ที่คำนวณแล้ว (ไม่ใช่ยอดรวมโรงเรียน)
+                // กราฟค่าไฟห้องโดยเฉพาะ
                 renderChart('chartOverviewPower', 'bar', eLabels, [{ label: 'ค่าไฟฟ้าห้องศูนย์ฯ (บาท)', data: eRoomCosts, backgroundColor: '#3b82f6', borderRadius: 6 }]);
             }
             else if (currentDashView === 'usage') {
@@ -871,9 +877,10 @@
                 renderChart('chartUsagePie', 'doughnut', ['นักเรียน', 'ประชาชนทั่วไป', 'ครู/บุคลากร'], [{ data: uPie, backgroundColor: ['#10b981', '#f59e0b', '#3b82f6'], borderWidth: 0 }], true);
             }
             else if (currentDashView === 'electric') {
-                // แสดงหน่วยไฟที่ศูนย์ใช้จริงๆ 
+                // กราฟปริมาณการใช้ไฟของห้องศูนย์ (H ลบ G)
                 renderChart('chartElecUnit', 'line', eLabels, [{ label: 'หน่วยไฟฟ้าศูนย์ฯ (Unit)', data: eRoomUnits, borderColor: '#f59e0b', backgroundColor: 'rgba(245, 158, 11, 0.1)', fill: true, tension: 0.4 }]);
-                renderChart('chartElecRate', 'line', eLabels, [{ label: 'อัตราค่าไฟเฉลี่ย (บาท/หน่วย)', data: eRates, borderColor: '#ef4444', backgroundColor: 'transparent', tension: 0.1, borderDash: [5, 5] }]);
+                // กราฟค่าไฟฟ้าห้องศูนย์
+                renderChart('chartElecCost', 'line', eLabels, [{ label: 'ค่าไฟฟ้า (บาท/ตามเรต 15A)', data: eRoomCosts, borderColor: '#3b82f6', backgroundColor: 'transparent', tension: 0.1, borderDash: [5, 5] }]);
             }
             else if (currentDashView === 'equipment') {
                 renderChart('chartEqStatus', 'pie', ['ใช้งานได้ปกติ', 'ส่งซ่อม/ชำรุด'], [{ data: [normalEq, repairEq+brokenEq], backgroundColor: ['#10b981', '#f43f5e'], borderWidth: 0 }], true);
@@ -900,7 +907,6 @@
                 if (!startTimestamp) startTimestamp = timestamp;
                 const progress = Math.min((timestamp - startTimestamp) / duration, 1);
                 
-                // สำหรับจำนวนเงิน ให้รองรับทศนิยม
                 if(unit === 'บาท') {
                     let current = (progress * end).toFixed(2);
                     obj.innerHTML = parseFloat(current).toLocaleString('en-US', {minimumFractionDigits: 2}) + ` <span class="text-sm font-normal text-slate-500">${unit}</span>`;
