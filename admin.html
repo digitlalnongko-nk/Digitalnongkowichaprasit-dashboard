@@ -361,7 +361,7 @@
                     <h2 class="text-xl font-bold text-slate-800 font-kanit mb-6 border-b border-slate-100 pb-4 flex items-center gap-3"><div class="w-10 h-10 bg-amber-50 text-amber-500 rounded-xl flex items-center justify-center"><i class="ph-fill ph-archive text-xl"></i></div> บันทึกข้อมูลยืม-คืน</h2>
                     <form onsubmit="submitData(event, 'Borrow', ['b_date', 'b_item', 'b_user', 'b_status', 'b_note'], 'btn-borrow')">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 font-sarabun">
-                            <div><label class="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wide">วันที่ทำรายการ *</label><input type="text" id="b_date" required placeholder="เช่น 15 ม.ค. 69" class="input-field"></div>
+                            <div><label class="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wide">วันที่ทำรายการ *</label><input type="text" id="b_date" required placeholder="เช่น 15/01/2026" class="input-field"></div>
                             <div><label class="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wide">ชื่ออุปกรณ์ *</label><input type="text" id="b_item" required placeholder="เช่น โน้ตบุ๊ก หมายเลข 1" class="input-field"></div>
                             <div><label class="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wide">ผู้ยืม *</label><input type="text" id="b_user" required placeholder="เช่น ด.ช.สมชาย ใจดี" class="input-field"></div>
                             <div><label class="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wide">สถานะ *</label>
@@ -404,8 +404,9 @@
                                         <option value="พฤษภาคม">พฤษภาคม</option><option value="มิถุนายน">มิถุนายน</option><option value="กรกฎาคม">กรกฎาคม</option><option value="สิงหาคม">สิงหาคม</option>
                                         <option value="กันยายน">กันยายน</option><option value="ตุลาคม">ตุลาคม</option><option value="พฤศจิกายน">พฤศจิกายน</option><option value="ธันวาคม">ธันวาคม</option>
                                     </select>
+                                    <!-- เปลี่ยนค.ศ.ในช่องเลือกเพื่อบันทึกลงฐานข้อมูลเป็น ค.ศ. -->
                                     <select id="e_year" class="input-field flex-1 cursor-pointer" onchange="updateEDate()">
-                                        <option value="2568">2568</option><option value="2569" selected>2569</option><option value="2570">2570</option>
+                                        <option value="2025">2025</option><option value="2026" selected>2026</option><option value="2027">2027</option>
                                     </select>
                                 </div>
                             </div>
@@ -487,7 +488,7 @@
                             
                             <div class="md:col-span-2 mt-2"><label class="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wide">รายละเอียดเพิ่มเติม (แสดงในหน้าดูรูป)</label><input type="text" id="g_details" placeholder="อธิบายกิจกรรมคร่าวๆ (ถ้ามี)" class="input-field"></div>
                         </div>
-                        <button type="submit" id="btn-gallery" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-3.5 rounded-xl transition flex items-center justify-center shadow-md font-kanit text-lg"><i class="ph-bold ph-paper-plane-tilt mr-2"></i> สร้างอัลบั้มใหม่</button>
+                        <button type="submit" id="btn-gallery" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-3.5 rounded-xl transition flex items-center justify-center shadow-md font-kanit text-lg"><i class="ph-bold ph-folder-plus mr-2"></i> สร้างอัลบั้มใหม่</button>
                     </form>
                 </div>
 
@@ -616,6 +617,16 @@
         let currentTimeFilter = '6m';
         let chartsObj = {};
 
+        // === ฟังก์ชันแปลง ค.ศ. เป็น พ.ศ. สำหรับแสดงผลหน้าเว็บ ===
+        function convertToThaiYear(text) {
+            if (!text) return text;
+            text = String(text);
+            // จับตัวเลขที่ขึ้นต้นด้วย 202 และเปลี่ยนเป็น พ.ศ. (+543)
+            return text.replace(/\b(202\d)\b/g, function(match) {
+                return parseInt(match) + 543;
+            });
+        }
+
         // 🔐 Login System
         async function login() {
             const p = document.getElementById('password').value;
@@ -716,40 +727,47 @@
             if(currentTimeFilter === 'all') monthsLimit = 999;
 
             // ---------------------------------
-            // 1. ประมวลผล Equipment (ของจริง 100%)
+            // 1. ประมวลผล Equipment 
             // ---------------------------------
             let normalEq=0, repairEq=0, brokenEq=0;
             if(realDB.equipment.length > 0) {
                 realDB.equipment.forEach(e => {
-                    let s = (e['สถานะปัจจุบัน'] || e['สถานะ'] || '').trim();
-                    let w = (e['สถานะการรับประกัน'] || '').trim();
+                    let vals = Object.values(e);
+                    let s = String(e['สถานะปัจจุบัน'] || e['สถานะ'] || vals[6] || '').trim();
+                    let w = String(e['สถานะการรับประกัน'] || e['หมายเหตุ'] || vals[7] || '').trim();
+                    
                     if ((s.includes('ปี') || s.includes('ไม่มี')) && (w.includes('ใช้งาน') || w.includes('ชำรุด'))) s = w;
                     
-                    if (s.includes('ใช้งานได้') || s === 'ปกติ') normalEq++;
+                    if (s.includes('ใช้งานได้') || s === 'ปกติ' || s === 'ใช้งานปกติ') normalEq++;
                     else if (s.includes('ซ่อม')) repairEq++;
-                    else if (s.includes('ชำรุด') || s.includes('เสีย')) brokenEq++;
+                    else if (s.includes('ชำรุด') || s.includes('เสีย') || s.includes('แทงจำหน่าย') || s.includes('สูญหาย')) brokenEq++;
                 });
-            } else { normalEq=45; repairEq=3; brokenEq=2; } // Fallback
+            } else { normalEq=45; repairEq=3; brokenEq=2; }
 
             // ---------------------------------
-            // 2. ประมวลผล Borrow (ดึงการยืมมาแสดง 6 รายการตามตารางจริง)
+            // 2. ประมวลผล Borrow 
             // ---------------------------------
             let borrowedCount = 0; let borrowListHTML = '';
             if(realDB.borrow.length > 0) {
-                // หาจำนวนที่สถานะยัง "ยืม" อยู่ เพื่อโชว์บนการ์ดด้านบน
                 let borrowing = realDB.borrow.filter(b => {
-                    let st = String(b['สถานะ'] || b['e_status'] || Object.values(b)[3] || '').trim();
+                    let vals = Object.values(b);
+                    let st = String(b['สถานะ'] || vals[3] || '').trim();
                     return st.includes('ยืม');
                 });
                 borrowedCount = borrowing.length; 
                 
-                // ดึงข้อมูล 6 รายการล่าสุดมาแสดงในตาราง (จะคืนแล้วหรือยังยืมอยู่ก็แสดง)
-                let recent = realDB.borrow.slice(-6).reverse();
+                let recent = [...realDB.borrow].reverse();
+                if (recent.length > 20) recent = recent.slice(0, 20);
+
                 recent.forEach(b => {
-                    let d = (b['วันที่ทำรายการ'] || b['e_date'] || Object.values(b)[0] || '-').replace(/'/g, '');
-                    let item = b['ชื่ออุปกรณ์'] || b['e_item'] || Object.values(b)[1] || '-';
-                    let user = b['ผู้ยืม'] || b['e_user'] || Object.values(b)[2] || '-';
-                    let status = (b['สถานะ'] || b['e_status'] || Object.values(b)[3] || '').trim();
+                    let vals = Object.values(b);
+                    // ดึงวันที่และใช้ฟังก์ชัน convertToThaiYear แปลง ค.ศ. -> พ.ศ.
+                    let rawDate = String(b['วันที่'] || b['วันที่ทำรายการ'] || vals[0] || '-').replace(/'/g, '').trim();
+                    let d = convertToThaiYear(rawDate);
+                    
+                    let item = String(b['ชื่ออุปกรณ์'] || vals[1] || '-').trim();
+                    let user = String(b['ผู้ยืม'] || vals[2] || '-').trim();
+                    let status = String(b['สถานะ'] || vals[3] || '').trim();
                     
                     let stBadge = status.includes('ยืม') ? `<span class="bg-amber-100 text-amber-700 px-2 py-1 rounded text-[10px] font-bold">กำลังยืม</span>` : 
                                   (status.includes('คืน') ? `<span class="bg-emerald-100 text-emerald-700 px-2 py-1 rounded text-[10px] font-bold">คืนแล้ว</span>` : 
@@ -758,38 +776,29 @@
                     borrowListHTML += `<tr class="hover:bg-slate-50 border-b border-slate-100"><td class="p-4 text-xs">${d}</td><td class="p-4 font-bold text-slate-800">${item}</td><td class="p-4 text-slate-600">${user}</td><td class="p-4 text-center">${stBadge}</td></tr>`;
                 });
             } else { 
-                borrowedCount = 6; 
-                borrowListHTML = `
-                    <tr class="hover:bg-slate-50 border-b border-slate-100"><td class="p-4 text-xs">01/10/2569</td><td class="p-4 font-bold text-slate-800">โน้ตบุ๊ก 1</td><td class="p-4 text-slate-600">ด.ช.เอ</td><td class="p-4 text-center"><span class="bg-amber-100 text-amber-700 px-2 py-1 rounded text-[10px] font-bold">กำลังยืม</span></td></tr>
-                    <tr class="hover:bg-slate-50 border-b border-slate-100"><td class="p-4 text-xs">05/10/2569</td><td class="p-4 font-bold text-slate-800">แท็บเล็ต 3</td><td class="p-4 text-slate-600">ด.ญ.บี</td><td class="p-4 text-center"><span class="bg-amber-100 text-amber-700 px-2 py-1 rounded text-[10px] font-bold">กำลังยืม</span></td></tr>
-                    <tr class="hover:bg-slate-50 border-b border-slate-100"><td class="p-4 text-xs">10/10/2569</td><td class="p-4 font-bold text-slate-800">โปรเจคเตอร์</td><td class="p-4 text-slate-600">ครูสมศรี</td><td class="p-4 text-center"><span class="bg-amber-100 text-amber-700 px-2 py-1 rounded text-[10px] font-bold">กำลังยืม</span></td></tr>
-                    <tr class="hover:bg-slate-50 border-b border-slate-100"><td class="p-4 text-xs">12/10/2569</td><td class="p-4 font-bold text-slate-800">ปลั๊กพ่วง 5M</td><td class="p-4 text-slate-600">นายสมชาย</td><td class="p-4 text-center"><span class="bg-emerald-100 text-emerald-700 px-2 py-1 rounded text-[10px] font-bold">คืนแล้ว</span></td></tr>
-                    <tr class="hover:bg-slate-50 border-b border-slate-100"><td class="p-4 text-xs">15/10/2569</td><td class="p-4 font-bold text-slate-800">ไมค์ลอย</td><td class="p-4 text-slate-600">ครูสมศักดิ์</td><td class="p-4 text-center"><span class="bg-emerald-100 text-emerald-700 px-2 py-1 rounded text-[10px] font-bold">คืนแล้ว</span></td></tr>
-                    <tr class="hover:bg-slate-50 border-b border-slate-100"><td class="p-4 text-xs">18/10/2569</td><td class="p-4 font-bold text-slate-800">กล้อง DSLR</td><td class="p-4 text-slate-600">น.ส.ซี</td><td class="p-4 text-center"><span class="bg-amber-100 text-amber-700 px-2 py-1 rounded text-[10px] font-bold">กำลังยืม</span></td></tr>
-                `;
+                borrowListHTML = `<tr><td colspan="4" class="text-center py-8 text-rose-500 font-bold text-xs"><i class="ph-bold ph-warning-circle"></i> โปรดระบุลิงก์ Borrow CSV ในโค้ดเพื่อดูข้อมูลจริง</td></tr>`;
             }
             if(!borrowListHTML) borrowListHTML = `<tr><td colspan="4" class="text-center py-8 text-slate-400">ไม่มีประวัติการทำรายการ</td></tr>`;
 
             // ---------------------------------
-            // 3. ประมวลผล Electric (คำนวณตามเรต กฟภ. 15A ของห้องโดยเฉพาะ)
+            // 3. ประมวลผล Electric 
             // ---------------------------------
             let eLabels = [], eRoomUnits = [], eRoomCosts = [], eRates = [], totalRoomPowerCost = 0;
             if(realDB.electric.length > 0) {
-                let list = realDB.electric.slice(-monthsLimit);
+                let list = realDB.electric;
+                if(list.length > monthsLimit) list = list.slice(-monthsLimit);
                 
                 list.forEach(e => {
-                    let monthStr = e['ประจำเดือน'] || e['รอบบิลประจำเดือน'] || e['รอบบิล'] || e['e_month'] || Object.values(e)[0] || '-';
-                    monthStr = monthStr.replace(/'/g, '').trim();
+                    let vals = Object.values(e);
+                    let monthStr = String(e['ประจำเดือน'] || vals[0] || '-').replace(/'/g, '').trim();
+                    // แปลง ค.ศ. เป็น พ.ศ.
+                    monthStr = convertToThaiYear(monthStr);
                     eLabels.push(monthStr);
                     
-                    // ดึงค่ามิเตอร์ก่อนจด (Column G) และหลังจด (Column H) เพื่อมาลบกันหาหน่วยห้อง
-                    let roomPrev = parseFloat(e['เลขมิเตอร์ก่อนหน้า'] || e['เลขมิเตอร์ ครั้งก่อน'] || e['e_room_meter_prev'] || Object.values(e)[6] || 0);
-                    let roomCurr = parseFloat(e['เลขมิเตอร์หลังจด'] || e['เลขมิเตอร์ หลังจด'] || e['e_room_meter_curr'] || Object.values(e)[7] || 0);
-                    
-                    // หน่วยที่ใช้จริงของห้อง (H - G)
+                    let roomPrev = parseFloat(e['เลขมิเตอร์ก่อนหน้า'] || vals[6] || 0);
+                    let roomCurr = parseFloat(e['เลขมิเตอร์หลังจด'] || vals[7] || 0);
                     let rUnit = roomCurr > roomPrev ? (roomCurr - roomPrev) : 0;
                     
-                    // คำนวณค่าไฟห้องตามเรต กฟภ. 15A (ประเภท 1.1.2)
                     let rCost = 0;
                     if(rUnit > 0) {
                         let base = 0;
@@ -798,8 +807,8 @@
                         else base = (150 * 3.2484) + (250 * 4.2218) + ((rUnit - 400) * 4.4217);
                         
                         let service = 38.22;
-                        let ft = rUnit * 0.3972; // ค่า Ft ปัจจุบันเฉลี่ย
-                        rCost = (base + service + ft) * 1.07; // รวม VAT 7%
+                        let ft = rUnit * 0.3972; 
+                        rCost = (base + service + ft) * 1.07; 
                     }
 
                     eRoomUnits.push(rUnit); 
@@ -812,20 +821,17 @@
             }
 
             // ---------------------------------
-            // 4. ประมวลผล Usage (นับแยกประเภทและรายเดือนอย่างถูกต้อง)
+            // 4. ประมวลผล Usage 
             // ---------------------------------
-            let uLabels = [], uCounts = [], totalUsers = 0, uPie = [0,0,0];
+            let uLabels = [], uCounts = [], totalUsers = 0, uPie = [0,0,0]; 
             
             if(realDB.usage.length > 0) {
                 let monthlyData = {};
                 
                 realDB.usage.forEach(u => {
                     let vals = Object.values(u);
-                    // Col วันที่เข้าใช้
                     let dateStr = String(u['วันที่เข้าใช้บริการ'] || u['วันที่เข้าใช้'] || u['วันที่'] || vals[2] || '').replace(/'/g, '').trim();
-                    // Col จำนวนผู้ใช้
                     let count = parseInt(u['จำนวนผู้เข้าใช้งาน'] || u['จำนวน'] || u['จำนวนคน'] || vals[20] || 1) || 1;
-                    // Col ประเภทผู้ใช้
                     let userType = String(u['ประเภทผู้ใช้งาน'] || u['ประเภทผู้รับบริการ'] || u['ประเภท'] || vals[4] || vals[5] || 'ประชาชนทั่วไป');
                     
                     if (userType.includes('นักเรียน') || userType.includes('เด็ก')) uPie[0] += count;
@@ -837,25 +843,30 @@
                         let m = '', y = '';
                         if(parts.length >= 3) {
                             if(parts[0].length === 4) { y = parts[0].substring(2,4); m = parts[1].padStart(2, '0'); } 
-                            else { m = parts[1].padStart(2, '0'); y = parts[2].substring(2,4); }
+                            else { m = parts[1].padStart(2, '0'); y = parts[2].substring(2,4); } 
                             
                             let monthKey = `${y}-${m}`; 
                             if(!monthlyData[monthKey]) monthlyData[monthKey] = 0;
                             monthlyData[monthKey] += count;
                         }
                     }
-                    totalUsers += count;
                 });
 
                 let sortedKeys = Object.keys(monthlyData).sort();
-                let limitedKeys = sortedKeys.slice(-monthsLimit);
+                let limitedKeys = sortedKeys;
+                if(sortedKeys.length > monthsLimit) limitedKeys = sortedKeys.slice(-monthsLimit);
                 
                 limitedKeys.forEach(k => {
                     let mNames = ["", "ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
                     let parts = k.split('-');
                     let y = parts[0]; let m = parseInt(parts[1]);
-                    uLabels.push(`${mNames[m]} ${y}`);
+                    // แปลง ค.ศ. 26 เป็น พ.ศ. 69
+                    let showYear = parseInt(y) + 43; 
+                    if(y.length === 4) showYear = convertToThaiYear(y);
+
+                    uLabels.push(`${mNames[m]} ${showYear}`);
                     uCounts.push(monthlyData[k]);
+                    totalUsers += monthlyData[k]; 
                 });
             } else {
                 uLabels = ['ก.ค. 69', 'ส.ค. 69', 'ก.ย. 69']; uCounts = [120, 350, 410]; totalUsers = 880; uPie = [500, 280, 100];
@@ -870,7 +881,6 @@
                 animateValue('ov-broken', repairEq + brokenEq, 'รายการ');
                 
                 renderChart('chartOverviewLine', 'line', uLabels, [{ label: 'จำนวนผู้ใช้งาน', data: uCounts, borderColor: '#6366f1', backgroundColor: 'rgba(99, 102, 241, 0.1)', fill: true, tension: 0.4 }]);
-                // กราฟค่าไฟห้องโดยเฉพาะ
                 renderChart('chartOverviewPower', 'bar', eLabels, [{ label: 'ค่าไฟฟ้าห้องศูนย์ฯ (บาท)', data: eRoomCosts, backgroundColor: '#3b82f6', borderRadius: 6 }]);
             }
             else if (currentDashView === 'usage') {
@@ -878,9 +888,7 @@
                 renderChart('chartUsagePie', 'doughnut', ['นักเรียน', 'ประชาชนทั่วไป', 'ครู/บุคลากร'], [{ data: uPie, backgroundColor: ['#10b981', '#f59e0b', '#3b82f6'], borderWidth: 0 }], true);
             }
             else if (currentDashView === 'electric') {
-                // กราฟปริมาณการใช้ไฟของห้องศูนย์ (H ลบ G)
                 renderChart('chartElecUnit', 'line', eLabels, [{ label: 'หน่วยไฟฟ้าศูนย์ฯ (Unit)', data: eRoomUnits, borderColor: '#f59e0b', backgroundColor: 'rgba(245, 158, 11, 0.1)', fill: true, tension: 0.4 }]);
-                // กราฟค่าไฟฟ้าห้องศูนย์
                 renderChart('chartElecCost', 'line', eLabels, [{ label: 'ค่าไฟฟ้า (บาท/ตามเรต 15A)', data: eRoomCosts, borderColor: '#3b82f6', backgroundColor: 'transparent', tension: 0.1, borderDash: [5, 5] }]);
             }
             else if (currentDashView === 'equipment') {
@@ -959,19 +967,22 @@
                         if(String(row[0]).includes('จังหวัด') || String(row[2]).includes('วันที่')) continue;
 
                         let rDate = String(row[2] || '').trim();
+                        // 🌟 แก้ไข: ดึงข้อมูลเป็น ค.ศ. เสมอเพื่อนำเข้า Google Sheets
                         if(!isNaN(parseFloat(rDate)) && parseFloat(rDate) > 30000 && !rDate.includes('/') && !rDate.includes('-')) {
                             let d = new Date(Math.round((parseFloat(rDate) - 25569) * 86400 * 1000));
-                            row[2] = `'${d.getDate().toString().padStart(2,'0')}/${(d.getMonth()+1).toString().padStart(2,'0')}/${d.getFullYear()+543}`;
+                            let py = d.getFullYear(); 
+                            if(py > 2500) py -= 543; // ถ้ามาเป็น พ.ศ. ให้แปลงเป็น ค.ศ. ก่อนนำเข้า
+                            row[2] = `'${d.getDate().toString().padStart(2,'0')}/${(d.getMonth()+1).toString().padStart(2,'0')}/${py}`;
                         } 
                         else if (rDate.includes('/') || rDate.includes('-')) {
                             let sep = rDate.includes('/') ? '/' : '-';
                             let parts = rDate.split(' ')[0].split(sep); 
                             if (parts.length === 3 && parts[0].length === 4) { 
                                 let y = parseInt(parts[0]); let m = parts[1].padStart(2, '0'); let d = parts[2].padStart(2, '0');
-                                if (y < 2500) y += 543; row[2] = `'${d}/${m}/${y}`;
+                                if (y > 2500) y -= 543; row[2] = `'${d}/${m}/${y}`;
                             } else if (parts.length === 3 && parts[2].length === 4) { 
                                 let d = parts[0].padStart(2, '0'); let m = parts[1].padStart(2, '0'); let y = parseInt(parts[2]);
-                                if (y < 2500) y += 543; row[2] = `'${d}/${m}/${y}`;
+                                if (y > 2500) y -= 543; row[2] = `'${d}/${m}/${y}`;
                             } else { row[2] = `'` + rDate; }
                         } else { row[2] = `'` + rDate; }
 
@@ -1063,7 +1074,7 @@
 
         function extractDriveId(url) {
             if (!url) return "";
-            let match = url.match(/\/d\/(.+?)\/|\/folders\/(.+?)(?:\/|\?|$)|\?id=(.+?)(?:&|$)/);
+            let match = url.match(/\/d\/(.+?)\/|\/folders\/(.+?)(?:\/|\?|$)\vert{}\?id=(.+?)(?:&\vert{}$)/);
             return match ? (match[1] || match[2] || match[3]) : url.trim();
         }
 
