@@ -487,7 +487,7 @@
                             
                             <div class="md:col-span-2 mt-2"><label class="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wide">รายละเอียดเพิ่มเติม (แสดงในหน้าดูรูป)</label><input type="text" id="g_details" placeholder="อธิบายกิจกรรมคร่าวๆ (ถ้ามี)" class="input-field"></div>
                         </div>
-                        <button type="submit" id="btn-gallery" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-3.5 rounded-xl transition flex items-center justify-center shadow-md font-kanit text-lg"><i class="ph-bold ph-folder-plus mr-2"></i> สร้างอัลบั้มใหม่</button>
+                        <button type="submit" id="btn-gallery" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-3.5 rounded-xl transition flex items-center justify-center shadow-md font-kanit text-lg"><i class="ph-bold ph-paper-plane-tilt mr-2"></i> สร้างอัลบั้มใหม่</button>
                     </form>
                 </div>
 
@@ -778,13 +778,13 @@
                 let list = realDB.electric.slice(-monthsLimit);
                 
                 list.forEach(e => {
-                    let monthStr = e['รอบบิลประจำเดือน'] || e['รอบบิล'] || e['e_month'] || Object.values(e)[0] || '-';
+                    let monthStr = e['ประจำเดือน'] || e['รอบบิลประจำเดือน'] || e['รอบบิล'] || e['e_month'] || Object.values(e)[0] || '-';
                     monthStr = monthStr.replace(/'/g, '').trim();
                     eLabels.push(monthStr);
                     
                     // ดึงค่ามิเตอร์ก่อนจด (Column G) และหลังจด (Column H) เพื่อมาลบกันหาหน่วยห้อง
-                    let roomPrev = parseFloat(e['เลขมิเตอร์ ครั้งก่อน'] || e['e_room_meter_prev'] || Object.values(e)[6] || 0);
-                    let roomCurr = parseFloat(e['เลขมิเตอร์ หลังจด'] || e['e_room_meter_curr'] || Object.values(e)[7] || 0);
+                    let roomPrev = parseFloat(e['เลขมิเตอร์ก่อนหน้า'] || e['เลขมิเตอร์ ครั้งก่อน'] || e['e_room_meter_prev'] || Object.values(e)[6] || 0);
+                    let roomCurr = parseFloat(e['เลขมิเตอร์หลังจด'] || e['เลขมิเตอร์ หลังจด'] || e['e_room_meter_curr'] || Object.values(e)[7] || 0);
                     
                     // หน่วยที่ใช้จริงของห้อง (H - G)
                     let rUnit = roomCurr > roomPrev ? (roomCurr - roomPrev) : 0;
@@ -822,9 +822,9 @@
                 realDB.usage.forEach(u => {
                     let vals = Object.values(u);
                     // Col วันที่เข้าใช้
-                    let dateStr = (u['วันที่เข้าใช้บริการ'] || u['วันที่'] || vals[2] || '').replace(/'/g, '').trim();
+                    let dateStr = String(u['วันที่เข้าใช้บริการ'] || u['วันที่เข้าใช้'] || u['วันที่'] || vals[2] || '').replace(/'/g, '').trim();
                     // Col จำนวนผู้ใช้
-                    let count = parseInt(u['จำนวนผู้เข้าใช้งาน'] || u['จำนวน'] || vals[20] || 1) || 1;
+                    let count = parseInt(u['จำนวนผู้เข้าใช้งาน'] || u['จำนวน'] || u['จำนวนคน'] || vals[20] || 1) || 1;
                     // Col ประเภทผู้ใช้
                     let userType = String(u['ประเภทผู้ใช้งาน'] || u['ประเภทผู้รับบริการ'] || u['ประเภท'] || vals[4] || vals[5] || 'ประชาชนทั่วไป');
                     
@@ -833,12 +833,13 @@
                     else uPie[1] += count;
 
                     if(dateStr) {
-                        let parts = dateStr.split('/');
-                        if(parts.length >= 2) {
-                            let m = parts[1].padStart(2, '0');
-                            let y = parts[2] ? parts[2].substring(2,4) : ''; 
-                            let monthKey = `${y}-${m}`; 
+                        let parts = dateStr.includes('/') ? dateStr.split('/') : dateStr.split('-');
+                        let m = '', y = '';
+                        if(parts.length >= 3) {
+                            if(parts[0].length === 4) { y = parts[0].substring(2,4); m = parts[1].padStart(2, '0'); } 
+                            else { m = parts[1].padStart(2, '0'); y = parts[2].substring(2,4); }
                             
+                            let monthKey = `${y}-${m}`; 
                             if(!monthlyData[monthKey]) monthlyData[monthKey] = 0;
                             monthlyData[monthKey] += count;
                         }
