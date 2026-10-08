@@ -1379,11 +1379,11 @@
             </form>
         </div>
     </div>
+
     <!-- ========================================== -->
     <!-- ⚙️ ADVANCED JAVASCRIPT CORE ENGINE -->
     <!-- ========================================== -->
     <script>
-        // 🔴 ข้อมูล Database URLs (6 ลิงก์หลัก)
         const GAS_URL = "https://script.google.com/macros/s/AKfycbwnu_wHUys0gK1cv8YmPb39ziTCa_TbTFBXm-DIpIDzViFpJC0fSkHg_a_30841p_pRFQ/exec";
         
         const USAGE_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRZZibUzzgdZ-lCiuC2r9LdaYrjHZKnbUdOYCxJLDaIF4qUmxw8LuKX1FlXr2ADxHPNknSsiWTkncqJ/pub?gid=0&single=true&output=csv";    
@@ -1443,7 +1443,6 @@
             `;
             
             container.appendChild(toast);
-            
             setTimeout(() => { 
                 toast.style.opacity = '0'; 
                 toast.style.transform = 'translateX(100%)'; 
@@ -1452,6 +1451,9 @@
             }, duration);
         }
 
+        // ==========================================
+        // 🧠 Smart Utility Functions 
+        // ==========================================
         function extractYearMonthFromRaw(rawDate) {
             if(!rawDate) return null;
             let parts = rawDate.includes('/') ? rawDate.split(' ')[0].split('/') : rawDate.split(' ')[0].split('-');
@@ -1462,7 +1464,6 @@
                 y = parseInt(y);
                 
                 if (y < 100) y += 2500;
-                
                 if (y < 2500 && y > 1900) y += 543;
                 
                 return `${y}-${m}`; 
@@ -1498,7 +1499,6 @@
             let mNames = ["", "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
             let p = ymStr.split('-'); 
             if(p.length !== 2) return ymStr; 
-            
             return `${mNames[parseInt(p[1])]} ${p[0]}`;
         }
         
@@ -1507,22 +1507,13 @@
             let mNames = ["", "ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
             let p = ymStr.split('-'); 
             if(p.length !== 2) return ymStr; 
-            
             return `${mNames[parseInt(p[1])]} ${String(p[0]).slice(-2)}`;
         }
 
-        function showLoading(msg) { 
-            Swal.fire({ title: msg, allowOutsideClick: false, didOpen: () => Swal.showLoading() }); 
-        }
-        function closeLoading() { 
-            Swal.close(); 
-        }
-        function showSuccess(msg) { 
-            Swal.fire({ icon: 'success', title: 'สำเร็จ', text: msg, timer: 2000, showConfirmButton: false, confirmButtonColor: '#059669' }); 
-        }
-        function showError(msg) { 
-            Swal.fire({ icon: 'error', title: 'ผิดพลาด', text: msg, confirmButtonColor: '#0f172a' }); 
-        }
+        function showLoading(msg) { Swal.fire({ title: msg, allowOutsideClick: false, didOpen: () => Swal.showLoading() }); }
+        function closeLoading() { Swal.close(); }
+        function showSuccess(msg) { Swal.fire({ icon: 'success', title: 'สำเร็จ', text: msg, timer: 2000, showConfirmButton: false, confirmButtonColor: '#059669' }); }
+        function showError(msg) { Swal.fire({ icon: 'error', title: 'ผิดพลาด', text: msg, confirmButtonColor: '#0f172a' }); }
 
         async function login() {
             const p = document.getElementById('password').value;
@@ -1540,7 +1531,7 @@
                 showToast('เข้าสู่ระบบสิทธิ์ผู้ดูแลเรียบร้อยแล้ว', 'success');
 
                 await loadAllDatabases();
-                extractAllMonths();
+                extractAllMonths(); // เรียกใช้ฟังก์ชันตัวกรองเดือน
                 refreshDashboard(); 
             } else {
                 const err = document.getElementById('errorMsg');
@@ -1565,19 +1556,14 @@
             });
         }
         
-        function prepareAndPrintPDF() { 
-            window.print(); 
-        }
+        function prepareAndPrintPDF() { window.print(); }
+
         async function loadAllDatabases() {
             showLoading('กำลังซิงค์และวิเคราะห์ฐานข้อมูล...');
             try {
                 const [resEq, resBorrow, resElec, resUsage, resActivity, resStaff] = await Promise.all([
-                    fetch(EQ_CSV_URL), 
-                    fetch(BORROW_CSV_URL), 
-                    fetch(ELECTRIC_CSV_URL), 
-                    fetch(USAGE_CSV_URL),
-                    fetch(ACTIVITY_CSV_URL),
-                    fetch(STAFF_CSV_URL)
+                    fetch(EQ_CSV_URL), fetch(BORROW_CSV_URL), fetch(ELECTRIC_CSV_URL), 
+                    fetch(USAGE_CSV_URL), fetch(ACTIVITY_CSV_URL), fetch(STAFF_CSV_URL)
                 ]);
                 
                 realDB.equipment = parseCSVData(await resEq.text()); 
@@ -1599,22 +1585,22 @@
         }
 
         // ==========================================
-        // 📅 ระบบ Custom Date Filter (Select Dropdown - แก้ปัญหา)
+        // 📅 ระบบ Custom Date Filter (Select Dropdown - แก้ปัญหากำลังโหลด)
         // ==========================================
         function extractAllMonths() {
-            let tempSet = new Set();
+            let tempArray = []; // ใช้ Array ตรงๆ แทน Set เพื่อหลีกเลี่ยงปัญหาของ Browser
             
-            // 1. ดึงเดือนจาก Usage
+            // พยายามดึงเดือนจาก Usage (ถ้ามีข้อมูล)
             if(realDB.usage && realDB.usage.length > 0) {
                 realDB.usage.forEach(u => {
                     let vals = Object.values(u);
                     let rawDate = String(u['วันที่เข้าใช้บริการ'] || u['วันที่เข้าใช้'] || vals[2] || '').replace(/'/g, '').trim();
                     let ym = extractYearMonthFromRaw(rawDate);
-                    if(ym) tempSet.add(ym);
+                    if(ym && !tempArray.includes(ym)) tempArray.push(ym);
                 });
             }
             
-            // 2. ดึงเดือนจาก Electric
+            // พยายามดึงเดือนจาก Electric (ถ้ามีข้อมูล)
             if(realDB.electric && realDB.electric.length > 0) {
                 realDB.electric.forEach(e => {
                     let mStr = String(e['ประจำเดือน'] || Object.values(e)[0] || '').trim();
@@ -1628,41 +1614,47 @@
                         let mIndex = mNames.findIndex(n => n && mStr.includes(n));
                         
                         if(mIndex > 0) {
-                            tempSet.add(`${y}-${String(mIndex).padStart(2,'0')}`);
+                            let newYM = `${y}-${String(mIndex).padStart(2,'0')}`;
+                            if(!tempArray.includes(newYM)) tempArray.push(newYM);
                         }
                     }
                 });
             }
 
-            availableMonthsList = Array.from(tempSet).sort();
+            // เรียงลำดับ Array 
+            availableMonthsList = tempArray.sort();
             
             let startSel = document.getElementById('dateStart');
             let endSel = document.getElementById('dateEnd');
             let optionsHtml = '';
             
-            // ⭐ Fallback อัจฉริยะ: ถ้าหาข้อมูลไม่เจอ ให้สร้างเดือนปัจจุบันขึ้นมาแทน ไม่ให้มันค้าง!
-            if(availableMonthsList.length === 0) {
-                let d = new Date();
-                let y = d.getFullYear() + 543;
-                let m = String(d.getMonth() + 1).padStart(2, '0');
-                let ym = `${y}-${m}`;
-                availableMonthsList = [ym]; 
-            }
+            // ⭐ บังคับสร้างเดือนปัจจุบันเสมอ ป้องกัน Error (Fallback)
+            let d = new Date();
+            let currentY = d.getFullYear() + 543;
+            let currentM = String(d.getMonth() + 1).padStart(2, '0');
+            let currentYM = `${currentY}-${currentM}`;
             
-            // สร้างตัวเลือก (Options)
-            availableMonthsList.forEach(ym => {
-                let label = formatMonthYearLabelFull(ym);
-                optionsHtml += `<option value="${ym}">${label}</option>`;
-            });
+            if(availableMonthsList.length === 0) {
+                availableMonthsList = [currentYM]; 
+            } else if (!availableMonthsList.includes(currentYM)) {
+                availableMonthsList.push(currentYM);
+                availableMonthsList.sort(); // เรียงลำดับอีกครั้งหลังเพิ่ม
+            }
             
             // นำ HTML ใส่ลงใน Select
             if(startSel && endSel) {
+                // สร้าง Option Tags แบบเจาะจง
+                availableMonthsList.forEach(ym => {
+                    let label = formatMonthYearLabelFull(ym);
+                    optionsHtml += `<option value="${ym}">${label}</option>`;
+                });
+                
                 startSel.innerHTML = optionsHtml;
                 endSel.innerHTML = optionsHtml;
                 
-                // เลือก 6 เดือนล่าสุดอัตโนมัติ (หรือเท่าที่มี)
+                // ล็อกให้เลือกเดือนล่าสุดที่มีใน List
                 let endYM = availableMonthsList[availableMonthsList.length - 1];
-                let startIndex = Math.max(0, availableMonthsList.length - 6);
+                let startIndex = Math.max(0, availableMonthsList.length - 6); 
                 let startYM = availableMonthsList[startIndex];
                 
                 startSel.value = startYM;
@@ -1723,6 +1715,7 @@
             container.innerHTML = html;
         }
 
+        // ระบบคลิกนอกกล่องแล้วปิด Dropdown
         document.addEventListener('click', function(event) {
             const selector = document.getElementById('monthSelector');
             const button = document.querySelector('button[onclick="toggleMonthSelector()"]');
@@ -1755,6 +1748,7 @@
             refreshDashboard(true); 
             showToast('อัปเดตข้อมูลตามช่วงเวลาใหม่แล้ว', 'success');
         }
+       
         // ==========================================
         // 📊 ระบบการสลับมุมมอง (Tabs & Dashboard Views)
         // ==========================================
@@ -1801,7 +1795,6 @@
             let endV = endEl ? endEl.value : '';
 
             if(!fromCheckbox) {
-                // ⭐ ป้องกัน Error หาก Element หาไม่เจอหรือมีค่าว่าง
                 if(!startV || !endV) {
                     if(availableMonthsList.length > 0) {
                         startV = availableMonthsList[Math.max(0, availableMonthsList.length - 6)];
@@ -2116,7 +2109,6 @@
                 }
             }
 
-            // === 🎨 RENDER CHARTS ===
             if (currentDashView === 'overview') {
                 animateValue('ov-users', totalUsers, 'คน');
                 animateValue('ov-borrow', borrowedCount, 'ชิ้น');
@@ -2188,6 +2180,7 @@
                 }], true);
             }
         }
+
         function renderChart(canvasId, type, labels, datasets, isPie = false) {
             const ctx = document.getElementById(canvasId); 
             if (!ctx) return;
@@ -2399,6 +2392,7 @@
             let thClicked = document.querySelectorAll(`#${tableBodyId}Obj th`)[colIndex].querySelector('.sort-icon');
             if(thClicked) thClicked.className = 'sort-icon ' + (dir === 'asc' ? 'sort-asc' : 'sort-desc');
         }
+
         function parseCSVData(csv) {
             const lines = csv.split('\n'); 
             const res = []; 
@@ -2770,6 +2764,7 @@
             input.value = '';
             display.classList.add('hidden');
         }
+
         async function processAIBillScan(input, event) {
             if (!input.files || input.files.length === 0) return; 
             
