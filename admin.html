@@ -921,9 +921,8 @@
             closeLoading();
             renderAdminEqTable(adminEqData);
         }
-
         // ------------------------------------------
-        // ระบบ Custom Time Filter (ใหม่)
+        // ระบบ Custom Time Filter (แก้ไขบั๊กกล่องขาว)
         // ------------------------------------------
         function extractAllMonths() {
             let tempSet = new Set();
@@ -935,49 +934,13 @@
             });
             availableMonthsList = Array.from(tempSet).sort();
             
-            if(availableMonthsList.length > 0) {
-                document.getElementById('dateEnd').value = availableMonthsList[availableMonthsList.length - 1];
-                let startIndex = Math.max(0, availableMonthsList.length - 6);
-                document.getElementById('dateStart').value = availableMonthsList[startIndex];
+            // ค่าเริ่มต้นแสดง 6 เดือนล่าสุด
+            if(availableMonthsList.length > 6) {
+                selectedMonthsList = availableMonthsList.slice(-6);
             } else {
-                let d = new Date();
-                document.getElementById('dateEnd').value = d.toISOString().slice(0, 7);
-                d.setMonth(d.getMonth() - 5);
-                document.getElementById('dateStart').value = d.toISOString().slice(0, 7);
+                selectedMonthsList = [...availableMonthsList];
             }
             buildMonthSelectorUI();
-        }
-
-        function extractYearMonthFromRaw(rawDate) {
-            if(!rawDate) return null;
-            let parts = rawDate.includes('/') ? rawDate.split(' ')[0].split('/') : rawDate.split(' ')[0].split('-');
-            if(parts.length >= 3) {
-                let m = parts[1].padStart(2, '0');
-                let y = parts[2].length === 4 ? parts[2] : (parts[0].length === 4 ? parts[0] : parts[2]); 
-                return `${y}-${m}`; 
-            }
-            return null;
-        }
-
-        function getMonthsBetween(start, end) {
-            let dates = []; 
-            let currDate = new Date(start + "-01"); 
-            let endDate = new Date(end + "-01");
-            while (currDate <= endDate) {
-                dates.push(currDate.getFullYear() + "-" + String(currDate.getMonth() + 1).padStart(2, '0'));
-                currDate.setMonth(currDate.getMonth() + 1);
-            }
-            return dates;
-        }
-
-        function formatMonthYearLabel(ymStr) {
-            let mNames = ["", "ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
-            let parts = ymStr.split('-'); 
-            if(parts.length !== 2) return ymStr;
-            let y = parseInt(parts[0]); 
-            let m = parseInt(parts[1]);
-            let showYear = y > 2500 ? y : y + 543; 
-            return `${mNames[m]} ${String(showYear).slice(-2)}`;
         }
 
         function buildMonthSelectorUI() {
@@ -992,6 +955,48 @@
             <div class="month-grid">`;
             
             const monthNames = ["", "ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
+
+            availableMonthsList.forEach(ym => {
+                let [y, m] = ym.split('-');
+                let isChecked = selectedMonthsList.includes(ym) ? 'checked' : '';
+                let label = `${monthNames[parseInt(m)]} ${y}`; 
+                html += `<label class="flex items-center space-x-2 cursor-pointer hover:bg-slate-50 p-1.5 rounded">
+                    <input type="checkbox" class="month-cb rounded border-slate-300 text-emerald-600 focus:ring-emerald-500" value="${ym}" ${isChecked} onchange="updateSelectedMonths()">
+                    <span class="text-xs text-slate-700 font-medium whitespace-nowrap">${label}</span>
+                </label>`;
+            });
+            
+            html += `</div>
+            <div class="col-span-3 mt-3 pt-3 border-t border-slate-100">
+                <button onclick="applyMonthFilter()" class="w-full bg-emerald-600 text-white font-bold py-2.5 rounded-lg text-xs hover:bg-emerald-700 shadow-sm transition">อัปเดตกราฟทั้งหมด</button>
+            </div>`;
+            container.innerHTML = html;
+        }
+
+        // รีเฟรชแดชบอร์ดโดยใช้ข้อมูลจาก Checkbox ล้วนๆ
+        function refreshDashboard(fromCheckbox = false) {
+            if(selectedMonthsList.length === 0) { 
+                showError("กรุณาเลือกอย่างน้อย 1 เดือน"); 
+                return; 
+            }
+
+            // จัดเรียงลำดับเวลาใหม่ให้ถูกต้องเสมอ
+            selectedMonthsList.sort();
+
+            let lbl = '';
+            if(selectedMonthsList.length === 1) {
+                lbl = formatMonthYearLabel(selectedMonthsList[0]);
+            } else {
+                lbl = `${formatMonthYearLabel(selectedMonthsList[0])} ถึง ${formatMonthYearLabel(selectedMonthsList[selectedMonthsList.length-1])}`;
+            }
+            
+            let rl = document.getElementById('dashRangeLabel'); 
+            if(rl) {
+                rl.innerText = "กำลังแสดงข้อมูล: " + lbl; 
+                rl.classList.remove('hidden');
+            }
+
+            const mNames = ["", "ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
             
             let currentRange = getMonthsBetween(document.getElementById('dateStart').value, document.getElementById('dateEnd').value);
             selectedMonthsList = currentRange;
