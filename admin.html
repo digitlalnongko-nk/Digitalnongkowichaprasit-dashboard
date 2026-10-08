@@ -1377,11 +1377,11 @@
             </form>
         </div>
     </div>
-    <!-- ========================================== -->
+   <!-- ========================================== -->
     <!-- ⚙️ ADVANCED JAVASCRIPT CORE ENGINE (Part 8) -->
     <!-- ========================================== -->
     <script>
-        // 🔴 ข้อมูล Database URLs (อัปเดตลิงก์ใหม่ทั้งหมด 6 ลิงก์)
+        // 🔴 ข้อมูล Database URLs (6 ลิงก์หลัก)
         const GAS_URL = "https://script.google.com/macros/s/AKfycbwnu_wHUys0gK1cv8YmPb39ziTCa_TbTFBXm-DIpIDzViFpJC0fSkHg_a_30841p_pRFQ/exec";
         
         const USAGE_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRZZibUzzgdZ-lCiuC2r9LdaYrjHZKnbUdOYCxJLDaIF4qUmxw8LuKX1FlXr2ADxHPNknSsiWTkncqJ/pub?gid=0&single=true&output=csv";    
@@ -1477,16 +1477,26 @@
             return null;
         }
 
-        function getMonthsBetween(start, end) {
-            let dates = []; 
-            let currDate = new Date(start + "-01"); 
-            let endDate = new Date(end + "-01");
-            
-            while (currDate <= endDate) {
-                let y = currDate.getFullYear();
-                let beYear = y > 2500 ? y : y + 543; // แปลงให้เป็น พ.ศ.
-                dates.push(beYear + "-" + String(currDate.getMonth() + 1).padStart(2, '0'));
-                currDate.setMonth(currDate.getMonth() + 1);
+        // ⭐ แก้วิธีหาช่วงเดือน ไม่พึ่งพา Date() ของเบราว์เซอร์ ป้องกันบั๊กปี พ.ศ.
+        function getMonthsBetween(startYM, endYM) {
+            let dates = [];
+            if (!startYM || !endYM) return dates;
+
+            let [startY, startM] = startYM.split('-').map(Number);
+            let [endY, endM] = endYM.split('-').map(Number);
+
+            if (startY > endY || (startY === endY && startM > endM)) return dates;
+
+            let currY = startY;
+            let currM = startM;
+
+            while (currY < endY || (currY === endY && currM <= endM)) {
+                dates.push(`${currY}-${String(currM).padStart(2, '0')}`);
+                currM++;
+                if (currM > 12) {
+                    currM = 1;
+                    currY++;
+                }
             }
             return dates;
         }
@@ -1525,7 +1535,6 @@
         // ==========================================
         async function login() {
             const p = document.getElementById('password').value;
-            // ตรวจสอบรหัสผ่าน
             if(btoa(p) === 'NjY0NDA3NjM=') { 
                 document.getElementById('loginZone').classList.add('hidden'); 
                 document.getElementById('adminZone').classList.remove('hidden'); 
@@ -1609,7 +1618,6 @@
         function extractAllMonths() {
             let tempSet = new Set();
             
-            // ดึงเดือนจาก Usage
             if(realDB.usage && realDB.usage.length > 0) {
                 realDB.usage.forEach(u => {
                     let vals = Object.values(u);
@@ -1619,7 +1627,6 @@
                 });
             }
             
-            // ดึงเดือนจากค่าไฟ (เผื่อไม่มีใน Usage)
             if(realDB.electric && realDB.electric.length > 0) {
                 realDB.electric.forEach(e => {
                     let mStr = String(e['ประจำเดือน'] || Object.values(e)[0] || '').trim();
@@ -1643,34 +1650,37 @@
             
             let startSel = document.getElementById('dateStart');
             let endSel = document.getElementById('dateEnd');
-            startSel.innerHTML = '';
-            endSel.innerHTML = '';
+            let optionsHtml = '';
             
             if(availableMonthsList.length > 0) {
-                // เติม Option ลงใน Select
+                // เติม Option ลงใน Select แบบใหม่ ใช้ HTML String (เร็วและไม่บั๊ก)
                 availableMonthsList.forEach(ym => {
                     let label = formatMonthYearLabelFull(ym);
-                    startSel.innerHTML += `<option value="${ym}">${label}</option>`;
-                    endSel.innerHTML += `<option value="${ym}">${label}</option>`;
+                    optionsHtml += `<option value="${ym}">${label}</option>`;
                 });
+                
+                startSel.innerHTML = optionsHtml;
+                endSel.innerHTML = optionsHtml;
                 
                 // เลือก 6 เดือนล่าสุดอัตโนมัติ
                 let endYM = availableMonthsList[availableMonthsList.length - 1];
                 let startIndex = Math.max(0, availableMonthsList.length - 6);
                 let startYM = availableMonthsList[startIndex];
                 
+                // ⭐ เลือกล็อกค่าตรงๆ ไปยัง Value ที่เป็น พ.ศ.
                 startSel.value = startYM;
                 endSel.value = endYM;
             } else {
-                // Fallback กรณีไม่มีข้อมูล
+                // Fallback กรณีไม่มีข้อมูลเลย
                 let d = new Date();
                 let y = d.getFullYear() + 543;
                 let m = String(d.getMonth() + 1).padStart(2, '0');
                 let ym = `${y}-${m}`;
                 let label = formatMonthYearLabelFull(ym);
                 
-                startSel.innerHTML = `<option value="${ym}">${label}</option>`;
-                endSel.innerHTML = `<option value="${ym}">${label}</option>`;
+                optionsHtml = `<option value="${ym}">${label}</option>`;
+                startSel.innerHTML = optionsHtml;
+                endSel.innerHTML = optionsHtml;
             }
             
             buildMonthSelectorUI();
@@ -1775,6 +1785,7 @@
         // ==========================================
         function refreshDashboard(fromCheckbox = false) {
             
+            // กรณีรีเฟรชจากการกดปุ่มอัปเดตข้อมูล (Input Select)
             if(!fromCheckbox) {
                 let startV = document.getElementById('dateStart').value;
                 let endV = document.getElementById('dateEnd').value;
@@ -1840,6 +1851,7 @@
                 });
             }
             
+            // Pagination Eq
             if(document.getElementById('dashEqTable')) {
                 renderTableWithPagination('dashEqTable', eqDataArr, currentPage.dashEq, rowsPerPage, (row) => {
                     return `<tr class="hover:bg-slate-50 border-b border-slate-100 transition-colors">
@@ -1876,13 +1888,6 @@
                 filteredBorrow.forEach(b => {
                     let vals = Object.values(b);
                     let rawDate = String(vals[0] || '-').replace(/'/g, '').trim();
-                    
-                    // แปลง ค.ศ. เป็น พ.ศ. ทันที
-                    if(rawDate.includes('/202') || rawDate.includes('/203')) {
-                        rawDate = rawDate.replace(/\b(202\d|203\d)\b/g, match => parseInt(match) + 543);
-                    }
-                    let d = rawDate;
-                    
                     let item = String(vals[1] || '-').trim(); 
                     let user = String(vals[2] || '-').trim(); 
                     let status = String(vals[3] || '').trim();
@@ -1900,7 +1905,7 @@
                         stBadge = `<span class="bg-rose-100 text-rose-700 px-3 py-1.5 rounded-lg border border-rose-200 font-bold text-[10px] shadow-sm">${status}</span>`;
                     }
                     
-                    borrowDataArr.push({ d, item, user, stBadge });
+                    borrowDataArr.push({ d: rawDate, item, user, stBadge });
                 });
             }
             
@@ -1991,7 +1996,7 @@
                 document.getElementById('dashElectricTable').innerHTML = eTableHTML;
             }
 
-            // --- 4. USAGE PROCESSOR (Advanced Parsing) ---
+            // --- 4. USAGE PROCESSOR ---
             let uLabels = []; 
             let mCounts = []; 
             let fCounts = []; 
@@ -1999,19 +2004,31 @@
             let pieType = [0,0,0];
             let prevTotalUsers = 0; 
             
-            // หาเดือนช่วงก่อนหน้าแบบ Dynamics
-            let monthsCount = selectedMonthsList.length;
-            let dP = new Date(); 
-            
-            if(selectedMonthsList[0]) {
-                let firstYr = parseInt(selectedMonthsList[0].split('-')[0]);
-                if(firstYr > 2500) { dP.setFullYear(firstYr - 543); } else { dP.setFullYear(firstYr); }
-                dP.setMonth(parseInt(selectedMonthsList[0].split('-')[1]) - 1);
+            // ใช้ฟังก์ชัน getMonthsBetween เพื่อหา 6 เดือนก่อนหน้าเป๊ะๆ ป้องกันบัก
+            let prevMonthsList = [];
+            if(selectedMonthsList.length > 0) {
+                let sYM = selectedMonthsList[0];
+                let [sY, sM] = sYM.split('-').map(Number);
+                
+                // ถอยหลังไปตามจำนวนเดือนที่เลือก
+                let pM = sM - selectedMonthsList.length;
+                let pY = sY;
+                while(pM < 1) {
+                    pM += 12;
+                    pY--;
+                }
+                
+                let eM = sM - 1;
+                let eY = sY;
+                if(eM < 1) {
+                    eM += 12;
+                    eY--;
+                }
+                
+                let prevStartStr = `${pY}-${String(pM).padStart(2, '0')}`;
+                let prevEndStr = `${eY}-${String(eM).padStart(2, '0')}`;
+                prevMonthsList = getMonthsBetween(prevStartStr, prevEndStr);
             }
-            
-            let dPs = new Date(dP); dPs.setMonth(dPs.getMonth() - monthsCount);
-            let dPe = new Date(dP); dPe.setMonth(dPe.getMonth() - 1);
-            let pSD = getMonthsBetween(dPs.toISOString().slice(0, 7), dPe.toISOString().slice(0, 7));
 
             selectedMonthsList.forEach(ym => {
                 uLabels.push(formatMonthYearLabel(ym)); 
@@ -2033,7 +2050,7 @@
                                 
                                 if(isFemale && !isMale) fDay += count;
                                 else if(isMale && !isFemale) mDay += count;
-                                else mDay += count; // fallback to male
+                                else mDay += count; 
                                 
                                 if (uType.includes('นักเรียน')) pieType[0] += count;
                                 else if (uType.includes('ครู') || uType.includes('บุคลากร')) pieType[2] += count;
@@ -2041,7 +2058,7 @@
                                 
                                 totalUsers += count;
                             }
-                            if(pSD.includes(uYM)) {
+                            if(prevMonthsList.includes(uYM)) {
                                 prevTotalUsers += count;
                             }
                         }
@@ -2070,7 +2087,7 @@
                 }
             }
 
-            // === 🎨 RENDER CHARTS (เรียกฟังก์ชันกราฟ) ===
+            // === 🎨 RENDER CHARTS ===
             if (currentDashView === 'overview') {
                 animateValue('ov-users', totalUsers, 'คน');
                 animateValue('ov-borrow', borrowedCount, 'ชิ้น');
@@ -2144,7 +2161,7 @@
         }
 
         // ==========================================
-        // 📊 ระบบสร้างกราฟและแอนิเมชันตัวเลข (Chart.js & Counter)
+        // 📊 ระบบสร้างกราฟและแอนิเมชันตัวเลข 
         // ==========================================
         function renderChart(canvasId, type, labels, datasets, isPie = false) {
             const ctx = document.getElementById(canvasId); 
@@ -2215,7 +2232,7 @@
         }
 
         // ==========================================
-        // 🗃️ ระบบแบ่งหน้าตาราง (Pagination System) และ Export CSV
+        // 🗃️ ระบบแบ่งหน้าตาราง (Pagination System) 
         // ==========================================
         function renderTableWithPagination(tbodyId, fullData, page, perPage, renderRowFn, paginationContainerId, pageInfoId) {
             const tbody = document.getElementById(tbodyId);
@@ -2235,7 +2252,6 @@
             if (page < 1) page = 1; 
             if (page > totalPages) page = totalPages;
             
-            // Render Table Rows
             const startIdx = (page - 1) * perPage;
             const endIdx = Math.min(startIdx + perPage, fullData.length);
             let html = '';
@@ -2244,10 +2260,8 @@
             }
             tbody.innerHTML = html;
 
-            // Render Info
             infoContainer.innerHTML = `แสดงรายการที่ <span class="text-indigo-600">${startIdx + 1} - ${endIdx}</span> จากทั้งหมด <span class="text-slate-800">${fullData.length}</span>`;
 
-            // Render Pagination Buttons
             let pagHtml = '';
             pagHtml += `<button onclick="changePage('${tbodyId}', ${page - 1})" class="px-3 py-1.5 rounded-lg bg-white border border-slate-200 shadow-sm text-slate-600 hover:bg-slate-100 transition disabled:opacity-50" ${page === 1 ? 'disabled' : ''}><i class="ph-bold ph-caret-left"></i></button>`;
             
@@ -2273,7 +2287,6 @@
             refreshDashboard(true); 
         }
 
-        // Export ตาราง HTML เป็นไฟล์ CSV
         function exportTableToCSV(tableId, filename) {
             let csv = [];
             let rows = document.querySelectorAll(`#${tableId} tr`);
@@ -2314,7 +2327,6 @@
             showToast('ดาวน์โหลดรูปภาพกราฟสำเร็จ', 'success');
         }
 
-        // Basic Sorting for Tables
         function sortTable(tableBodyId, colIndex, isNumeric = false) {
             let table = document.getElementById(tableBodyId);
             let switching = true; 
@@ -2367,7 +2379,7 @@
         }
 
         // ==========================================
-        // 📥 ระบบการนำเข้าข้อมูล Excel สู่ Usage (พร้อมตัวกรองข้อมูลซ้ำอัจฉริยะ)
+        // 📥 ระบบการนำเข้าข้อมูล Excel สู่ Usage (ตรวจซ้ำอัตโนมัติ)
         // ==========================================
         function parseCSVData(csv) {
             const lines = csv.split('\n'); 
@@ -2443,7 +2455,7 @@
                         
                         let rDate = String(row[2] || '').trim();
                         
-                        // 🌟 ระบบจัดการวันที่ แปลงทุก Format เข้าสู่ Google Sheets เป็นรูปแบบ พ.ศ. เสมอ
+                        // แปลงวันที่ Excel เป็นพ.ศ.
                         if(!isNaN(parseFloat(rDate)) && parseFloat(rDate) > 30000 && !rDate.includes('/') && !rDate.includes('-')) {
                             let d = new Date(Math.round((parseFloat(rDate) - 25569) * 86400 * 1000)); 
                             let py = d.getFullYear(); 
@@ -2476,7 +2488,7 @@
                             row[3] = `'` + rTime; 
                         }
                         
-                        // 🛑 Smart Duplicate Checker: เช็คข้อมูลซ้ำ
+                        // 🛑 ป้องกันข้อมูลซ้ำ (เช็คจาก 5 ปัจจัย)
                         let newDate = String(row[2]).replace(/'/g, '').trim();
                         let newTime = String(row[3]).replace(/'/g, '').trim();
                         let newFName = String(row[9]||'').trim();
@@ -2507,7 +2519,7 @@
                 } catch(error) { 
                     res.innerHTML = `
                         <div class="p-6 bg-rose-50 border border-rose-200 text-rose-700 font-bold rounded-2xl flex items-center gap-3">
-                            <i class="ph-fill ph-x-circle text-2xl"></i> ไม่สามารถอ่านไฟล์ได้ โปรดตรวจสอบนามสกุลไฟล์
+                            <i class="ph-fill ph-x-circle text-2xl"></i> ไม่สามารถอ่านไฟล์ได้ โปรดตรวจสอบว่าไฟล์ไม่เสียหาย
                         </div>`; 
                 }
             }; 
@@ -2523,7 +2535,7 @@
                     <div class="bg-amber-50 rounded-[24px] border border-amber-200 p-8 shadow-sm flex items-center gap-4">
                         <i class="ph-fill ph-warning-circle text-amber-500 text-4xl"></i>
                         <div>
-                            <h4 class="text-amber-800 font-bold text-xl font-kanit">ข้อมูลซ้ำซ้อนทั้งหมด</h4>
+                            <h4 class="text-amber-800 font-bold text-xl font-kanit">ไม่มีข้อมูลใหม่</h4>
                             <p class="text-amber-700 text-sm mt-1">ไฟล์ที่คุณอัปโหลดมีข้อมูลที่อยู่ในฐานข้อมูลอยู่แล้วทั้ง ${skippedCount} รายการ จึงไม่มีการนำเข้าเพิ่มเติม</p>
                         </div>
                     </div>`; 
@@ -2543,14 +2555,14 @@
                 let timeVal = String(row[3] || '').replace(/'/g, '').trim(); 
                 let countVal = row[20];
                 
-                if (!dateVal) errors.push(`แถวใน Excel: ขาดข้อมูล "วันที่เข้าใช้บริการ" (คอลัมน์ C)`); 
-                if (!timeVal) errors.push(`แถวใน Excel: ขาดข้อมูล "เวลาเข้าใช้บริการ" (คอลัมน์ D)`); 
-                if (!countVal || isNaN(countVal) || parseInt(countVal) <= 0) errors.push(`แถวใน Excel: "จำนวนผู้เข้าใช้งาน" ต้องเป็นตัวเลขเท่านั้น (คอลัมน์ U)`);
+                if (!dateVal) errors.push(`แถว ${i+2}: ขาดข้อมูล "วันที่เข้าใช้บริการ"`); 
+                if (!timeVal) errors.push(`แถว ${i+2}: ขาดข้อมูล "เวลาเข้าใช้บริการ"`); 
+                if (!countVal || isNaN(countVal) || parseInt(countVal) <= 0) errors.push(`แถว ${i+2}: "จำนวนผู้ใช้" ต้องเป็นตัวเลข`);
             });
 
             let skippedHTML = skippedCount > 0 ? `
                 <div class="mt-4 inline-flex items-center gap-2 bg-amber-100 text-amber-700 px-4 py-1.5 rounded-full text-xs font-bold border border-amber-200">
-                    <i class="ph-bold ph-shield-check"></i> ระบบคัดกรองข้อมูลที่ซ้ำออกให้ ${skippedCount} รายการ
+                    <i class="ph-bold ph-shield-check"></i> ระบบตัดข้อมูลซ้ำออกให้ ${skippedCount} รายการ
                 </div>` : '';
 
             if (errors.length > 0) { 
@@ -2560,7 +2572,7 @@
                             <div class="w-10 h-10 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center">
                                 <i class="ph-fill ph-x-circle text-2xl"></i>
                             </div> 
-                            <h4 class="text-rose-800 font-bold text-lg font-kanit">พบข้อผิดพลาดในเอกสาร ${errors.length} จุด</h4>
+                            <h4 class="text-rose-800 font-bold text-lg font-kanit">พบข้อผิดพลาด ${errors.length} จุด</h4>
                         </div>
                         <ul class="text-rose-600 text-sm mt-2 ml-12 space-y-2 font-medium bg-rose-50/50 p-4 rounded-xl border border-rose-100">
                             ${errors.slice(0,6).map(e => `<li>• ${e}</li>`).join('')}
@@ -2576,8 +2588,8 @@
                                 <i class="ph-fill ph-check-circle text-emerald-500 text-4xl"></i>
                             </div>
                             <div>
-                                <h4 class="text-emerald-800 font-bold text-xl font-kanit">โครงสร้างข้อมูลถูกต้องสมบูรณ์ 100%</h4>
-                                <p class="text-emerald-600 text-sm mt-1 font-medium">พร้อมนำเข้าข้อมูลใหม่ <b>${data.length}</b> รายการลงสู่ฐานข้อมูล</p>
+                                <h4 class="text-emerald-800 font-bold text-xl font-kanit">ไฟล์ข้อมูลสมบูรณ์พร้อมนำเข้า</h4>
+                                <p class="text-emerald-600 text-sm mt-1 font-medium">เตรียมนำเข้าข้อมูลใหม่ <b>${data.length}</b> รายการลงสู่ฐานข้อมูล</p>
                                 ${skippedHTML}
                             </div>
                         </div>
@@ -2618,7 +2630,7 @@
             }
             
             if (failCount === 0) { 
-                showSuccess(`กระบวนการเสร็จสิ้น! นำเข้าข้อมูลสำเร็จ ${successCount} รายการ`); 
+                showSuccess(`นำเข้าข้อมูลสำเร็จ ${successCount} รายการ`); 
                 showToast(`อัปเดตสถิติ Usage ${successCount} รายการ สำเร็จ`, 'success');
                 document.getElementById('validationResult').classList.add('hidden'); 
                 document.getElementById('fileInput').value = ''; 
@@ -2628,12 +2640,12 @@
                 btn.disabled = false; 
                 btn.innerHTML = '<i class="ph-bold ph-arrow-counter-clockwise"></i> มีข้อผิดพลาด ลองอีกครั้ง'; 
                 btn.classList.remove('opacity-70'); 
-                showError("การเชื่อมต่อฐานข้อมูลถูกขัดจังหวะ โปรดลองใหม่"); 
+                showError("การเชื่อมต่อถูกขัดจังหวะ โปรดลองใหม่"); 
             }
         }
 
         // ==========================================
-        // ✍️ ระบบ Submit บันทึกฟอร์ม (Borrow, Electric, Activity, Gallery, Staff)
+        // ✍️ ระบบ Submit บันทึกฟอร์มอื่นๆ (Borrow, Electric, Activity, Gallery, Staff)
         // ==========================================
         function extractDriveId(url) { 
             if (!url) return ""; 
@@ -2678,7 +2690,7 @@
                             mimeType: file.type, 
                             base64: base64String.split(',')[1] 
                         }; 
-                        payload.fileColIndex = 8; // ระบุ Index ช่องที่จะให้ Script วางลิงก์ไฟล์
+                        payload.fileColIndex = 8; 
                     } catch(err) { 
                         return showError('การเตรียมไฟล์ล้มเหลว กรุณาลองใหม่'); 
                     }
@@ -2721,7 +2733,6 @@
             }
         }
 
-        // ระบบแปลง File เป็น Base64 สำหรับอัปโหลด
         function getBase64(file) { 
             return new Promise((resolve, reject) => { 
                 const reader = new FileReader(); 
@@ -2752,7 +2763,6 @@
         // ==========================================
         async function processAIBillScan(input, event) {
             if (!input.files || input.files.length === 0) return; 
-            
             event.stopPropagation(); 
             const file = input.files[0]; 
             const statusEl = document.getElementById('ai_scan_status');
@@ -2764,7 +2774,6 @@
             `;
             
             try {
-                // สร้าง Worker สำหรับอ่านภาษาไทยและอังกฤษ
                 const worker = await Tesseract.createWorker('tha+eng', 1, { 
                     logger: m => { 
                         if(m.status === 'recognizing text' && document.getElementById('ocr_progress')) {
@@ -2780,14 +2789,12 @@
                 
                 let foundCount = 0;
                 
-                // ค้นหาหมายเลขผู้ใช้ไฟฟ้า (มักจะขึ้นต้นด้วย 0200)
                 const peaMatch = text.match(/0200\d{8}/); 
                 if (peaMatch) { 
                     document.getElementById('e_pea_no').value = peaMatch[0]; 
                     foundCount++; 
                 }
                 
-                // ค้นหาเลขที่ใบแจ้ง (ตัวเลขยาวๆ ที่ไม่ได้ขึ้นต้นด้วย 0200)
                 const allLongNums = text.match(/\b\d{12,14}\b/g) || []; 
                 const invMatch = allLongNums.find(n => !n.startsWith('0200')); 
                 if (invMatch) { 
@@ -2795,14 +2802,12 @@
                     foundCount++; 
                 }
                 
-                // ค้นหาวันที่อ่านหน่วย
                 const dateMatch = text.match(/\b(?:0[1-9]|[12]\d|3[01])\/(?:0[1-9]|1[0-2])\/(?:25\d{2}|\d{2})\b/);
                 if (dateMatch) { 
                     document.getElementById('e_read_date').value = dateMatch[0]; 
                     foundCount++; 
                 }
                 
-                // ค้นหาจำนวนเงิน (ค่าไฟรวมของโรงเรียน)
                 const allMoneys = [...text.matchAll(/\b(\d{1,3}(?:,\d{3})*\.\d{2})\b/g)].map(m => parseFloat(m[1].replace(/,/g, ''))); 
                 const validMoneys = allMoneys.filter(v => v > 1000 && v < 500000); 
                 if (validMoneys.length > 0) { 
@@ -2812,7 +2817,6 @@
                     foundCount++; 
                 }
                 
-                // ค้นหาจำนวนหน่วยไฟฟ้า (ตาราง 8343.000)
                 const meterTableMatch = text.match(/\d{3,8}\.000\s*\d{3,8}\.000\s*([\d,]+(?:\.\d{1,2})?)/);
                 if (meterTableMatch) { 
                     const el = document.getElementById('e_school_unit'); 
@@ -2822,12 +2826,11 @@
                 }
                 
                 if (foundCount >= 3) { 
-                    statusEl.innerHTML = `<i class="ph-fill ph-check-circle text-emerald-500 text-lg"></i> <span class="text-emerald-700 font-bold text-xs">ดึงข้อมูลสำเร็จ! กรุณาตรวจสอบความถูกต้องอีกครั้ง</span>`; 
+                    statusEl.innerHTML = `<i class="ph-fill ph-check-circle text-emerald-500 text-lg"></i> <span class="text-emerald-700 font-bold text-xs">ดึงข้อมูลสำเร็จ! กรุณาตรวจสอบความถูกต้อง</span>`; 
                 } else { 
                     throw new Error("Data incomplete"); 
                 }
                 
-                // ยัดไฟล์ที่เลือกใส่เข้าไปในช่องอัปโหลดไฟล์หลักด้วย
                 const dt = new DataTransfer(); 
                 dt.items.add(file); 
                 const mf = document.getElementById('e_file'); 
@@ -2915,7 +2918,6 @@
             const r = adminEqData[idx]; 
             const d = new Date(); 
             
-            // ฟอร์แมตวันที่แบบไทย
             let thaiYear = d.getFullYear() + (d.getFullYear() < 2500 ? 543 : 0);
             document.getElementById('upd_date').value = `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${thaiYear}`;
             
