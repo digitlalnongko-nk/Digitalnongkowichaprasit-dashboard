@@ -289,20 +289,21 @@
             box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.2); 
         }
         
-        /* 10. Smart Month Dropdown */
+        /* 10. Smart Month Dropdown (แก้ปัญหาทับซ้อนและโดนตัด) */
         .month-selector-dropdown { 
             display: none; 
             position: absolute; 
-            z-index: 100; 
+            z-index: 9999; /* ⭐ เพิ่ม Z-index ให้สูงสุดเพื่อลอยอยู่บนชิ้นส่วนอื่นทั้งหมด */
             background: rgba(255, 255, 255, 0.98); 
             backdrop-filter: blur(10px); 
             border: 1px solid var(--theme-border); 
             border-radius: 20px; 
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15); 
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.2); /* เพิ่มเงาให้เห็นชัดขึ้นว่าลอยอยู่ */
             padding: 24px; 
             width: 380px; 
             right: 0; 
-            margin-top: 12px; 
+            top: 110%; /* ⭐ บังคับให้เริ่มแสดงผลใต้ปุ่มฟันเฟืองเสมอ */
+            margin-top: 5px; 
             transition: all 0.3s ease; 
         }
         .month-selector-dropdown.show { 
@@ -313,8 +314,9 @@
             display: grid; 
             grid-template-columns: repeat(3, 1fr); 
             gap: 12px; 
-            max-height: 320px; 
+            max-height: 280px; /* ปรับลดความสูงลงนิดหน่อยเพื่อไม่ให้ล้นจอ */
             overflow-y: auto; 
+            padding-right: 5px; /* เผื่อที่ให้ Scrollbar */
         }
         
         .month-cb { 
