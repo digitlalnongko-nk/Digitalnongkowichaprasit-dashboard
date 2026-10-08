@@ -1377,8 +1377,8 @@
             </form>
         </div>
     </div>
-   <!-- ========================================== -->
-    <!-- ⚙️ ADVANCED JAVASCRIPT CORE ENGINE (Part 8) -->
+    <!-- ========================================== -->
+    <!-- ⚙️ ADVANCED JAVASCRIPT CORE ENGINE -->
     <!-- ========================================== -->
     <script>
         // 🔴 ข้อมูล Database URLs (6 ลิงก์หลัก)
@@ -1402,13 +1402,9 @@
         let selectedMonthsList = []; 
         let electricViewMode = 'all'; 
 
-        // ตัวแปร Pagination สำหรับตาราง
         let currentPage = { dashEq: 1, borrow: 1, manageEq: 1 };
         const rowsPerPage = 10;
 
-        // ==========================================
-        // 🔔 Notification System
-        // ==========================================
         function showToast(message, type = 'success', duration = 4000) {
             const container = document.getElementById('toast-container');
             if (!container) return;
@@ -1454,9 +1450,6 @@
             }, duration);
         }
 
-        // ==========================================
-        // 🧠 Smart Utility Functions (ฟังก์ชันอัจฉริยะ)
-        // ==========================================
         function extractYearMonthFromRaw(rawDate) {
             if(!rawDate) return null;
             let parts = rawDate.includes('/') ? rawDate.split(' ')[0].split('/') : rawDate.split(' ')[0].split('-');
@@ -1466,10 +1459,8 @@
                 let y = parts[2].length === 4 ? parts[2] : (parts[0].length === 4 ? parts[0] : parts[2]); 
                 y = parseInt(y);
                 
-                // ตรวจจับ: ถ้ากรอกแบบย่อ 2 หลัก
                 if (y < 100) y += 2500;
                 
-                // ถ้ายปีเป็น ค.ศ. (เช่น 2026) จะบวก 543 ให้เป็น พ.ศ. เสมอ
                 if (y < 2500 && y > 1900) y += 543;
                 
                 return `${y}-${m}`; 
@@ -1477,7 +1468,6 @@
             return null;
         }
 
-        // ⭐ แก้วิธีหาช่วงเดือน ไม่พึ่งพา Date() ของเบราว์เซอร์ ป้องกันบั๊กปี พ.ศ.
         function getMonthsBetween(startYM, endYM) {
             let dates = [];
             if (!startYM || !endYM) return dates;
@@ -1502,6 +1492,7 @@
         }
 
         function formatMonthYearLabelFull(ymStr) {
+            if(!ymStr) return "-";
             let mNames = ["", "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
             let p = ymStr.split('-'); 
             if(p.length !== 2) return ymStr; 
@@ -1510,6 +1501,7 @@
         }
         
         function formatMonthYearLabel(ymStr) {
+            if(!ymStr) return "-";
             let mNames = ["", "ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
             let p = ymStr.split('-'); 
             if(p.length !== 2) return ymStr; 
@@ -1530,9 +1522,6 @@
             Swal.fire({ icon: 'error', title: 'ผิดพลาด', text: msg, confirmButtonColor: '#0f172a' }); 
         }
 
-        // ==========================================
-        // 🔐 Authentication & Initialization
-        // ==========================================
         async function login() {
             const p = document.getElementById('password').value;
             if(btoa(p) === 'NjY0NDA3NjM=') { 
@@ -1577,14 +1566,9 @@
         function prepareAndPrintPDF() { 
             window.print(); 
         }
-
-        // ==========================================
-        // 📥 ระบบเชื่อมต่อฐานข้อมูล Google Sheets
-        // ==========================================
         async function loadAllDatabases() {
             showLoading('กำลังซิงค์และวิเคราะห์ฐานข้อมูล...');
             try {
-                // โหลดแบบขนานเพื่อความเร็ว (Parallel Fetch)
                 const [resEq, resBorrow, resElec, resUsage, resActivity, resStaff] = await Promise.all([
                     fetch(EQ_CSV_URL), 
                     fetch(BORROW_CSV_URL), 
@@ -1609,11 +1593,11 @@
                 showToast("เกิดข้อผิดพลาดในการดึงข้อมูลจากฐานข้อมูล", "error");
             }
             closeLoading();
-            renderAdminEqTable(); // แสดงผลตารางจัดการพัสดุ
+            renderAdminEqTable();
         }
 
         // ==========================================
-        // 📅 ระบบ Custom Date Filter (Select Dropdown)
+        // 📅 ระบบ Custom Date Filter (Select Dropdown - แก้ปัญหา)
         // ==========================================
         function extractAllMonths() {
             let tempSet = new Set();
@@ -1636,7 +1620,7 @@
                     
                     if(yMatch) {
                         let y = parseInt(yMatch[0]);
-                        if(y < 2500) y += 543; // แปลง ค.ศ. -> พ.ศ.
+                        if(y < 2500) y += 543; 
                         
                         let mNames = ["", "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
                         let mIndex = mNames.findIndex(n => n && mStr.includes(n));
@@ -1654,34 +1638,33 @@
             let endSel = document.getElementById('dateEnd');
             let optionsHtml = '';
             
-            if(availableMonthsList.length > 0) {
-                // เติม Option ลงใน Select แบบใหม่ ใช้ HTML String
-                availableMonthsList.forEach(ym => {
-                    let label = formatMonthYearLabelFull(ym);
-                    optionsHtml += `<option value="${ym}">${label}</option>`;
-                });
-                
+            // ⭐ Fallback อัจฉริยะ: ถ้าหาข้อมูลไม่เจอ ให้สร้างเดือนปัจจุบันขึ้นมาแทน ไม่ให้มันค้าง!
+            if(availableMonthsList.length === 0) {
+                let d = new Date();
+                let y = d.getFullYear() + 543;
+                let m = String(d.getMonth() + 1).padStart(2, '0');
+                let ym = `${y}-${m}`;
+                availableMonthsList = [ym]; 
+            }
+            
+            // สร้างตัวเลือก (Options)
+            availableMonthsList.forEach(ym => {
+                let label = formatMonthYearLabelFull(ym);
+                optionsHtml += `<option value="${ym}">${label}</option>`;
+            });
+            
+            // นำ HTML ใส่ลงใน Select
+            if(startSel && endSel) {
                 startSel.innerHTML = optionsHtml;
                 endSel.innerHTML = optionsHtml;
                 
-                // เลือก 6 เดือนล่าสุดอัตโนมัติ
+                // เลือก 6 เดือนล่าสุดอัตโนมัติ (หรือเท่าที่มี)
                 let endYM = availableMonthsList[availableMonthsList.length - 1];
                 let startIndex = Math.max(0, availableMonthsList.length - 6);
                 let startYM = availableMonthsList[startIndex];
                 
                 startSel.value = startYM;
                 endSel.value = endYM;
-            } else {
-                // Fallback กรณีไม่มีข้อมูลเลย
-                let d = new Date();
-                let y = d.getFullYear() + 543;
-                let m = String(d.getMonth() + 1).padStart(2, '0');
-                let ym = `${y}-${m}`;
-                let label = formatMonthYearLabelFull(ym);
-                
-                optionsHtml = `<option value="${ym}">${label}</option>`;
-                startSel.innerHTML = optionsHtml;
-                endSel.innerHTML = optionsHtml;
             }
             
             buildMonthSelectorUI();
@@ -1689,6 +1672,8 @@
 
         function buildMonthSelectorUI() {
             const container = document.getElementById('monthSelector');
+            if(!container) return; 
+
             let html = `
                 <div class="pb-4 mb-4 border-b border-slate-100 flex justify-between items-center">
                     <span class="font-bold text-slate-800">เลือกเดือนแบบอิสระ (ข้ามเดือน)</span>
@@ -1697,12 +1682,20 @@
                         <button onclick="selectAllMonths(false)" class="text-[11px] bg-rose-50 px-3 py-1.5 rounded-lg text-rose-600 font-bold hover:bg-rose-100 transition">ล้าง</button>
                     </div>
                 </div>
-                <div class="month-grid">
+                <div class="month-grid max-h-[250px] overflow-y-auto">
             `;
             
             const monthNames = ["", "ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
             
-            selectedMonthsList = getMonthsBetween(document.getElementById('dateStart').value, document.getElementById('dateEnd').value);
+            let startV = document.getElementById('dateStart') ? document.getElementById('dateStart').value : '';
+            let endV = document.getElementById('dateEnd') ? document.getElementById('dateEnd').value : '';
+            
+            selectedMonthsList = getMonthsBetween(startV, endV);
+
+            // ถ้าไม่มีเดือนที่เลือกเลย ให้เลือกอันล่าสุดเป็นค่าเริ่มต้น
+            if(selectedMonthsList.length === 0 && availableMonthsList.length > 0) {
+                selectedMonthsList = [availableMonthsList[availableMonthsList.length - 1]];
+            }
 
             availableMonthsList.forEach(ym => {
                 let [y, m] = ym.split('-');
@@ -1728,8 +1721,21 @@
             container.innerHTML = html;
         }
 
+        document.addEventListener('click', function(event) {
+            const selector = document.getElementById('monthSelector');
+            const button = document.querySelector('button[onclick="toggleMonthSelector()"]');
+            
+            if (selector && button) {
+                const isClickInside = selector.contains(event.target) || button.contains(event.target);
+                if (!isClickInside && selector.classList.contains('show')) {
+                    selector.classList.remove('show');
+                }
+            }
+        });
+
         function toggleMonthSelector() { 
-            document.getElementById('monthSelector').classList.toggle('show'); 
+            const selector = document.getElementById('monthSelector');
+            if(selector) selector.classList.toggle('show'); 
         }
         
         function selectAllMonths(isSelect) { 
@@ -1742,11 +1748,11 @@
         }
         
         function applyMonthFilter() { 
-            document.getElementById('monthSelector').classList.remove('show'); 
+            const selector = document.getElementById('monthSelector');
+            if(selector) selector.classList.remove('show'); 
             refreshDashboard(true); 
             showToast('อัปเดตข้อมูลตามช่วงเวลาใหม่แล้ว', 'success');
         }
-
         // ==========================================
         // 📊 ระบบการสลับมุมมอง (Tabs & Dashboard Views)
         // ==========================================
@@ -1786,18 +1792,34 @@
         // ==========================================
         function refreshDashboard(fromCheckbox = false) {
             
-            // กรณีรีเฟรชจากการกดปุ่มอัปเดตข้อมูล (Input Select)
+            let startEl = document.getElementById('dateStart');
+            let endEl = document.getElementById('dateEnd');
+            
+            let startV = startEl ? startEl.value : '';
+            let endV = endEl ? endEl.value : '';
+
             if(!fromCheckbox) {
-                let startV = document.getElementById('dateStart').value;
-                let endV = document.getElementById('dateEnd').value;
-                if(startV > endV) { 
+                // ⭐ ป้องกัน Error หาก Element หาไม่เจอหรือมีค่าว่าง
+                if(!startV || !endV) {
+                    if(availableMonthsList.length > 0) {
+                        startV = availableMonthsList[Math.max(0, availableMonthsList.length - 6)];
+                        endV = availableMonthsList[availableMonthsList.length - 1];
+                    } else {
+                        let d = new Date();
+                        startV = `${d.getFullYear() + 543}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+                        endV = startV;
+                    }
+                } else if(startV > endV) { 
                     showToast("เดือนเริ่มต้นต้องน้อยกว่าหรือเท่ากับเดือนสิ้นสุด", "error"); 
                     return; 
                 }
                 selectedMonthsList = getMonthsBetween(startV, endV);
             }
 
-            if(!selectedMonthsList || selectedMonthsList.length === 0) return;
+            if(!selectedMonthsList || selectedMonthsList.length === 0) {
+                 selectedMonthsList = [startV]; 
+            }
+            
             selectedMonthsList.sort();
 
             let lbl = '';
@@ -1812,7 +1834,9 @@
                 rl.innerText = "กำลังแสดงข้อมูลตั้งแต่: " + lbl;
                 rl.classList.remove('hidden');
             }
-            document.getElementById('printRangeDisplay').innerText = "ข้อมูล " + lbl;
+            
+            let printDisp = document.getElementById('printRangeDisplay');
+            if(printDisp) printDisp.innerText = "ข้อมูล " + lbl;
 
             const mNames = ["", "ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
             const mNameThai = ["", "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
@@ -1852,7 +1876,6 @@
                 });
             }
             
-            // Pagination Eq
             if(document.getElementById('dashEqTable')) {
                 renderTableWithPagination('dashEqTable', eqDataArr, currentPage.dashEq, rowsPerPage, (row) => {
                     return `<tr class="hover:bg-slate-50 border-b border-slate-100 transition-colors">
@@ -1889,6 +1912,12 @@
                 filteredBorrow.forEach(b => {
                     let vals = Object.values(b);
                     let rawDate = String(vals[0] || '-').replace(/'/g, '').trim();
+                    
+                    if(rawDate.includes('/202') || rawDate.includes('/203')) {
+                        rawDate = rawDate.replace(/\b(202\d|203\d)\b/g, match => parseInt(match) + 543);
+                    }
+                    let d = rawDate;
+                    
                     let item = String(vals[1] || '-').trim(); 
                     let user = String(vals[2] || '-').trim(); 
                     let status = String(vals[3] || '').trim();
@@ -1906,7 +1935,7 @@
                         stBadge = `<span class="bg-rose-100 text-rose-700 px-3 py-1.5 rounded-lg border border-rose-200 font-bold text-[10px] shadow-sm">${status}</span>`;
                     }
                     
-                    borrowDataArr.push({ d: rawDate, item, user, stBadge });
+                    borrowDataArr.push({ d, item, user, stBadge });
                 });
             }
             
@@ -2005,13 +2034,11 @@
             let pieType = [0,0,0];
             let prevTotalUsers = 0; 
             
-            // ใช้ฟังก์ชัน getMonthsBetween เพื่อหา 6 เดือนก่อนหน้าเป๊ะๆ ป้องกันบัก
             let prevMonthsList = [];
             if(selectedMonthsList.length > 0) {
                 let sYM = selectedMonthsList[0];
                 let [sY, sM] = sYM.split('-').map(Number);
                 
-                // ถอยหลังไปตามจำนวนเดือนที่เลือก
                 let pM = sM - selectedMonthsList.length;
                 let pY = sY;
                 while(pM < 1) {
@@ -2069,7 +2096,6 @@
                 fCounts.push(fDay);
             });
 
-            // อัปเดตข้อมูลบนการ์ด UI
             if(document.getElementById('usg-total')) {
                 document.getElementById('usg-total').innerHTML = `${totalUsers.toLocaleString()} <span class="text-base text-emerald-600 font-normal">คน</span>`;
                 
@@ -2160,10 +2186,6 @@
                 }], true);
             }
         }
-
-        // ==========================================
-        // 📊 ระบบสร้างกราฟและแอนิเมชันตัวเลข 
-        // ==========================================
         function renderChart(canvasId, type, labels, datasets, isPie = false) {
             const ctx = document.getElementById(canvasId); 
             if (!ctx) return;
@@ -2232,9 +2254,6 @@
             window.requestAnimationFrame(step);
         }
 
-        // ==========================================
-        // 🗃️ ระบบแบ่งหน้าตาราง (Pagination System) 
-        // ==========================================
         function renderTableWithPagination(tbodyId, fullData, page, perPage, renderRowFn, paginationContainerId, pageInfoId) {
             const tbody = document.getElementById(tbodyId);
             const pagContainer = document.getElementById(paginationContainerId);
@@ -2378,10 +2397,6 @@
             let thClicked = document.querySelectorAll(`#${tableBodyId}Obj th`)[colIndex].querySelector('.sort-icon');
             if(thClicked) thClicked.className = 'sort-icon ' + (dir === 'asc' ? 'sort-asc' : 'sort-desc');
         }
-
-        // ==========================================
-        // 📥 ระบบการนำเข้าข้อมูล Excel สู่ Usage (ตรวจซ้ำอัตโนมัติ)
-        // ==========================================
         function parseCSVData(csv) {
             const lines = csv.split('\n'); 
             const res = []; 
@@ -2456,7 +2471,6 @@
                         
                         let rDate = String(row[2] || '').trim();
                         
-                        // แปลงวันที่ Excel เป็นพ.ศ.
                         if(!isNaN(parseFloat(rDate)) && parseFloat(rDate) > 30000 && !rDate.includes('/') && !rDate.includes('-')) {
                             let d = new Date(Math.round((parseFloat(rDate) - 25569) * 86400 * 1000)); 
                             let py = d.getFullYear(); 
@@ -2489,7 +2503,6 @@
                             row[3] = `'` + rTime; 
                         }
                         
-                        // 🛑 ป้องกันข้อมูลซ้ำ (เช็คจาก 5 ปัจจัย)
                         let newDate = String(row[2]).replace(/'/g, '').trim();
                         let newTime = String(row[3]).replace(/'/g, '').trim();
                         let newFName = String(row[9]||'').trim();
@@ -2636,7 +2649,7 @@
                 document.getElementById('validationResult').classList.add('hidden'); 
                 document.getElementById('fileInput').value = ''; 
                 readyToImportData = []; 
-                loadAllDatabases(); // Refresh Data Automatically
+                loadAllDatabases(); 
             } else { 
                 btn.disabled = false; 
                 btn.innerHTML = '<i class="ph-bold ph-arrow-counter-clockwise"></i> มีข้อผิดพลาด ลองอีกครั้ง'; 
@@ -2645,9 +2658,6 @@
             }
         }
 
-        // ==========================================
-        // ✍️ ระบบ Submit บันทึกฟอร์มอื่นๆ (Borrow, Electric, Activity, Gallery, Staff)
-        // ==========================================
         function extractDriveId(url) { 
             if (!url) return ""; 
             let match = url.match(/\/d\/(.+?)\/|\/folders\/(.+?)(?:\/|\?|$)\vert{}\?id=(.+?)(?:&\vert{}$)/); 
@@ -2758,12 +2768,9 @@
             input.value = '';
             display.classList.add('hidden');
         }
-
-        // ==========================================
-        // 🤖 ระบบ AI OCR สแกนบิลไฟฟ้าอัจฉริยะ (Tesseract.js)
-        // ==========================================
         async function processAIBillScan(input, event) {
             if (!input.files || input.files.length === 0) return; 
+            
             event.stopPropagation(); 
             const file = input.files[0]; 
             const statusEl = document.getElementById('ai_scan_status');
@@ -2827,7 +2834,7 @@
                 }
                 
                 if (foundCount >= 3) { 
-                    statusEl.innerHTML = `<i class="ph-fill ph-check-circle text-emerald-500 text-lg"></i> <span class="text-emerald-700 font-bold text-xs">ดึงข้อมูลสำเร็จ! กรุณาตรวจสอบความถูกต้อง</span>`; 
+                    statusEl.innerHTML = `<i class="ph-fill ph-check-circle text-emerald-500 text-lg"></i> <span class="text-emerald-700 font-bold text-xs">ดึงข้อมูลสำเร็จ! กรุณาตรวจสอบความถูกต้องอีกครั้ง</span>`; 
                 } else { 
                     throw new Error("Data incomplete"); 
                 }
@@ -2846,9 +2853,6 @@
             }
         }
 
-        // ==========================================
-        // 🖥️ ระบบจัดการและอัปเดตทะเบียนพัสดุ (Equipment Admin Module)
-        // ==========================================
         function filterEqTable() {
             const q = document.getElementById('eqSearch').value.toLowerCase();
             if(q === '') { 
@@ -2996,7 +3000,7 @@
                     showSuccess('อัปเดตสถานะพัสดุสำเร็จ!'); 
                     showToast(`อัปเดตสถานะ: ${document.getElementById('upd_name').value}`, 'success');
                     closeEqModal(); 
-                    loadAllDatabases(); // โหลดใหม่เพื่อให้หน้าจออัปเดต
+                    loadAllDatabases(); 
                 } else {
                     showError("เกิดความขัดข้องระหว่างบันทึกข้อมูล: " + result.message);
                 }
