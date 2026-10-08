@@ -639,7 +639,7 @@
                         </div>
                     </div>
 
-                    <!-- 📅 Smart Date Filter Engine (แก้เป็น Select เพื่อแสดง พ.ศ. 100%) -->
+                    <!-- 📅 Smart Date Filter Engine (แก้ปัญหา Dropdown ไม่แสดง) -->
                     <div class="bg-gradient-to-r from-slate-50 to-white border border-slate-200 rounded-[20px] p-6 mb-8 font-sarabun text-sm flex flex-col xl:flex-row items-start xl:items-center justify-between gap-5 no-print shadow-sm relative overflow-hidden">
                         
                         <div class="absolute right-0 top-0 w-64 h-full bg-gradient-to-l from-indigo-50 to-transparent opacity-50"></div>
@@ -655,25 +655,25 @@
                         </div>
                         
                         <div class="flex items-center gap-3 flex-wrap w-full xl:w-auto justify-start xl:justify-end relative z-10">
-                            <div class="flex items-center bg-white border border-slate-300 rounded-xl overflow-hidden shadow-sm focus-within:border-indigo-400 focus-within:ring-2 focus-within:ring-indigo-100 transition-all">
-                                <span class="pl-4 pr-2 text-slate-400 bg-slate-50 py-3 border-r border-slate-200"><i class="ph-bold ph-calendar-plus"></i></span>
-                                <!-- เปลี่ยน Input เป็น Select Dropdown -->
-                                <select id="dateStart" class="py-2.5 px-3 w-auto bg-transparent outline-none font-medium text-slate-700 font-mono text-sm cursor-pointer hover:bg-slate-50 border-none">
-                                    <!-- ตัวเลือกจะถูกสร้างจาก JavaScript อัตโนมัติในรูปแบบ เดือน พ.ศ. -->
+                            <!-- ✅ แก้ไข UI กล่องเลือกเดือนให้กว้างและกดได้จริง -->
+                            <div class="flex items-center bg-white border border-slate-300 rounded-xl overflow-hidden shadow-sm focus-within:border-indigo-400 focus-within:ring-2 focus-within:ring-indigo-100 transition-all p-1">
+                                <span class="px-3 text-slate-400"><i class="ph-bold ph-calendar-plus text-lg"></i></span>
+                                <select id="dateStart" class="py-2.5 px-3 w-[140px] bg-slate-50 rounded-lg outline-none font-bold text-slate-700 font-sarabun text-base cursor-pointer hover:bg-slate-100 border border-slate-200">
+                                    <option value="">กำลังโหลด...</option>
                                 </select> 
-                                <span class="px-2 text-slate-300 font-bold">ถึง</span> 
-                                <select id="dateEnd" class="py-2.5 px-3 w-auto bg-transparent outline-none font-medium text-slate-700 font-mono text-sm cursor-pointer hover:bg-slate-50 border-none">
-                                    <!-- ตัวเลือกจะถูกสร้างจาก JavaScript อัตโนมัติในรูปแบบ เดือน พ.ศ. -->
+                                <span class="px-3 text-slate-400 font-bold">ถึง</span> 
+                                <select id="dateEnd" class="py-2.5 px-3 w-[140px] bg-slate-50 rounded-lg outline-none font-bold text-slate-700 font-sarabun text-base cursor-pointer hover:bg-slate-100 border border-slate-200">
+                                    <option value="">กำลังโหลด...</option>
                                 </select>
                             </div>
                             
-                            <button onclick="refreshDashboard()" class="bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-indigo-700 transition shadow-md font-kanit flex items-center gap-2 transform hover:-translate-y-0.5">
+                            <button onclick="refreshDashboard()" class="bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-indigo-700 transition shadow-md font-kanit flex items-center gap-2 transform hover:-translate-y-0.5 h-[50px]">
                                 <i class="ph-bold ph-arrows-clockwise text-lg"></i> อัปเดตข้อมูล
                             </button>
                             
                             <!-- ปุ่มตัวกรองเวลาข้ามเดือนแบบอิสระ -->
-                            <div class="relative">
-                                <button onclick="toggleMonthSelector()" class="bg-white border border-slate-300 text-slate-700 w-12 h-12 rounded-xl text-xl flex items-center justify-center hover:bg-indigo-50 hover:text-indigo-600 transition shadow-sm" title="ตั้งค่าตัวกรองเดือนแบบอิสระ (ข้ามเดือนได้)">
+                            <div class="relative h-[50px]">
+                                <button onclick="toggleMonthSelector()" class="bg-white border border-slate-300 text-slate-700 w-[50px] h-full rounded-xl text-xl flex items-center justify-center hover:bg-indigo-50 hover:text-indigo-600 transition shadow-sm" title="ตั้งค่าตัวกรองเดือนแบบอิสระ (ข้ามเดือนได้)">
                                     <i class="ph-bold ph-faders"></i>
                                 </button>
                                 <div id="monthSelector" class="month-selector-dropdown font-sarabun text-sm">
@@ -1618,6 +1618,7 @@
         function extractAllMonths() {
             let tempSet = new Set();
             
+            // 1. ดึงเดือนจาก Usage
             if(realDB.usage && realDB.usage.length > 0) {
                 realDB.usage.forEach(u => {
                     let vals = Object.values(u);
@@ -1627,6 +1628,7 @@
                 });
             }
             
+            // 2. ดึงเดือนจาก Electric
             if(realDB.electric && realDB.electric.length > 0) {
                 realDB.electric.forEach(e => {
                     let mStr = String(e['ประจำเดือน'] || Object.values(e)[0] || '').trim();
@@ -1653,7 +1655,7 @@
             let optionsHtml = '';
             
             if(availableMonthsList.length > 0) {
-                // เติม Option ลงใน Select แบบใหม่ ใช้ HTML String (เร็วและไม่บั๊ก)
+                // เติม Option ลงใน Select แบบใหม่ ใช้ HTML String
                 availableMonthsList.forEach(ym => {
                     let label = formatMonthYearLabelFull(ym);
                     optionsHtml += `<option value="${ym}">${label}</option>`;
@@ -1667,7 +1669,6 @@
                 let startIndex = Math.max(0, availableMonthsList.length - 6);
                 let startYM = availableMonthsList[startIndex];
                 
-                // ⭐ เลือกล็อกค่าตรงๆ ไปยัง Value ที่เป็น พ.ศ.
                 startSel.value = startYM;
                 endSel.value = endYM;
             } else {
