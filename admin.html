@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     
-    <!-- 🔒 Security & Responsive: ป้องกันการซูมหน้าจอโดยไม่ได้ตั้งใจในอุปกรณ์พกพา -->
+    <!-- 🔒 Security & Responsive -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <meta name="description" content="ระบบสารสนเทศเพื่อการบริหารจัดการศูนย์ดิจิทัลชุมชน โรงเรียนหนองโกวิชาประสิทธิ์พิทยาคม (Smart MIS)">
@@ -22,7 +22,7 @@
     <!-- 🔤 Official Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;600;700&family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-    <!-- 🎨 Tailwind Configuration (Enterprise UI) -->
+    <!-- 🎨 Tailwind Configuration -->
     <script>
         tailwind.config = {
             theme: {
@@ -80,14 +80,14 @@
             scroll-behavior: smooth;
         }
         
-        /* อนุญาตให้ Select ข้อความได้เฉพาะใน Input/Textarea/Table data */
+        /* อนุญาตให้ Select ข้อความได้เฉพาะใน Input/Textarea/Table */
         input, textarea, select, td, th { 
             user-select: auto; 
             -webkit-user-select: auto; 
             touch-action: auto; 
         }
 
-        /* 2. Glassmorphism Navigation */
+        /* 2. Navigation */
         .glass-nav { 
             background: rgba(255, 255, 255, 0.88); 
             backdrop-filter: blur(20px); 
@@ -97,7 +97,7 @@
             transition: all 0.3s ease; 
         }
 
-        /* 3. Card Component */
+        /* 3. Cards */
         .minimal-card { 
             background: var(--theme-surface); 
             border: 1px solid var(--theme-border); 
@@ -106,7 +106,7 @@
             transition: transform 0.3s ease, box-shadow 0.3s ease; 
         }
         
-        /* 4. Inputs & Controls */
+        /* 4. Inputs */
         .input-field { 
             width: 100%; 
             padding: 14px 20px; 
@@ -160,7 +160,7 @@
             transform: translateY(-1px); 
         }
 
-        /* 6. Sub Tabs (Dashboard Views) */
+        /* 6. Sub Tabs */
         .dash-type-btn { 
             padding: 10px 20px; 
             border-radius: 14px; 
@@ -207,7 +207,7 @@
             color: #1e293b; 
         }
 
-        /* 7. Keyframes & Animation (แก้ปัญหาหน้าจอขาว/ว่างเปล่า) */
+        /* 7. Animations */
         @keyframes slideUp {
             0% { opacity: 0; transform: translateY(40px); }
             100% { opacity: 1; transform: translateY(0); }
@@ -262,7 +262,7 @@
             background: #94a3b8; 
         }
 
-        /* 9. Utilities */
+        /* 9. Utilities & AI Box */
         .spinner { 
             border: 3px solid rgba(255,255,255,0.2); 
             border-radius: 50%; 
@@ -289,7 +289,7 @@
             box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.2); 
         }
         
-        /* 10. Smart Filter */
+        /* 10. Smart Month Dropdown */
         .month-selector-dropdown { 
             display: none; 
             position: absolute; 
@@ -359,6 +359,7 @@
         th { cursor: pointer; transition: background 0.2s; }
         th:hover { background-color: rgba(0,0,0,0.04); color: var(--theme-primary); }
 
+        /* Notification Toast */
         #toast-container { 
             position: fixed; 
             bottom: 24px; 
@@ -429,7 +430,6 @@
     </style>
 </head>
 <body class="relative">
-
     <!-- 🛡️ Security System: ป้องกันการดูโค้ดและเจาะระบบเบื้องต้น -->
     <script>
         (function() {
@@ -471,6 +471,7 @@
 
     <!-- Container สำหรับแจ้งเตือน -->
     <div id="toast-container" class="no-print"></div>
+
     <!-- 📱 แถบเมนูด้านบน (Navigation) -->
     <header class="glass-nav sticky top-0 z-50 no-print" id="navbar">
         <div class="max-w-[1440px] w-full mx-auto px-5 sm:px-8 py-3.5 flex justify-between items-center">
@@ -547,7 +548,6 @@
                 </a>
             </div>
         </div>
-
         <!-- 🛠️ Admin Workspace Zone -->
         <div id="adminZone" class="hidden w-full animate-fade-in space-y-6">
             
@@ -574,13 +574,13 @@
                     <i class="ph-fill ph-chart-pie-slice text-indigo-500 text-xl"></i> แดชบอร์ดวิเคราะห์สถิติ
                 </button>
                 <button class="tab-btn" onclick="switchTab('import', this)">
-                    <i class="ph-fill ph-file-xls text-emerald-500 text-xl"></i> นำเข้าข้อมูล (Smart Import)
+                    <i class="ph-fill ph-file-xls text-emerald-500 text-xl"></i> นำเข้าข้อมูลสถิติ
                 </button>
                 <button class="tab-btn" onclick="switchTab('borrow', this)">
                     <i class="ph-fill ph-archive text-amber-500 text-xl"></i> ยืม-คืน ทรัพยากร
                 </button>
                 <button class="tab-btn" onclick="switchTab('electric', this)">
-                    <i class="ph-fill ph-plug-charging text-blue-500 text-xl"></i> ข้อมูลสาธารณูปโภค (AI)
+                    <i class="ph-fill ph-plug-charging text-blue-500 text-xl"></i> ข้อมูลสาธารณูปโภค
                 </button>
                 <button class="tab-btn" onclick="switchTab('activity', this)">
                     <i class="ph-fill ph-megaphone text-purple-500 text-xl"></i> ประชาสัมพันธ์กิจกรรม
@@ -596,7 +596,7 @@
                 </button>
             </div>
 
-            <!-- 📄 ส่วนหัวสำหรับพิมพ์ PDF (จะโชว์เฉพาะตอนกด Print เท่านั้น) -->
+            <!-- 📄 ส่วนหัวสำหรับพิมพ์ PDF -->
             <div class="print-header font-sarabun">
                 <h1 class="text-2xl font-bold text-slate-900 mb-2">รายงานสรุปข้อมูลสารสนเทศ ศูนย์ดิจิทัลชุมชน</h1>
                 <p class="text-slate-800 text-lg" id="printDateDisplay">โรงเรียนหนองโกวิชาประสิทธิ์พิทยาคม จังหวัดมหาสารคาม</p>
@@ -604,7 +604,8 @@
             </div>
 
             <div class="minimal-card p-6 md:p-8 relative overflow-visible bg-white">
-            <!-- 📊 DASHBOARD SECTION -->
+                
+                <!-- 📊 DASHBOARD SECTION -->
                 <div id="form-dashboard" class="form-section active">
                     
                     <!-- Dashboard Header & Sub-Views Toggles -->
@@ -638,7 +639,7 @@
                         </div>
                     </div>
 
-                    <!-- 📅 Smart Date Filter Engine (ระบบคัดกรองข้ามเดือน) -->
+                    <!-- 📅 Smart Date Filter Engine (แก้เป็น Select เพื่อแสดง พ.ศ. 100%) -->
                     <div class="bg-gradient-to-r from-slate-50 to-white border border-slate-200 rounded-[20px] p-6 mb-8 font-sarabun text-sm flex flex-col xl:flex-row items-start xl:items-center justify-between gap-5 no-print shadow-sm relative overflow-hidden">
                         
                         <div class="absolute right-0 top-0 w-64 h-full bg-gradient-to-l from-indigo-50 to-transparent opacity-50"></div>
@@ -656,9 +657,14 @@
                         <div class="flex items-center gap-3 flex-wrap w-full xl:w-auto justify-start xl:justify-end relative z-10">
                             <div class="flex items-center bg-white border border-slate-300 rounded-xl overflow-hidden shadow-sm focus-within:border-indigo-400 focus-within:ring-2 focus-within:ring-indigo-100 transition-all">
                                 <span class="pl-4 pr-2 text-slate-400 bg-slate-50 py-3 border-r border-slate-200"><i class="ph-bold ph-calendar-plus"></i></span>
-                                <input type="month" id="dateStart" class="py-3 px-3 w-auto bg-transparent outline-none font-medium text-slate-700 font-mono text-sm cursor-pointer hover:bg-slate-50"> 
-                                <span class="px-2 text-slate-300">ถึง</span> 
-                                <input type="month" id="dateEnd" class="py-3 px-3 w-auto bg-transparent outline-none font-medium text-slate-700 font-mono text-sm cursor-pointer hover:bg-slate-50">
+                                <!-- เปลี่ยน Input เป็น Select Dropdown -->
+                                <select id="dateStart" class="py-2.5 px-3 w-auto bg-transparent outline-none font-medium text-slate-700 font-mono text-sm cursor-pointer hover:bg-slate-50 border-none">
+                                    <!-- ตัวเลือกจะถูกสร้างจาก JavaScript อัตโนมัติในรูปแบบ เดือน พ.ศ. -->
+                                </select> 
+                                <span class="px-2 text-slate-300 font-bold">ถึง</span> 
+                                <select id="dateEnd" class="py-2.5 px-3 w-auto bg-transparent outline-none font-medium text-slate-700 font-mono text-sm cursor-pointer hover:bg-slate-50 border-none">
+                                    <!-- ตัวเลือกจะถูกสร้างจาก JavaScript อัตโนมัติในรูปแบบ เดือน พ.ศ. -->
+                                </select>
                             </div>
                             
                             <button onclick="refreshDashboard()" class="bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-indigo-700 transition shadow-md font-kanit flex items-center gap-2 transform hover:-translate-y-0.5">
@@ -823,7 +829,6 @@
                                         </tbody>
                                     </table>
                                 </div>
-                                <!-- ระบบแบ่งหน้า Pagination (ถ้าจำเป็น) -->
                                 <div class="p-3 border-t border-slate-100 bg-white flex justify-between items-center text-xs font-bold text-slate-500 no-print">
                                     <span id="elecPageInfo">แสดงข้อมูลทั้งหมด</span>
                                     <div class="flex gap-1.5" id="elecPagination"></div>
@@ -868,6 +873,7 @@
                             </div>
                         </div>
                     </div>
+
                     <!-- 5. VIEW: ทะเบียนพัสดุ (Inventory & Equipment) -->
                     <div id="dash-view-equipment" class="dash-view">
                         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 font-sarabun mb-6">
@@ -919,7 +925,6 @@
                     </div>
 
                 </div> <!-- จบฟังก์ชัน แดชบอร์ด -->
-
                 <!-- ===================================== -->
                 <!-- 📁 SECTION 2: DATA INPUT FORMS (ฟอร์มบันทึกข้อมูล) -->
                 <!-- ===================================== -->
@@ -950,6 +955,7 @@
                     
                     <div id="validationResult" class="hidden w-full mt-8 font-sarabun transition-all"></div>
                 </div>
+
                 <!-- 2. Form Borrow -->
                 <div id="form-borrow" class="form-section">
                     <h2 class="text-2xl font-bold text-slate-800 font-kanit mb-6 border-b border-slate-100 pb-5 flex items-center gap-3">
@@ -1044,7 +1050,6 @@
                                         <option value="พฤษภาคม">พฤษภาคม</option><option value="มิถุนายน">มิถุนายน</option><option value="กรกฎาคม">กรกฎาคม</option><option value="สิงหาคม">สิงหาคม</option>
                                         <option value="กันยายน">กันยายน</option><option value="ตุลาคม">ตุลาคม</option><option value="พฤศจิกายน">พฤศจิกายน</option><option value="ธันวาคม">ธันวาคม</option>
                                     </select>
-                                    <!-- ตัวเลือกปี พ.ศ. ตรงๆ เพื่อบันทึกเข้าชีต -->
                                     <select id="e_year" class="input-field flex-1 cursor-pointer font-bold text-slate-800 text-base" onchange="updateEDate()">
                                         <option value="2568">2568</option><option value="2569" selected>2569</option><option value="2570">2570</option><option value="2571">2571</option>
                                     </select>
@@ -1115,7 +1120,6 @@
                         </button>
                     </form>
                 </div>
-
                 <!-- 4. Form Activity -->
                 <div id="form-activity" class="form-section">
                     <h2 class="text-2xl font-bold text-slate-800 font-kanit mb-6 border-b border-slate-100 pb-5 flex items-center gap-3">
@@ -1164,7 +1168,7 @@
                 <div id="form-gallery" class="form-section">
                     <h2 class="text-2xl font-bold text-slate-800 font-kanit mb-6 border-b border-slate-100 pb-5 flex items-center gap-3">
                         <div class="w-12 h-12 bg-gradient-to-br from-pink-400 to-rose-500 text-white rounded-xl flex items-center justify-center shadow-md">
-                            <i class="ph-fill ph-images text-2xl"></i>
+                            <i class="ph-fill ph-folder-star text-2xl"></i>
                         </div> 
                         เพิ่มอัลบั้มคลังภาพองค์กร
                     </h2>
@@ -1249,7 +1253,7 @@
                         <div class="w-12 h-12 bg-gradient-to-br from-rose-400 to-red-500 text-white rounded-xl flex items-center justify-center shadow-md">
                             <i class="ph-fill ph-user-circle-gear text-2xl"></i>
                         </div> 
-                        บันทึกเวรปฏิบัติงานบุคลากร
+                        บันทึกเวรปฏิบัติงานเจ้าหน้าที่
                     </h2>
                     <form onsubmit="submitData(event, 'Staff', ['s_date', 's_name', 's_role', 's_status', 's_note'], 'btn-staff')">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 font-sarabun bg-slate-50 p-8 rounded-[24px] border border-slate-200 shadow-sm">
@@ -1374,7 +1378,7 @@
         </div>
     </div>
     <!-- ========================================== -->
-    <!-- ⚙️ ADVANCED JAVASCRIPT CORE ENGINE -->
+    <!-- ⚙️ ADVANCED JAVASCRIPT CORE ENGINE (Part 8) -->
     <!-- ========================================== -->
     <script>
         // 🔴 ข้อมูล Database URLs (อัปเดตลิงก์ใหม่ทั้งหมด 6 ลิงก์)
@@ -1442,7 +1446,6 @@
             
             container.appendChild(toast);
             
-            // ลบ Toast อัตโนมัติเมื่อครบเวลา
             setTimeout(() => { 
                 toast.style.opacity = '0'; 
                 toast.style.transform = 'translateX(100%)'; 
@@ -1463,7 +1466,7 @@
                 let y = parts[2].length === 4 ? parts[2] : (parts[0].length === 4 ? parts[0] : parts[2]); 
                 y = parseInt(y);
                 
-                // ตรวจจับ: ถ้ากรอกแบบย่อ 2 หลัก (เช่น 69) จะแปลงเป็น 2569
+                // ตรวจจับ: ถ้ากรอกแบบย่อ 2 หลัก
                 if (y < 100) y += 2500;
                 
                 // ถ้ายปีเป็น ค.ศ. (เช่น 2026) จะบวก 543 ให้เป็น พ.ศ. เสมอ
@@ -1481,13 +1484,21 @@
             
             while (currDate <= endDate) {
                 let y = currDate.getFullYear();
-                let beYear = y > 2500 ? y : y + 543;
+                let beYear = y > 2500 ? y : y + 543; // แปลงให้เป็น พ.ศ.
                 dates.push(beYear + "-" + String(currDate.getMonth() + 1).padStart(2, '0'));
                 currDate.setMonth(currDate.getMonth() + 1);
             }
             return dates;
         }
 
+        function formatMonthYearLabelFull(ymStr) {
+            let mNames = ["", "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
+            let p = ymStr.split('-'); 
+            if(p.length !== 2) return ymStr; 
+            
+            return `${mNames[parseInt(p[1])]} ${p[0]}`;
+        }
+        
         function formatMonthYearLabel(ymStr) {
             let mNames = ["", "ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
             let p = ymStr.split('-'); 
@@ -1496,12 +1507,25 @@
             return `${mNames[parseInt(p[1])]} ${String(p[0]).slice(-2)}`;
         }
 
+        function showLoading(msg) { 
+            Swal.fire({ title: msg, allowOutsideClick: false, didOpen: () => Swal.showLoading() }); 
+        }
+        function closeLoading() { 
+            Swal.close(); 
+        }
+        function showSuccess(msg) { 
+            Swal.fire({ icon: 'success', title: 'สำเร็จ', text: msg, timer: 2000, showConfirmButton: false, confirmButtonColor: '#059669' }); 
+        }
+        function showError(msg) { 
+            Swal.fire({ icon: 'error', title: 'ผิดพลาด', text: msg, confirmButtonColor: '#0f172a' }); 
+        }
+
         // ==========================================
         // 🔐 Authentication & Initialization
         // ==========================================
         async function login() {
             const p = document.getElementById('password').value;
-            // ตรวจสอบรหัสผ่านอย่างง่าย (เบื้องต้น)
+            // ตรวจสอบรหัสผ่าน
             if(btoa(p) === 'NjY0NDA3NjM=') { 
                 document.getElementById('loginZone').classList.add('hidden'); 
                 document.getElementById('adminZone').classList.remove('hidden'); 
@@ -1546,20 +1570,12 @@
         }
 
         // ==========================================
-        // 📥 ระบบเชื่อมต่อฐานข้อมูล Google Sheets (โหลด 6 ลิงก์)
+        // 📥 ระบบเชื่อมต่อฐานข้อมูล Google Sheets
         // ==========================================
-        function showLoading(msg) { 
-            Swal.fire({ title: msg, allowOutsideClick: false, didOpen: () => Swal.showLoading() }); 
-        }
-        
-        function closeLoading() { 
-            Swal.close(); 
-        }
-        
         async function loadAllDatabases() {
             showLoading('กำลังซิงค์และวิเคราะห์ฐานข้อมูล...');
             try {
-                // โหลดแบบขนานเพื่อความเร็ว (Parallel Fetch) 6 ฐานข้อมูล
+                // โหลดแบบขนานเพื่อความเร็ว (Parallel Fetch)
                 const [resEq, resBorrow, resElec, resUsage, resActivity, resStaff] = await Promise.all([
                     fetch(EQ_CSV_URL), 
                     fetch(BORROW_CSV_URL), 
@@ -1588,7 +1604,7 @@
         }
 
         // ==========================================
-        // 📅 ระบบ Custom Date Filter (กล่องเลือกเดือน)
+        // 📅 ระบบ Custom Date Filter (Select Dropdown)
         // ==========================================
         function extractAllMonths() {
             let tempSet = new Set();
@@ -1611,7 +1627,7 @@
                     
                     if(yMatch) {
                         let y = parseInt(yMatch[0]);
-                        if(y < 2500) y += 543;
+                        if(y < 2500) y += 543; // แปลง ค.ศ. -> พ.ศ.
                         
                         let mNames = ["", "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
                         let mIndex = mNames.findIndex(n => n && mStr.includes(n));
@@ -1625,25 +1641,36 @@
 
             availableMonthsList = Array.from(tempSet).sort();
             
+            let startSel = document.getElementById('dateStart');
+            let endSel = document.getElementById('dateEnd');
+            startSel.innerHTML = '';
+            endSel.innerHTML = '';
+            
             if(availableMonthsList.length > 0) {
+                // เติม Option ลงใน Select
+                availableMonthsList.forEach(ym => {
+                    let label = formatMonthYearLabelFull(ym);
+                    startSel.innerHTML += `<option value="${ym}">${label}</option>`;
+                    endSel.innerHTML += `<option value="${ym}">${label}</option>`;
+                });
+                
                 // เลือก 6 เดือนล่าสุดอัตโนมัติ
                 let endYM = availableMonthsList[availableMonthsList.length - 1];
                 let startIndex = Math.max(0, availableMonthsList.length - 6);
                 let startYM = availableMonthsList[startIndex];
                 
-                // Set ค่าให้ Input Type Month (ต้องแปลงเป็น ค.ศ. คืนให้ HTML อ่านออก)
-                let endY_CE = parseInt(endYM.split('-')[0]);
-                if(endY_CE > 2500) endY_CE -= 543;
-                let startY_CE = parseInt(startYM.split('-')[0]);
-                if(startY_CE > 2500) startY_CE -= 543;
-                
-                document.getElementById('dateEnd').value = `${endY_CE}-${endYM.split('-')[1]}`;
-                document.getElementById('dateStart').value = `${startY_CE}-${startYM.split('-')[1]}`;
+                startSel.value = startYM;
+                endSel.value = endYM;
             } else {
+                // Fallback กรณีไม่มีข้อมูล
                 let d = new Date();
-                document.getElementById('dateEnd').value = d.toISOString().slice(0, 7);
-                d.setMonth(d.getMonth() - 5);
-                document.getElementById('dateStart').value = d.toISOString().slice(0, 7);
+                let y = d.getFullYear() + 543;
+                let m = String(d.getMonth() + 1).padStart(2, '0');
+                let ym = `${y}-${m}`;
+                let label = formatMonthYearLabelFull(ym);
+                
+                startSel.innerHTML = `<option value="${ym}">${label}</option>`;
+                endSel.innerHTML = `<option value="${ym}">${label}</option>`;
             }
             
             buildMonthSelectorUI();
@@ -1666,7 +1693,6 @@
             
             selectedMonthsList = getMonthsBetween(document.getElementById('dateStart').value, document.getElementById('dateEnd').value);
 
-            // สร้าง Checkbox จากเดือนที่มีข้อมูลทั้งหมด
             availableMonthsList.forEach(ym => {
                 let [y, m] = ym.split('-');
                 let isChecked = selectedMonthsList.includes(ym) ? 'checked' : '';
@@ -1749,7 +1775,6 @@
         // ==========================================
         function refreshDashboard(fromCheckbox = false) {
             
-            // กรณีรีเฟรชจากการกดปุ่มอัปเดตข้อมูล (Input Month)
             if(!fromCheckbox) {
                 let startV = document.getElementById('dateStart').value;
                 let endV = document.getElementById('dateEnd').value;
@@ -1765,9 +1790,9 @@
 
             let lbl = '';
             if(selectedMonthsList.length === 1) { 
-                lbl = formatMonthYearLabel(selectedMonthsList[0]); 
+                lbl = formatMonthYearLabelFull(selectedMonthsList[0]); 
             } else { 
-                lbl = `${formatMonthYearLabel(selectedMonthsList[0])} ถึง ${formatMonthYearLabel(selectedMonthsList[selectedMonthsList.length-1])}`; 
+                lbl = `${formatMonthYearLabelFull(selectedMonthsList[0])} ถึง ${formatMonthYearLabelFull(selectedMonthsList[selectedMonthsList.length-1])}`; 
             }
             
             let rl = document.getElementById('dashRangeLabel');
@@ -1815,7 +1840,6 @@
                 });
             }
             
-            // Pagination Eq
             if(document.getElementById('dashEqTable')) {
                 renderTableWithPagination('dashEqTable', eqDataArr, currentPage.dashEq, rowsPerPage, (row) => {
                     return `<tr class="hover:bg-slate-50 border-b border-slate-100 transition-colors">
@@ -1852,7 +1876,13 @@
                 filteredBorrow.forEach(b => {
                     let vals = Object.values(b);
                     let rawDate = String(vals[0] || '-').replace(/'/g, '').trim();
-                    let d = convertToThaiYear(rawDate);
+                    
+                    // แปลง ค.ศ. เป็น พ.ศ. ทันที
+                    if(rawDate.includes('/202') || rawDate.includes('/203')) {
+                        rawDate = rawDate.replace(/\b(202\d|203\d)\b/g, match => parseInt(match) + 543);
+                    }
+                    let d = rawDate;
+                    
                     let item = String(vals[1] || '-').trim(); 
                     let user = String(vals[2] || '-').trim(); 
                     let status = String(vals[3] || '').trim();
@@ -2252,7 +2282,6 @@
                 let row = [], cols = rows[i].querySelectorAll("td, th");
                 for (let j = 0; j < cols.length; j++) {
                     let text = cols[j].innerText.replace(/(\r\n|\n|\r)/gm, " ").trim();
-                    // เอาคอลัมน์ปุ่มจัดการออกจากการส่งออก CSV
                     if(text !== 'จัดการ' && text !== 'การจัดการ' && text !== 'แก้ไข') {
                         row.push('"' + text + '"');
                     }
@@ -2275,7 +2304,6 @@
             showToast('ส่งออกไฟล์แบบ Excel / CSV สำเร็จ', 'success');
         }
 
-        // Export Chart to Image
         function exportChart(canvasId, filename) {
             const canvas = document.getElementById(canvasId);
             if(!canvas) return;
@@ -2293,7 +2321,6 @@
             let dir = "asc"; 
             let switchcount = 0;
             
-            // ล้าง icon ทิ้งให้หมดก่อน
             document.querySelectorAll(`#${tableBodyId}Obj th .sort-icon`).forEach(el => { 
                 el.className = 'sort-icon'; 
             });
@@ -2335,7 +2362,6 @@
                 }
             }
             
-            // ใส่ icon ลงช่องที่โดนคลิก
             let thClicked = document.querySelectorAll(`#${tableBodyId}Obj th`)[colIndex].querySelector('.sort-icon');
             if(thClicked) thClicked.className = 'sort-icon ' + (dir === 'asc' ? 'sort-asc' : 'sort-desc');
         }
@@ -2450,7 +2476,7 @@
                             row[3] = `'` + rTime; 
                         }
                         
-                        // 🛑 Smart Duplicate Checker: เช็คข้อมูลซ้ำ (วันที่ + เวลา + ชื่อ + สกุล + วัตถุประสงค์)
+                        // 🛑 Smart Duplicate Checker: เช็คข้อมูลซ้ำ
                         let newDate = String(row[2]).replace(/'/g, '').trim();
                         let newTime = String(row[3]).replace(/'/g, '').trim();
                         let newFName = String(row[9]||'').trim();
@@ -2470,7 +2496,7 @@
                         }
 
                         if(isDuplicate) {
-                            skippedCount++; // ข้ามแถวที่ซ้ำ
+                            skippedCount++; 
                         } else {
                             cleanedData.push(row);
                         }
