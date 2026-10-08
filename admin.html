@@ -2,15 +2,16 @@
 <html lang="th" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
+    <!-- ป้องกันการซูมหน้าจอโดยไม่ได้ตั้งใจ (Mobile/Tablet/iPad) -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Admin Dashboard - ศูนย์ดิจิทัลชุมชน</title>
     
+    <!-- Libraries -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <!-- เพิ่ม Chart.js สำหรับทำกราฟแดชบอร์ด -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -33,8 +34,14 @@
                         'fade-in': 'fadeIn 0.5s ease-out forwards',
                     },
                     keyframes: {
-                        fadeIn: { '0%': { opacity: '0', transform: 'translateY(10px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
-                        floating: { '0%, 100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(-20px)' } },
+                        fadeIn: { 
+                            '0%': { opacity: '0', transform: 'translateY(10px)' }, 
+                            '100%': { opacity: '1', transform: 'translateY(0)' } 
+                        },
+                        floating: { 
+                            '0%, 100%': { transform: 'translateY(0)' }, 
+                            '50%': { transform: 'translateY(-20px)' } 
+                        },
                     }
                 }
             }
@@ -42,18 +49,27 @@
     </script>
 
     <style>
-        :root { --theme-primary: #059669; /* Emerald 600 */ }
+        :root { --theme-primary: #059669; }
         html, body {
-            background-color: #f8fafc; /* Slate 50 ให้เข้ากับหน้าเว็บหลัก */
+            background-color: #f8fafc;
             color: #1e293b;
             min-height: 100vh;
-            -webkit-user-select: none; user-select: none;
+            /* ป้องกันการคลุมดำโดยไม่ตั้งใจ */
+            -webkit-user-select: none; 
+            user-select: none; 
+            touch-action: pan-y;
         }
-        input, textarea, select { user-select: auto; -webkit-user-select: auto; }
+        /* ยกเว้น Input ให้สามารถคลุมดำแก้ไขข้อความได้ */
+        input, textarea, select { 
+            user-select: auto; 
+            -webkit-user-select: auto; 
+            touch-action: auto; 
+        }
 
         .glass-nav {
             background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            backdrop-filter: blur(12px); 
+            -webkit-backdrop-filter: blur(12px);
             border-bottom: 1px solid rgba(0, 0, 0, 0.05);
         }
 
@@ -65,55 +81,137 @@
             transition: all 0.3s ease;
         }
         
-        .input-field { width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid #e2e8f0; outline: none; transition: all 0.2s; background: #f8fafc; font-family: 'Sarabun'; font-size: 14px;}
-        .input-field:focus { border-color: var(--theme-primary); box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15); background: #ffffff; }
+        .input-field { 
+            width: 100%; 
+            padding: 12px 16px; 
+            border-radius: 12px; 
+            border: 1px solid #e2e8f0; 
+            outline: none; 
+            transition: all 0.2s; 
+            background: #f8fafc; 
+            font-family: 'Sarabun'; 
+            font-size: 14px;
+        }
+        .input-field:focus { 
+            border-color: var(--theme-primary); 
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15); 
+            background: #ffffff; 
+        }
 
-        .tab-btn { white-space: nowrap; padding: 10px 20px; border-radius: 50px; font-size: 14px; font-weight: 500; transition: all 0.3s; color: #64748b; background: white; border: 1px solid #f1f5f9; font-family: 'Kanit'; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        /* เมนูแท็บ */
+        .tab-btn { 
+            white-space: nowrap; 
+            padding: 10px 20px; 
+            border-radius: 50px; 
+            font-size: 14px; 
+            font-weight: 500; 
+            transition: all 0.3s; 
+            color: #64748b; 
+            background: white; 
+            border: 1px solid #f1f5f9; 
+            font-family: 'Kanit'; 
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
         .tab-btn.active { background: #ecfdf5; color: var(--theme-primary); border-color: #a7f3d0; box-shadow: none; }
         .tab-btn:hover:not(.active) { background: #f1f5f9; color: #334155; }
 
-        /* ปุ่มย่อยสำหรับ Dashboard Type */
-        .dash-type-btn { padding: 8px 16px; border-radius: 12px; font-size: 13px; font-weight: 500; transition: all 0.2s; color: #64748b; background: #f8fafc; border: 1px solid #e2e8f0; font-family: 'Kanit'; }
+        /* เมนูย่อยใน Dashboard */
+        .dash-type-btn { 
+            padding: 8px 16px; 
+            border-radius: 12px; 
+            font-size: 13px; 
+            font-weight: 500; 
+            transition: all 0.2s; 
+            color: #64748b; 
+            background: #f8fafc; 
+            border: 1px solid #e2e8f0; 
+            font-family: 'Kanit'; 
+            cursor: pointer;
+        }
         .dash-type-btn.active { background: #6366f1; color: white; border-color: #4f46e5; box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.2); }
         .dash-type-btn:hover:not(.active) { background: #e2e8f0; color: #334155; }
 
-        /* ปุ่มย่อยสำหรับ Time Filter */
-        .time-filter-btn { padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 500; transition: all 0.2s; color: #64748b; background: transparent; border: 1px solid transparent; font-family: 'Kanit'; }
-        .time-filter-btn.active { background: #f1f5f9; color: #0f172a; border-color: #cbd5e1; }
-        .time-filter-btn:hover:not(.active) { color: #334155; }
+        /* ปุ่มเลือกดูกราฟไฟฟ้า */
+        .toggle-btn { padding: 8px 16px; font-size: 13px; font-weight: 500; border: 1px solid #cbd5e1; cursor: pointer; transition: all 0.2s;}
+        .toggle-btn.active { background: #0f172a; color: white; border-color: #0f172a;}
 
-        .form-section { display: none; animation: fadeIn 0.4s ease-out; }
-        .form-section.active { display: block; }
-        
-        /* Dashboard Views */
-        .dash-view { display: none; animation: fadeIn 0.3s ease-out; }
-        .dash-view.active { display: block; }
+        .form-section, .dash-view { display: none; animation: fadeIn 0.4s ease-out; }
+        .form-section.active, .dash-view.active { display: block; }
         
         .custom-scrollbar::-webkit-scrollbar { height: 6px; width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
 
-        .spinner { border: 3px solid rgba(255,255,255,0.3); border-radius: 50%; border-top: 3px solid currentColor; width: 20px; height: 20px; animation: spin 1s linear infinite; display: inline-block; vertical-align: middle; margin-right: 8px;}
+        .spinner { 
+            border: 3px solid rgba(255,255,255,0.3); 
+            border-radius: 50%; 
+            border-top: 3px solid currentColor; 
+            width: 20px; 
+            height: 20px; 
+            animation: spin 1s linear infinite; 
+            display: inline-block; 
+            vertical-align: middle; 
+            margin-right: 8px;
+        }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        .ai-scanner-box { border: 2px dashed #a7f3d0; background-color: #f0fdf4; transition: all 0.3s ease; }
+        .ai-scanner-box { border: 2px dashed #a7f3d0; background-color: #f0fdf4; transition: all 0.3s ease; cursor: pointer;}
         .ai-scanner-box:hover { background-color: #d1fae5; border-color: #34d399; }
 
-        @media print {
-            body { background: white !important; }
-            .no-print, .glass-nav, .tab-btn { display: none !important; }
-            .minimal-card { box-shadow: none !important; border: none !important; padding: 0 !important; }
+        /* Dropdown สำหรับเลือกเดือนแบบอิสระ */
+        .month-selector-dropdown { 
+            display: none; 
+            position: absolute; 
+            z-index: 100; 
+            background: white; 
+            border: 1px solid #e2e8f0; 
+            border-radius: 16px; 
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); 
+            padding: 16px; 
+            width: 320px; 
+            right: 0; 
+            margin-top: 8px; 
         }
+        .month-selector-dropdown.show { display: block; }
+        .month-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+
+        /* ระบบ PDF Print สำหรับรายงานทางการ */
+        @media print {
+            body { background: white !important; font-size: 12pt; color: black; }
+            .no-print, header, .glass-nav, .tab-btn, .dash-type-btn, .month-selector-dropdown, button { display: none !important; }
+            .minimal-card, .bg-white { box-shadow: none !important; border: none !important; padding: 0 !important; }
+            .dash-view { display: block !important; page-break-inside: avoid; }
+            .print-header { display: block !important; margin-bottom: 20px; text-align: center;}
+            canvas { max-width: 100% !important; height: auto !important; }
+            .grid { display: block !important; }
+            .grid > div { margin-bottom: 20px; page-break-inside: avoid; }
+        }
+        .print-header { display: none; }
     </style>
 </head>
 <body class="relative">
 
-    <!-- BG Elements คุมโทน Emerald / Amber -->
+    <!-- สคริปต์ป้องกันการแฮก F12, คลิกขวา, Ctrl+U, Ctrl+Shift+I -->
+    <script>
+        document.addEventListener('contextmenu', event => event.preventDefault());
+        document.addEventListener('keydown', function(e) {
+            // ป้องกัน F12
+            if (e.keyCode == 123) { e.preventDefault(); return false; } 
+            // ป้องกัน Ctrl+Shift+I หรือ J
+            if (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74)) { e.preventDefault(); return false; } 
+            // ป้องกัน Ctrl+U
+            if (e.ctrlKey && e.keyCode == 85) { e.preventDefault(); return false; } 
+        });
+    </script>
+
+    <!-- พื้นหลัง (ซ่อนเวลาพิมพ์) -->
     <div class="fixed inset-0 z-[-1] overflow-hidden pointer-events-none no-print">
         <div class="absolute -top-[10%] -left-[10%] w-[50rem] h-[50rem] bg-emerald-100 rounded-full mix-blend-multiply filter blur-[100px] opacity-50 animate-float-slow"></div>
         <div class="absolute bottom-[10%] -right-[10%] w-[40rem] h-[40rem] bg-amber-100 rounded-full mix-blend-multiply filter blur-[100px] opacity-50 animate-float-slow" style="animation-delay: 2s"></div>
     </div>
 
+    <!-- แถบเมนูด้านบน -->
     <header class="glass-nav sticky top-0 z-50 no-print" id="navbar">
         <div class="max-w-[1400px] w-full mx-auto px-4 sm:px-6 py-3 flex justify-between items-center">
             <div class="flex items-center gap-3">
@@ -148,7 +246,7 @@
     <main class="flex-grow w-full max-w-[1400px] mx-auto px-4 py-8 relative z-10">
 
         <!-- Login Zone -->
-        <div id="loginZone" class="w-full max-w-sm minimal-card p-8 text-center mx-auto mt-10 animate-fade-in">
+        <div id="loginZone" class="w-full max-w-sm minimal-card p-8 text-center mx-auto mt-10 animate-fade-in no-print">
             <div class="w-20 h-20 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm border border-emerald-100">
                 <i class="ph-fill ph-lock-key text-4xl"></i>
             </div>
@@ -158,23 +256,31 @@
             <input type="password" id="password" placeholder="••••••••" class="input-field mb-6 text-center tracking-[0.5em] text-lg font-mono" onkeypress="if(event.key === 'Enter') login()">
             
             <button onclick="login()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 rounded-xl transition shadow-md shadow-emerald-600/30 font-kanit">เข้าสู่ระบบ</button>
-            <p id="errorMsg" class="text-rose-500 text-xs mt-4 hidden font-medium flex items-center justify-center gap-1 bg-rose-50 py-2 rounded-lg"><i class="ph-fill ph-warning-circle"></i> รหัสผ่านไม่ถูกต้อง!</p>
+            <p id="errorMsg" class="text-rose-500 text-xs mt-4 hidden font-medium flex items-center justify-center gap-1 bg-rose-50 py-2 rounded-lg">
+                <i class="ph-fill ph-warning-circle"></i> รหัสผ่านไม่ถูกต้อง!
+            </p>
             
-            <a href="index.html" class="block mt-8 text-xs text-slate-400 hover:text-emerald-600 transition font-sarabun flex items-center justify-center gap-1"><i class="ph-bold ph-arrow-left"></i> กลับหน้ารายงานสรุปผล</a>
+            <a href="index.html" class="block mt-8 text-xs text-slate-400 hover:text-emerald-600 transition font-sarabun flex items-center justify-center gap-1">
+                <i class="ph-bold ph-arrow-left"></i> กลับหน้ารายงานสรุปผล
+            </a>
         </div>
 
         <!-- Admin Zone -->
         <div id="adminZone" class="hidden w-full animate-fade-in space-y-6">
             
-            <div class="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 font-kanit mb-2">
+            <div class="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 font-kanit mb-2 no-print">
                 <div>
                     <span class="inline-block text-emerald-600 font-bold tracking-widest text-xs uppercase bg-emerald-50 px-3 py-1 rounded-full border border-emerald-100 mb-3">Management System</span>
                     <h2 class="text-3xl md:text-4xl font-bold text-slate-800">ระบบจัดการข้อมูล<span class="text-emerald-600">ส่วนกลาง</span></h2>
                 </div>
+                <!-- ปุ่ม Print PDF แบบเป็นทางการ -->
+                <button onclick="window.print()" class="bg-slate-800 text-white px-5 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 hover:bg-slate-900 transition shadow-sm">
+                    <i class="ph-bold ph-printer text-lg"></i> พิมพ์รายงานเอกสาร PDF
+                </button>
             </div>
 
-            <!-- TAB MENU -->
-            <div class="flex overflow-x-auto gap-3 pb-4 hide-scrollbar mt-4">
+            <!-- TAB MENU (คงฟังก์ชันเดิมไว้ครบถ้วน) -->
+            <div class="flex overflow-x-auto gap-3 pb-4 hide-scrollbar mt-4 no-print">
                 <button class="tab-btn active flex items-center gap-2" onclick="switchTab('dashboard', this)"><i class="ph-fill ph-chart-pie-slice text-indigo-500 text-lg"></i> แดชบอร์ด</button>
                 <button class="tab-btn flex items-center gap-2" onclick="switchTab('import', this)"><i class="ph-fill ph-file-xls text-emerald-500 text-lg"></i> นำเข้า Usage</button>
                 <button class="tab-btn flex items-center gap-2" onclick="switchTab('borrow', this)"><i class="ph-fill ph-archive text-amber-500 text-lg"></i> ยืม-คืน</button>
@@ -185,150 +291,223 @@
                 <button class="tab-btn flex items-center gap-2" onclick="switchTab('staff', this)"><i class="ph-fill ph-user-circle-gear text-rose-500 text-lg"></i> เจ้าหน้าที่</button>
             </div>
 
+            <!-- ส่วนหัวสำหรับพิมพ์ PDF (จะโชว์เฉพาะตอนกด Print) -->
+            <div class="print-header font-sarabun">
+                <h1 class="text-2xl font-bold text-slate-900">รายงานข้อมูลระบบส่วนกลางศูนย์ดิจิทัลชุมชน</h1>
+                <p class="text-slate-600" id="printDateDisplay">โรงเรียนหนองโกวิชาประสิทธิ์พิทยาคม</p>
+                <hr class="my-4 border-slate-200">
+            </div>
+
             <div class="minimal-card p-6 md:p-8 relative overflow-hidden bg-white">
                 
                 <!-- 📊 DASHBOARD SECTION -->
                 <div id="form-dashboard" class="form-section active">
                     
-                    <!-- ส่วนหัว Dashboard และปุ่มเลือกประเภท -->
-                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 border-b border-slate-100 pb-4">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 border-b border-slate-100 pb-4 no-print">
                         <div class="flex items-center gap-3">
                             <div class="w-10 h-10 bg-indigo-50 text-indigo-500 rounded-xl flex items-center justify-center text-xl"><i class="ph-fill ph-chart-pie-slice"></i></div>
                             <h2 class="text-xl font-bold text-slate-800 font-kanit">Analytics Dashboard</h2>
                         </div>
                         
-                        <!-- 1. ปุ่มเลือกประเภท Dashboard -->
-                        <div class="flex flex-wrap gap-2">
-                            <button class="dash-type-btn active" onclick="switchDashboardView('overview', this)"><i class="ph-fill ph-squares-four mr-1"></i> ภาพรวม</button>
-                            <button class="dash-type-btn" onclick="switchDashboardView('usage', this)"><i class="ph-fill ph-users mr-1"></i> ผู้ใช้งาน</button>
-                            <button class="dash-type-btn" onclick="switchDashboardView('electric', this)"><i class="ph-fill ph-lightning mr-1"></i> ไฟฟ้าห้องศูนย์ฯ</button>
-                            <button class="dash-type-btn" onclick="switchDashboardView('equipment', this)"><i class="ph-fill ph-desktop mr-1"></i> อุปกรณ์</button>
+                        <div class="flex flex-wrap gap-2 w-full md:w-auto items-center justify-between md:justify-end">
+                            <div class="flex gap-2 flex-wrap">
+                                <button class="dash-type-btn active" onclick="switchDashboardView('overview', this)"><i class="ph-fill ph-squares-four mr-1"></i> ภาพรวม</button>
+                                <button class="dash-type-btn" onclick="switchDashboardView('usage', this)"><i class="ph-fill ph-users mr-1"></i> ผู้ใช้งาน</button>
+                                <button class="dash-type-btn" onclick="switchDashboardView('electric', this)"><i class="ph-fill ph-lightning mr-1"></i> ค่าไฟฟ้า</button>
+                                <button class="dash-type-btn" onclick="switchDashboardView('borrow', this)"><i class="ph-fill ph-archive mr-1"></i> ยืม-คืน</button>
+                                <button class="dash-type-btn" onclick="switchDashboardView('equipment', this)"><i class="ph-fill ph-desktop mr-1"></i> ทะเบียนพัสดุ</button>
+                            </div>
+                            
+                            <!-- ตัวกรองเวลาข้ามเดือนแบบอิสระ -->
+                            <div class="relative mt-2 md:mt-0">
+                                <button onclick="toggleMonthSelector()" class="bg-white border border-slate-300 text-slate-700 px-4 py-2 rounded-xl text-sm font-kanit font-bold flex items-center gap-2 hover:bg-slate-50 transition shadow-sm">
+                                    <i class="ph-bold ph-calendar-blank"></i> เลือกเดือนแบบอิสระ <i class="ph-bold ph-caret-down"></i>
+                                </button>
+                                <div id="monthSelector" class="month-selector-dropdown font-sarabun text-sm">
+                                    <!-- สร้างตัวเลือก Checkbox จาก JS -->
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- 2. ตัวกรองเวลา (Time Filter) -->
-                    <div class="flex justify-end mb-6">
-                        <div class="bg-white border border-slate-200 rounded-xl p-1 inline-flex shadow-sm">
-                            <button class="time-filter-btn" onclick="updateTimeFilter('1m', this)">1 เดือน</button>
-                            <button class="time-filter-btn" onclick="updateTimeFilter('3m', this)">3 เดือน</button>
-                            <button class="time-filter-btn active" onclick="updateTimeFilter('6m', this)">6 เดือน</button>
-                            <button class="time-filter-btn" onclick="updateTimeFilter('1y', this)">1 ปี</button>
-                            <button class="time-filter-btn" onclick="updateTimeFilter('all', this)">ทั้งหมด</button>
+                    <!-- แสดงป้ายกำกับว่ากำลังดูกราฟช่วงเวลาไหน (แสดงในหน้า Print ด้วย) -->
+                    <div class="bg-indigo-50 border border-indigo-100 p-4 rounded-xl mb-6 flex items-center gap-3">
+                        <i class="ph-fill ph-info text-indigo-500 text-xl"></i>
+                        <div>
+                            <p class="text-[11px] text-indigo-700 font-bold uppercase tracking-wide">ข้อมูลที่กำลังแสดงผล (ดึงจากฐานข้อมูลจริง)</p>
+                            <h4 id="dashRangeLabel" class="font-bold text-slate-800 text-sm mt-0.5">กรุณาเลือกช่วงเวลา...</h4>
                         </div>
                     </div>
-
-                    <!-- ===================================== -->
-                    <!-- VIEW: ภาพรวม (Overview) -->
+<!-- ===================================== -->
+                    <!-- 1. VIEW: ภาพรวม (Overview) -->
                     <!-- ===================================== -->
                     <div id="dash-view-overview" class="dash-view active">
-                        <!-- Summary Cards -->
                         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8 font-kanit">
-                            <div class="bg-slate-50 border border-slate-100 p-5 rounded-2xl flex items-center gap-4">
-                                <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center text-2xl"><i class="ph-fill ph-users"></i></div>
-                                <div>
-                                    <p class="text-[11px] text-slate-500 font-bold uppercase tracking-wide mb-0.5">ผู้ใช้สะสม (<span class="filter-label">6 เดือน</span>)</p>
-                                    <h4 id="ov-users" class="text-2xl font-bold text-slate-800 leading-none">0 <span class="text-sm font-normal text-slate-500">คน</span></h4>
-                                </div>
+                            <div class="bg-white border border-slate-100 p-5 rounded-2xl flex items-center gap-4 shadow-sm border-l-4 border-l-emerald-500">
+                                <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center text-2xl"><i class="ph-fill ph-users"></i></div>
+                                <div><p class="text-[11px] text-slate-500 font-bold uppercase mb-0.5">ผู้ใช้รวมเดือนที่เลือก</p><h4 id="ov-users" class="text-2xl font-bold text-slate-800 leading-none">0 <span class="text-sm font-normal text-slate-500">คน</span></h4></div>
                             </div>
-                            <div class="bg-slate-50 border border-slate-100 p-5 rounded-2xl flex items-center gap-4">
-                                <div class="w-12 h-12 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center text-2xl"><i class="ph-fill ph-archive"></i></div>
-                                <div>
-                                    <p class="text-[11px] text-slate-500 font-bold uppercase tracking-wide mb-0.5">สถานะยืมปัจจุบัน</p>
-                                    <h4 id="ov-borrow" class="text-2xl font-bold text-slate-800 leading-none">0 <span class="text-sm font-normal text-slate-500">ชิ้น</span></h4>
-                                </div>
+                            <div class="bg-white border border-slate-100 p-5 rounded-2xl flex items-center gap-4 shadow-sm border-l-4 border-l-amber-500">
+                                <div class="w-12 h-12 bg-amber-50 text-amber-600 rounded-full flex items-center justify-center text-2xl"><i class="ph-fill ph-archive"></i></div>
+                                <div><p class="text-[11px] text-slate-500 font-bold uppercase mb-0.5">กำลังยืมยังไม่คืน</p><h4 id="ov-borrow" class="text-2xl font-bold text-slate-800 leading-none">0 <span class="text-sm font-normal text-slate-500">รายการ</span></h4></div>
                             </div>
-                            <div class="bg-slate-50 border border-slate-100 p-5 rounded-2xl flex items-center gap-4">
-                                <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-2xl"><i class="ph-fill ph-lightning"></i></div>
-                                <div>
-                                    <p class="text-[11px] text-slate-500 font-bold uppercase tracking-wide mb-0.5">ค่าไฟห้องศูนย์ (<span class="filter-label">6 เดือน</span>)</p>
-                                    <h4 id="ov-power" class="text-xl font-bold text-slate-800 leading-none">0.00 <span class="text-sm font-normal text-slate-500">บาท</span></h4>
-                                </div>
+                            <div class="bg-white border border-slate-100 p-5 rounded-2xl flex items-center gap-4 shadow-sm border-l-4 border-l-blue-500">
+                                <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center text-2xl"><i class="ph-fill ph-lightning"></i></div>
+                                <div><p class="text-[11px] text-slate-500 font-bold uppercase mb-0.5">ค่าไฟศูนย์รวมช่วงนี้</p><h4 id="ov-power" class="text-xl font-bold text-slate-800 leading-none">0.00 <span class="text-sm font-normal text-slate-500">บ.</span></h4></div>
                             </div>
-                            <div class="bg-slate-50 border border-slate-100 p-5 rounded-2xl flex items-center gap-4">
-                                <div class="w-12 h-12 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center text-2xl"><i class="ph-fill ph-wrench"></i></div>
-                                <div>
-                                    <p class="text-[11px] text-slate-500 font-bold uppercase tracking-wide mb-0.5">อุปกรณ์ส่งซ่อม/ชำรุด</p>
-                                    <h4 id="ov-broken" class="text-2xl font-bold text-slate-800 leading-none">0 <span class="text-sm font-normal text-slate-500">รายการ</span></h4>
-                                </div>
+                            <div class="bg-white border border-slate-100 p-5 rounded-2xl flex items-center gap-4 shadow-sm border-l-4 border-l-rose-500">
+                                <div class="w-12 h-12 bg-rose-50 text-rose-600 rounded-full flex items-center justify-center text-2xl"><i class="ph-fill ph-wrench"></i></div>
+                                <div><p class="text-[11px] text-slate-500 font-bold uppercase mb-0.5">พัสดุชำรุด/ส่งซ่อมรวม</p><h4 id="ov-broken" class="text-2xl font-bold text-slate-800 leading-none">0 <span class="text-sm font-normal text-slate-500">ชิ้น</span></h4></div>
                             </div>
                         </div>
 
                         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 font-sarabun">
-                            <!-- กราฟเส้นเปรียบเทียบแนวโน้ม -->
                             <div class="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm">
-                                <h3 class="text-base font-bold text-slate-700 font-kanit mb-4 flex items-center gap-2"><i class="ph-fill ph-trend-up text-indigo-500 text-xl"></i> แนวโน้มการเข้าใช้งานศูนย์ฯ</h3>
+                                <h3 class="text-base font-bold text-slate-700 font-kanit mb-4 flex items-center gap-2"><i class="ph-fill ph-trend-up text-indigo-500 text-xl"></i> แนวโน้มการเข้าใช้งาน (จำนวนรวม)</h3>
                                 <div class="relative h-[300px] w-full"><canvas id="chartOverviewLine"></canvas></div>
                             </div>
-                            <!-- กราฟแท่งค่าไฟ -->
                             <div class="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm">
-                                <h3 class="text-base font-bold text-slate-700 font-kanit mb-4 flex items-center gap-2"><i class="ph-fill ph-lightning text-blue-500 text-xl"></i> ค่าไฟฟ้าห้องศูนย์ฯ (เรต 15A)</h3>
+                                <h3 class="text-base font-bold text-slate-700 font-kanit mb-4 flex items-center gap-2"><i class="ph-fill ph-lightning text-blue-500 text-xl"></i> ค่าไฟฟ้าห้องศูนย์ฯ ตามเดือนที่เลือก</h3>
                                 <div class="relative h-[300px] w-full"><canvas id="chartOverviewPower"></canvas></div>
                             </div>
                         </div>
                     </div>
 
                     <!-- ===================================== -->
-                    <!-- VIEW: ผู้ใช้งาน (Usage) -->
+                    <!-- 2. VIEW: ผู้ใช้งาน (กราฟเส้นแยกเพศ + ข้อมูลละเอียด) -->
                     <!-- ===================================== -->
                     <div id="dash-view-usage" class="dash-view">
-                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 font-sarabun mb-6">
-                            <!-- กราฟแท่งแยกประเภทผู้ใช้ -->
-                            <div class="lg:col-span-2 bg-white border border-slate-200 p-6 rounded-2xl shadow-sm">
-                                <h3 class="text-base font-bold text-slate-700 font-kanit mb-4 flex items-center gap-2"><i class="ph-fill ph-users-three text-emerald-500 text-xl"></i> สถิติการใช้งานรายเดือน</h3>
-                                <div class="relative h-[300px] w-full"><canvas id="chartUsageBar"></canvas></div>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-6 font-kanit">
+                            <div class="bg-emerald-50 border border-emerald-100 p-5 rounded-2xl text-center shadow-sm">
+                                <p class="text-[11px] text-emerald-700 font-bold uppercase tracking-wide">ยอดเข้าใช้งานทั้งหมด</p>
+                                <h4 id="usg-total" class="text-3xl font-bold text-emerald-900 mt-2">0 <span class="text-sm text-emerald-600 font-normal">คน</span></h4>
                             </div>
-                            <!-- สัดส่วนประเภทผู้ใช้ -->
+                            <div class="bg-indigo-50 border border-indigo-100 p-5 rounded-2xl text-center shadow-sm">
+                                <p class="text-[11px] text-indigo-700 font-bold uppercase tracking-wide">ค่าเฉลี่ยผู้เข้าใช้ (ต่อวัน)</p>
+                                <h4 id="usg-avg" class="text-3xl font-bold text-indigo-900 mt-2">0 <span class="text-sm text-indigo-600 font-normal">คน/วัน</span></h4>
+                            </div>
+                            <div class="bg-white border border-slate-200 p-5 rounded-2xl text-center shadow-sm">
+                                <p class="text-[11px] text-slate-500 font-bold uppercase tracking-wide">เปรียบเทียบกับช่วงก่อนหน้า</p>
+                                <h4 id="usg-diff" class="text-2xl font-bold text-slate-800 mt-2">-</h4>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 font-sarabun mb-6">
+                            <div class="lg:col-span-2 bg-white border border-slate-200 p-6 rounded-2xl shadow-sm">
+                                <h3 class="text-base font-bold text-slate-700 font-kanit mb-4 flex items-center gap-2"><i class="ph-fill ph-trend-up text-emerald-500 text-xl"></i> สถิติผู้ใช้งานรายเดือน (แยกชาย-หญิง)</h3>
+                                <div class="relative h-[300px] w-full"><canvas id="chartUsageLine"></canvas></div>
+                            </div>
                             <div class="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm">
-                                <h3 class="text-base font-bold text-slate-700 font-kanit mb-4 flex items-center gap-2"><i class="ph-fill ph-chart-pie-slice text-emerald-500 text-xl"></i> สัดส่วนผู้ใช้งาน</h3>
+                                <h3 class="text-base font-bold text-slate-700 font-kanit mb-4 flex items-center gap-2"><i class="ph-fill ph-chart-pie-slice text-emerald-500 text-xl"></i> สัดส่วนประเภทผู้ใช้</h3>
                                 <div class="relative h-[250px] w-full flex justify-center"><canvas id="chartUsagePie"></canvas></div>
                             </div>
                         </div>
                     </div>
 
                     <!-- ===================================== -->
-                    <!-- VIEW: ไฟฟ้า (Electric) -->
+                    <!-- 3. VIEW: ไฟฟ้า (เลือกดูกราฟได้ + ตาราง) -->
                     <!-- ===================================== -->
                     <div id="dash-view-electric" class="dash-view">
-                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 font-sarabun mb-6">
-                            <!-- กราฟเส้นเปรียบเทียบหน่วยกับเงิน -->
-                            <div class="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm">
-                                <h3 class="text-base font-bold text-slate-700 font-kanit mb-4 flex items-center gap-2"><i class="ph-fill ph-plug-charging text-amber-500 text-xl"></i> ปริมาณหน่วยที่ใช้ในห้องศูนย์ฯ (H ลบ G)</h3>
-                                <div class="relative h-[300px] w-full"><canvas id="chartElecUnit"></canvas></div>
+                        <div class="flex justify-center mb-6 no-print">
+                            <div class="bg-slate-100 p-1.5 rounded-xl flex gap-1 border border-slate-200 shadow-sm">
+                                <button class="toggle-btn active rounded-lg" onclick="toggleElectricChart('all', this)">เปรียบเทียบ โรงเรียน vs ศูนย์ฯ</button>
+                                <button class="toggle-btn rounded-lg" onclick="toggleElectricChart('school', this)">ดูกราฟเฉพาะ โรงเรียน</button>
+                                <button class="toggle-btn rounded-lg" onclick="toggleElectricChart('room', this)">ดูกราฟเฉพาะ ห้องศูนย์ฯ</button>
                             </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 gap-6 font-sarabun mb-6">
                             <div class="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm">
-                                <h3 class="text-base font-bold text-slate-700 font-kanit mb-4 flex items-center gap-2"><i class="ph-fill ph-money text-blue-500 text-xl"></i> ค่าไฟฟ้าห้องศูนย์ฯ (เรต กฟภ. 15A)</h3>
-                                <div class="relative h-[300px] w-full"><canvas id="chartElecCost"></canvas></div>
+                                <h3 id="elec-chart-title" class="text-base font-bold text-slate-700 font-kanit mb-4 flex items-center gap-2"><i class="ph-fill ph-lightning text-amber-500 text-xl"></i> กราฟเปรียบเทียบการใช้ไฟฟ้าและค่าใช้จ่าย (บาท)</h3>
+                                <div class="relative h-[350px] w-full"><canvas id="chartElectricMain"></canvas></div>
+                            </div>
+
+                            <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+                                <div class="p-4 border-b border-slate-100 bg-slate-50">
+                                    <h3 class="text-sm font-bold text-slate-700 font-kanit"><i class="ph-fill ph-table text-blue-500 mr-1"></i> ตารางรายละเอียดข้อมูลไฟฟ้าตามเดือนที่เลือก</h3>
+                                </div>
+                                <div class="overflow-x-auto custom-scrollbar bg-white">
+                                    <table class="w-full text-left text-sm whitespace-nowrap">
+                                        <thead class="bg-slate-100 text-slate-600 text-[11px] uppercase tracking-wider">
+                                            <tr>
+                                                <th class="p-3 font-bold border-r border-white">เดือน/ปี</th>
+                                                <th class="p-3 font-bold text-right text-blue-700 bg-blue-50/50">หน่วย รร. (E)</th>
+                                                <th class="p-3 font-bold text-right text-blue-700 bg-blue-50/50 border-r border-white">ค่าไฟ รร. (F)</th>
+                                                <th class="p-3 font-bold text-right text-amber-700 bg-amber-50/50">หน่วย ศูนย์ฯ</th>
+                                                <th class="p-3 font-bold text-right text-amber-700 bg-amber-50/50 border-r border-white">ค่าไฟ ศูนย์ฯ</th>
+                                                <th class="p-3 font-bold text-center">เรตเฉลี่ยห้อง</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="dashElectricTable" class="divide-y divide-slate-100 text-slate-700">
+                                            <!-- Render via JS -->
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                     </div>
 
                     <!-- ===================================== -->
-                    <!-- VIEW: อุปกรณ์ (Equipment) -->
+                    <!-- 4. VIEW: ยืม-คืน (แสดงผลจากข้อมูลจริง) -->
                     <!-- ===================================== -->
-                    <div id="dash-view-equipment" class="dash-view">
+                    <div id="dash-view-borrow" class="dash-view">
                         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 font-sarabun mb-6">
-                            <!-- กราฟโดนัท สถานะปัจจุบัน -->
                             <div class="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm">
-                                <h3 class="text-base font-bold text-slate-700 font-kanit mb-4 flex items-center gap-2"><i class="ph-fill ph-desktop text-teal-500 text-xl"></i> สถานะครุภัณฑ์ทั้งหมด</h3>
-                                <div class="relative h-[250px] w-full flex justify-center"><canvas id="chartEqStatus"></canvas></div>
+                                <h3 class="text-base font-bold text-slate-700 font-kanit mb-4 flex items-center gap-2"><i class="ph-fill ph-chart-pie-slice text-amber-500 text-xl"></i> สัดส่วนสถานะ ยืม-คืน-ชำรุด</h3>
+                                <div class="relative h-[250px] w-full flex justify-center"><canvas id="chartBorrowPie"></canvas></div>
                             </div>
-                            <!-- ตารางยืมคืน -->
-                            <div class="lg:col-span-2 bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+                            <div class="lg:col-span-2 bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden flex flex-col">
                                 <div class="p-5 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
-                                    <h3 class="text-base font-bold text-slate-700 font-kanit"><i class="ph-fill ph-archive text-amber-500 mr-2"></i> ประวัติการยืม-คืนล่าสุด</h3>
+                                    <h3 class="text-base font-bold text-slate-700 font-kanit"><i class="ph-fill ph-list-dashes text-amber-500 mr-2"></i> ประวัติทำรายการช่วงเดือนที่เลือก</h3>
                                 </div>
-                                <div class="overflow-y-auto max-h-[250px] custom-scrollbar">
+                                <div class="overflow-y-auto max-h-[300px] custom-scrollbar flex-grow bg-white">
                                     <table class="w-full text-left text-sm whitespace-nowrap">
-                                        <thead class="sticky top-0 bg-white shadow-sm z-10">
-                                            <tr class="text-slate-500 text-[11px] uppercase tracking-wider border-b border-slate-100">
+                                        <thead class="sticky top-0 bg-slate-100 shadow-sm z-10 text-slate-600 text-[11px] uppercase tracking-wider">
+                                            <tr>
                                                 <th class="p-4 font-bold">วันที่รายการ</th>
                                                 <th class="p-4 font-bold">ชื่ออุปกรณ์</th>
-                                                <th class="p-4 font-bold">ผู้ทำรายการ</th>
+                                                <th class="p-4 font-bold">ผู้ยืม/คืน</th>
                                                 <th class="p-4 font-bold text-center">สถานะ</th>
                                             </tr>
                                         </thead>
                                         <tbody id="dashBorrowTable" class="divide-y divide-slate-50 text-slate-600">
-                                            <tr><td colspan="4" class="text-center py-8">กำลังโหลดข้อมูล...</td></tr>
+                                            <!-- Render via JS -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ===================================== -->
+                    <!-- 5. VIEW: ทะเบียนครุภัณฑ์พัสดุ โฉมใหม่ -->
+                    <!-- ===================================== -->
+                    <div id="dash-view-equipment" class="dash-view">
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 font-sarabun mb-6">
+                            <div class="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm">
+                                <h3 class="text-base font-bold text-slate-700 font-kanit mb-4 flex items-center gap-2"><i class="ph-fill ph-desktop text-teal-500 text-xl"></i> สัดส่วนสถานะพัสดุในระบบ</h3>
+                                <div class="relative h-[250px] w-full flex justify-center"><canvas id="chartEqStatus"></canvas></div>
+                            </div>
+                            
+                            <div class="lg:col-span-2 bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden flex flex-col">
+                                <div class="p-5 border-b border-slate-100 bg-slate-50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                                    <h3 class="text-base font-bold text-slate-700 font-kanit"><i class="ph-fill ph-clipboard-text text-teal-500 mr-2"></i> ทะเบียนสรุปพัสดุและครุภัณฑ์ทั้งหมด</h3>
+                                    <div class="text-xs font-bold bg-teal-100 text-teal-800 px-3 py-1.5 rounded-full shadow-sm border border-teal-200" id="eqTotalCount">ทั้งหมด 0 รายการ</div>
+                                </div>
+                                <div class="overflow-x-auto overflow-y-auto max-h-[300px] custom-scrollbar flex-grow bg-white">
+                                    <table class="w-full text-left font-sarabun text-[13px] whitespace-nowrap min-w-[700px]">
+                                        <thead class="sticky top-0 bg-slate-800 text-white text-[11px] uppercase tracking-wider z-10">
+                                            <tr>
+                                                <th class="p-3 font-bold text-center">รหัส/เลขพัสดุ</th>
+                                                <th class="p-3 font-bold">หมวดหมู่/ชื่ออุปกรณ์</th>
+                                                <th class="p-3 font-bold text-center">ปีที่ซื้อ</th>
+                                                <th class="p-3 font-bold text-center">สถานะ</th>
+                                                <th class="p-3 font-bold text-center">ตรวจล่าสุด</th>
+                                                <th class="p-3 font-bold">หมายเหตุ</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="dashEqTable" class="divide-y divide-slate-100 text-slate-700">
+                                            <!-- Render via JS -->
                                         </tbody>
                                     </table>
                                 </div>
@@ -337,11 +516,16 @@
                     </div>
 
                 </div>
-                <!-- ============================ -->
-
+                <!-- จบ Dashboard Section -->
+                <!-- ===================================== -->
+                <!-- ฟอร์มระบบหลังบ้าน ออริจินัล 100% ไม่ย่อ ไม่ลบ -->
+                <!-- ===================================== -->
+                
                 <div id="form-import" class="form-section">
                     <div class="flex items-center gap-3 mb-2">
-                        <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center text-2xl border border-emerald-100"><i class="ph-fill ph-microsoft-excel-logo"></i></div>
+                        <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center text-2xl border border-emerald-100">
+                            <i class="ph-fill ph-microsoft-excel-logo"></i>
+                        </div>
                         <div>
                             <h3 class="text-xl font-bold text-slate-800 font-kanit">นำเข้าข้อมูลผู้ใช้งาน (Smart Import)</h3>
                             <p class="text-slate-500 text-xs font-sarabun mt-1">อัปโหลดไฟล์ Excel (22 คอลัมน์) เพื่อตรวจสอบก่อนนำเข้าสู่ระบบ</p>
@@ -349,43 +533,74 @@
                     </div>
 
                     <div id="dropZone" class="mt-8 border-2 border-dashed border-emerald-200 rounded-[24px] p-12 flex flex-col items-center justify-center bg-slate-50 hover:bg-emerald-50 hover:border-emerald-400 cursor-pointer transition-all group" onclick="document.getElementById('fileInput').click()" ondragover="handleDragOver(event)" ondrop="handleDrop(event)">
-                        <div class="w-16 h-16 bg-white text-emerald-500 rounded-full flex items-center justify-center text-3xl mb-4 group-hover:scale-110 transition-transform shadow-sm"><i class="ph-fill ph-cloud-arrow-up"></i></div>
+                        <div class="w-16 h-16 bg-white text-emerald-500 rounded-full flex items-center justify-center text-3xl mb-4 group-hover:scale-110 transition-transform shadow-sm">
+                            <i class="ph-fill ph-cloud-arrow-up"></i>
+                        </div>
                         <p class="font-bold text-slate-700 text-base mb-1 font-kanit group-hover:text-emerald-600">คลิกเพื่อเลือกไฟล์ หรือ ลากไฟล์มาวางที่นี่</p>
                         <p class="text-xs text-slate-400 font-mono">รองรับไฟล์นามสกุล .xlsx, .xls, .csv</p>
                         <input type="file" id="fileInput" class="hidden" accept=".xlsx, .xls, .csv" onchange="handleFileSelect(event)">
                     </div>
+                    
                     <div id="validationResult" class="hidden w-full mt-6 font-sarabun"></div>
                 </div>
 
                 <div id="form-borrow" class="form-section">
-                    <h2 class="text-xl font-bold text-slate-800 font-kanit mb-6 border-b border-slate-100 pb-4 flex items-center gap-3"><div class="w-10 h-10 bg-amber-50 text-amber-500 rounded-xl flex items-center justify-center"><i class="ph-fill ph-archive text-xl"></i></div> บันทึกข้อมูลยืม-คืน</h2>
+                    <h2 class="text-xl font-bold text-slate-800 font-kanit mb-6 border-b border-slate-100 pb-4 flex items-center gap-3">
+                        <div class="w-10 h-10 bg-amber-50 text-amber-500 rounded-xl flex items-center justify-center">
+                            <i class="ph-fill ph-archive text-xl"></i>
+                        </div> 
+                        บันทึกข้อมูลยืม-คืน
+                    </h2>
+                    
                     <form onsubmit="submitData(event, 'Borrow', ['b_date', 'b_item', 'b_user', 'b_status', 'b_note'], 'btn-borrow')">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 font-sarabun">
-                            <div><label class="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wide">วันที่ทำรายการ *</label><input type="text" id="b_date" required placeholder="เช่น 15/01/2026" class="input-field"></div>
-                            <div><label class="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wide">ชื่ออุปกรณ์ *</label><input type="text" id="b_item" required placeholder="เช่น โน้ตบุ๊ก หมายเลข 1" class="input-field"></div>
-                            <div><label class="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wide">ผู้ยืม *</label><input type="text" id="b_user" required placeholder="เช่น ด.ช.สมชาย ใจดี" class="input-field"></div>
-                            <div><label class="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wide">สถานะ *</label>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wide">วันที่ทำรายการ *</label>
+                                <input type="text" id="b_date" required placeholder="เช่น 15/01/2026" class="input-field">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wide">ชื่ออุปกรณ์ *</label>
+                                <input type="text" id="b_item" required placeholder="เช่น โน้ตบุ๊ก หมายเลข 1" class="input-field">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wide">ผู้ยืม *</label>
+                                <input type="text" id="b_user" required placeholder="เช่น ด.ช.สมชาย ใจดี" class="input-field">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wide">สถานะ *</label>
                                 <select id="b_status" required class="input-field cursor-pointer">
-                                    <option value="ยืม">ยืม (ยังไม่คืน)</option><option value="คืนแล้ว">คืนแล้ว (ปกติ)</option><option value="ชำรุด">ชำรุด / สูญหาย</option>
+                                    <option value="ยืม">ยืม (ยังไม่คืน)</option>
+                                    <option value="คืนแล้ว">คืนแล้ว (ปกติ)</option>
+                                    <option value="ชำรุด">ชำรุด / สูญหาย</option>
                                 </select>
                             </div>
-                            <div class="md:col-span-2"><label class="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wide">หมายเหตุ</label><input type="text" id="b_note" placeholder="รายละเอียดเพิ่มเติม" class="input-field"></div>
+                            <div class="md:col-span-2">
+                                <label class="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wide">หมายเหตุ</label>
+                                <input type="text" id="b_note" placeholder="รายละเอียดเพิ่มเติม" class="input-field">
+                            </div>
                         </div>
-                        <button type="submit" id="btn-borrow" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-3.5 rounded-xl transition flex items-center justify-center shadow-md font-kanit text-lg"><i class="ph-bold ph-paper-plane-tilt mr-2"></i> บันทึกข้อมูล</button>
+                        <button type="submit" id="btn-borrow" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-3.5 rounded-xl transition flex items-center justify-center shadow-md font-kanit text-lg">
+                            <i class="ph-bold ph-paper-plane-tilt mr-2"></i> บันทึกข้อมูล
+                        </button>
                     </form>
                 </div>
 
                 <div id="form-electric" class="form-section">
-                    <h2 class="text-xl font-bold text-slate-800 font-kanit mb-6 border-b border-slate-100 pb-4 flex items-center gap-3"><div class="w-10 h-10 bg-blue-50 text-blue-500 rounded-xl flex items-center justify-center"><i class="ph-fill ph-plug-charging text-xl"></i></div> ข้อมูลค่าไฟฟ้า & สแกนบิล AI</h2>
+                    <h2 class="text-xl font-bold text-slate-800 font-kanit mb-6 border-b border-slate-100 pb-4 flex items-center gap-3">
+                        <div class="w-10 h-10 bg-blue-50 text-blue-500 rounded-xl flex items-center justify-center">
+                            <i class="ph-fill ph-plug-charging text-xl"></i>
+                        </div> 
+                        ข้อมูลค่าไฟฟ้า & สแกนบิล AI
+                    </h2>
                     
-                    <div class="ai-scanner-box p-8 rounded-2xl flex flex-col items-center justify-center text-center mb-8 cursor-pointer font-sarabun" onclick="document.getElementById('ai_scan_file').click()">
+                    <div class="ai-scanner-box p-8 rounded-2xl flex flex-col items-center justify-center text-center mb-8 font-sarabun" onclick="document.getElementById('ai_scan_file').click()">
                         <div class="w-14 h-14 bg-white text-emerald-500 rounded-full flex items-center justify-center mb-4 shadow-sm border border-emerald-100">
                             <i class="ph-bold ph-scan text-3xl"></i>
                         </div>
                         <h3 class="text-base font-bold text-emerald-800 mb-1">สแกนข้อมูลจากบิล กฟภ. (AI Auto-Fill)</h3>
                         <p class="text-xs text-emerald-600 mb-5 max-w-sm">อัปโหลดรูปภาพใบแจ้งค่าไฟ ระบบจะดึงข้อมูลมาเติมลงฟอร์มให้อัตโนมัติ</p>
                         <input type="file" id="ai_scan_file" accept="image/*" class="hidden" onchange="processAIBillScan(this, event)">
-                        <button type="button" class="bg-emerald-600 text-white px-6 py-2.5 rounded-full text-xs font-bold shadow-md shadow-emerald-600/30 flex items-center gap-2 pointer-events-none transition hover:scale-105">
+                        <button type="button" class="bg-emerald-600 text-white px-6 py-2.5 rounded-full text-xs font-bold shadow-md flex items-center gap-2 pointer-events-none transition">
                             <i class="ph-bold ph-upload-simple"></i> เลือกรูปบิลเพื่อสแกน
                         </button>
                         <div id="ai_scan_status" class="mt-4 hidden"></div>
@@ -393,8 +608,8 @@
 
                     <form onsubmit="submitData(event, 'Electric', ['e_date', 'e_pea_no', 'e_invoice_no', 'e_read_date', 'e_school_bill', 'e_school_unit', 'e_room_meter_prev', 'e_room_meter_curr', 'e_bill_img', 'e_note'], 'btn-electric')">
                         <input type="hidden" id="e_date" value="">
+                        
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 font-sarabun">
-                            
                             <div class="md:col-span-2">
                                 <label class="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wide">รอบบิลประจำเดือน *</label>
                                 <div class="flex gap-4">
@@ -404,9 +619,8 @@
                                         <option value="พฤษภาคม">พฤษภาคม</option><option value="มิถุนายน">มิถุนายน</option><option value="กรกฎาคม">กรกฎาคม</option><option value="สิงหาคม">สิงหาคม</option>
                                         <option value="กันยายน">กันยายน</option><option value="ตุลาคม">ตุลาคม</option><option value="พฤศจิกายน">พฤศจิกายน</option><option value="ธันวาคม">ธันวาคม</option>
                                     </select>
-                                    <!-- เปลี่ยนค.ศ.ในช่องเลือกเพื่อบันทึกลงฐานข้อมูลเป็น ค.ศ. -->
                                     <select id="e_year" class="input-field flex-1 cursor-pointer" onchange="updateEDate()">
-                                        <option value="2025">2025</option><option value="2026" selected>2026</option><option value="2027">2027</option>
+                                        <option value="2568">2568</option><option value="2569" selected>2569</option><option value="2570">2570</option>
                                     </select>
                                 </div>
                             </div>
@@ -444,7 +658,7 @@
                                 <label class="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wide">แนบหลักฐาน (PDF/รูป หรือวางลิงก์)</label>
                                 <div class="flex flex-col sm:flex-row gap-4">
                                     <input type="file" id="e_file" accept=".pdf, image/*" class="hidden" onchange="updateFileName(this)">
-                                    <button type="button" onclick="document.getElementById('e_file').click()" class="bg-white text-slate-700 hover:text-emerald-600 hover:border-emerald-300 px-5 py-3 rounded-xl border border-slate-200 transition text-sm font-bold flex items-center justify-center shadow-sm whitespace-nowrap">
+                                    <button type="button" onclick="document.getElementById('e_file').click()" class="bg-white text-slate-700 px-5 py-3 rounded-xl border border-slate-200 text-sm font-bold flex items-center justify-center shadow-sm whitespace-nowrap">
                                         <i class="ph-bold ph-upload-simple mr-2"></i> อัปโหลดไฟล์
                                     </button>
                                     <input type="url" id="e_bill_img" placeholder="หรือวางลิงก์ที่นี่..." class="input-field flex-1 text-sm">
@@ -454,14 +668,24 @@
                                     <button type="button" onclick="clearFileSelection()" class="text-slate-400 hover:text-rose-400 ml-2"><i class="ph-bold ph-x text-lg"></i></button>
                                 </div>
                             </div>
-                            <div class="md:col-span-2"><label class="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wide">หมายเหตุ</label><input type="text" id="e_note" class="input-field"></div>
+                            
+                            <div class="md:col-span-2">
+                                <label class="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wide">หมายเหตุ</label>
+                                <input type="text" id="e_note" class="input-field">
+                            </div>
                         </div>
-                        <button type="submit" id="btn-electric" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-3.5 rounded-xl transition flex items-center justify-center shadow-md font-kanit text-lg"><i class="ph-bold ph-paper-plane-tilt mr-2"></i> บันทึกข้อมูล</button>
+                        <button type="submit" id="btn-electric" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-3.5 rounded-xl transition flex items-center justify-center shadow-md font-kanit text-lg">
+                            <i class="ph-bold ph-paper-plane-tilt mr-2"></i> บันทึกข้อมูล
+                        </button>
                     </form>
                 </div>
-
                 <div id="form-activity" class="form-section">
-                    <h2 class="text-xl font-bold text-slate-800 font-kanit mb-6 border-b border-slate-100 pb-4 flex items-center gap-3"><div class="w-10 h-10 bg-purple-50 text-purple-500 rounded-xl flex items-center justify-center"><i class="ph-fill ph-image text-xl"></i></div> บันทึกข่าวกิจกรรมหน้าแรก</h2>
+                    <h2 class="text-xl font-bold text-slate-800 font-kanit mb-6 border-b border-slate-100 pb-4 flex items-center gap-3">
+                        <div class="w-10 h-10 bg-purple-50 text-purple-500 rounded-xl flex items-center justify-center">
+                            <i class="ph-fill ph-image text-xl"></i>
+                        </div> 
+                        บันทึกข่าวกิจกรรมหน้าแรก
+                    </h2>
                     <form onsubmit="submitData(event, 'Activity', ['a_date', 'a_name', 'a_detail', 'a_link'], 'btn-activity')">
                         <div class="grid grid-cols-1 gap-6 mb-8 font-sarabun">
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -471,55 +695,57 @@
                             <div><label class="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wide">ลิงก์ภาพหน้าปก *</label><input type="url" id="a_link" required placeholder="https://..." class="input-field"></div>
                             <div><label class="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wide">รายละเอียดเนื้อหาข่าว</label><textarea id="a_detail" rows="4" class="input-field resize-none rounded-xl"></textarea></div>
                         </div>
-                        <button type="submit" id="btn-activity" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-3.5 rounded-xl transition flex items-center justify-center shadow-md font-kanit text-lg"><i class="ph-bold ph-paper-plane-tilt mr-2"></i> อัปเดตข่าวสาร</button>
+                        <button type="submit" id="btn-activity" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-3.5 rounded-xl transition flex items-center justify-center shadow-md font-kanit text-lg">
+                            <i class="ph-bold ph-paper-plane-tilt mr-2"></i> อัปเดตข่าวสาร
+                        </button>
                     </form>
                 </div>
 
                 <div id="form-gallery" class="form-section">
-                    <h2 class="text-xl font-bold text-slate-800 font-kanit mb-6 border-b border-slate-100 pb-4 flex items-center gap-3"><div class="w-10 h-10 bg-pink-50 text-pink-500 rounded-xl flex items-center justify-center"><i class="ph-fill ph-folder-star text-xl"></i></div> เพิ่มอัลบั้มแกลอรีภาพ</h2>
+                    <h2 class="text-xl font-bold text-slate-800 font-kanit mb-6 border-b border-slate-100 pb-4 flex items-center gap-3">
+                        <div class="w-10 h-10 bg-pink-50 text-pink-500 rounded-xl flex items-center justify-center">
+                            <i class="ph-fill ph-folder-star text-xl"></i>
+                        </div> 
+                        เพิ่มอัลบั้มแกลอรีภาพ
+                    </h2>
                     <form onsubmit="submitData(event, 'Gallery', ['g_name', 'g_year', 'g_cover', 'g_folder', 'g_details'], 'btn-gallery')">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 font-sarabun">
                             <div class="md:col-span-2"><label class="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wide">ชื่ออัลบั้มกิจกรรม *</label><input type="text" id="g_name" required placeholder="เช่น กิจกรรมเข้าค่ายลูกเสือ" class="input-field font-bold text-slate-800 text-base"></div>
-                            
                             <div class="md:col-span-2"><label class="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wide">ปีการศึกษา *</label><input type="text" id="g_year" required placeholder="เช่น 2569" class="input-field"></div>
-                            
                             <div class="p-5 bg-slate-50 rounded-2xl border border-slate-200"><label class="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wide text-pink-600"><i class="ph-bold ph-link mr-1"></i> ลิงก์ภาพหน้าปก *</label><input type="text" id="g_cover" required placeholder="วางลิงก์ภาพจาก Google Drive..." class="input-field font-mono text-xs bg-white"></div>
                             <div class="p-5 bg-slate-50 rounded-2xl border border-slate-200"><label class="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wide text-pink-600"><i class="ph-bold ph-folder-open mr-1"></i> ลิงก์โฟลเดอร์รูป *</label><input type="text" id="g_folder" required placeholder="วางลิงก์โฟลเดอร์จาก Google Drive..." class="input-field font-mono text-xs bg-white"></div>
-                            
                             <div class="md:col-span-2 mt-2"><label class="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wide">รายละเอียดเพิ่มเติม (แสดงในหน้าดูรูป)</label><input type="text" id="g_details" placeholder="อธิบายกิจกรรมคร่าวๆ (ถ้ามี)" class="input-field"></div>
                         </div>
-                        <button type="submit" id="btn-gallery" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-3.5 rounded-xl transition flex items-center justify-center shadow-md font-kanit text-lg"><i class="ph-bold ph-folder-plus mr-2"></i> สร้างอัลบั้มใหม่</button>
+                        <button type="submit" id="btn-gallery" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-3.5 rounded-xl transition flex items-center justify-center shadow-md font-kanit text-lg">
+                            <i class="ph-bold ph-folder-plus mr-2"></i> สร้างอัลบั้มใหม่
+                        </button>
                     </form>
                 </div>
 
                 <div id="form-equipment" class="form-section">
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 border-b border-slate-100 pb-4 no-print gap-4">
-                        <h2 class="text-xl font-bold text-slate-800 font-kanit flex items-center gap-3"><div class="w-10 h-10 bg-teal-50 text-teal-500 rounded-xl flex items-center justify-center"><i class="ph-fill ph-desktop text-xl"></i></div> ทะเบียนพัสดุอุปกรณ์</h2>
+                        <h2 class="text-xl font-bold text-slate-800 font-kanit flex items-center gap-3">
+                            <div class="w-10 h-10 bg-teal-50 text-teal-500 rounded-xl flex items-center justify-center">
+                                <i class="ph-fill ph-desktop text-xl"></i>
+                            </div> 
+                            จัดการ/ค้นหาครุภัณฑ์
+                        </h2>
                         <div class="flex gap-3 w-full sm:w-auto">
                             <div class="relative w-full sm:w-64">
                                 <i class="ph-bold ph-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-lg"></i>
-                                <input type="text" id="eqSearch" placeholder="ค้นหาครุภัณฑ์..." class="input-field pl-11 py-2 shadow-sm" onkeyup="filterEqTable()">
+                                <input type="text" id="eqSearch" placeholder="พิมพ์ค้นหาครุภัณฑ์..." class="input-field pl-11 py-2 shadow-sm" onkeyup="filterEqTable()">
                             </div>
-                            <button onclick="exportAdminPDF()" class="bg-slate-800 text-white hover:bg-slate-900 px-4 py-2 rounded-xl transition flex items-center gap-2 font-bold text-sm font-kanit shadow-sm whitespace-nowrap">
-                                <i class="ph-bold ph-printer"></i> PDF
-                            </button>
                         </div>
                     </div>
-                    
-                    <div class="print-header font-sarabun mb-6 hidden">
-                        <h1 class="text-2xl font-bold text-slate-900">ทะเบียนคุมทรัพย์สินและอุปกรณ์ (Admin)</h1>
-                        <p class="text-slate-600">ศูนย์ดิจิทัลชุมชน โรงเรียนหนองโกวิชาประสิทธิ์พิทยาคม</p>
-                    </div>
-
                     <div class="border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
                         <div class="overflow-x-auto custom-scrollbar bg-white" style="-webkit-overflow-scrolling: touch;">
                             <table class="w-full text-left font-sarabun text-sm whitespace-nowrap border-collapse min-w-[800px]">
-                                <thead>
-                                    <tr class="bg-slate-50 text-slate-500 text-[11px] uppercase tracking-wider border-b border-slate-200">
+                                <thead class="bg-slate-50 text-slate-500 text-[11px] uppercase tracking-wider border-b border-slate-200">
+                                    <tr>
                                         <th class="p-4 font-bold text-center" width="15%">รหัสครุภัณฑ์</th>
                                         <th class="p-4 font-bold" width="35%">รายการพัสดุ / อุปกรณ์</th>
-                                        <th class="p-4 font-bold text-center" width="20%">สถานะ</th>
-                                        <th class="p-4 font-bold text-center" width="15%">อัปเดตล่าสุด</th>
+                                        <th class="p-4 font-bold text-center" width="20%">สถานะล่าสุด</th>
+                                        <th class="p-4 font-bold text-center" width="15%">อัปเดตเมื่อ</th>
                                         <th class="p-4 font-bold text-center no-print" width="15%">การจัดการ</th>
                                     </tr>
                                 </thead>
@@ -532,7 +758,12 @@
                 </div>
 
                 <div id="form-staff" class="form-section">
-                    <h2 class="text-xl font-bold text-slate-800 font-kanit mb-6 border-b border-slate-100 pb-4 flex items-center gap-3"><div class="w-10 h-10 bg-rose-50 text-rose-500 rounded-xl flex items-center justify-center"><i class="ph-fill ph-user-circle-gear text-xl"></i></div> บันทึกเวรปฏิบัติงานเจ้าหน้าที่</h2>
+                    <h2 class="text-xl font-bold text-slate-800 font-kanit mb-6 border-b border-slate-100 pb-4 flex items-center gap-3">
+                        <div class="w-10 h-10 bg-rose-50 text-rose-500 rounded-xl flex items-center justify-center">
+                            <i class="ph-fill ph-user-circle-gear text-xl"></i>
+                        </div> 
+                        บันทึกเวรปฏิบัติงานเจ้าหน้าที่
+                    </h2>
                     <form onsubmit="submitData(event, 'Staff', ['s_date', 's_name', 's_role', 's_status', 's_note'], 'btn-staff')">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 font-sarabun">
                             <div><label class="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wide">วันที่เข้าเวร *</label><input type="text" id="s_date" required placeholder="เช่น 15 ม.ค. 69" class="input-field"></div>
@@ -540,7 +771,9 @@
                             <div><label class="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wide">ตำแหน่ง / หน้าที่ *</label><input type="text" id="s_role" required placeholder="เช่น ผู้ดูแลระบบศูนย์" class="input-field"></div>
                             <div><label class="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wide">การเข้าปฏิบัติงาน *</label>
                                 <select id="s_status" required class="input-field cursor-pointer">
-                                    <option value="มาปฏิบัติงาน">✅ มาปฏิบัติงานตามปกติ</option><option value="ลากิจ/ลาป่วย">📝 ลากิจ / ลาป่วย</option><option value="ขาดเวร">❌ ขาดเวร</option>
+                                    <option value="มาปฏิบัติงาน">✅ มาปฏิบัติงานตามปกติ</option>
+                                    <option value="ลากิจ/ลาป่วย">📝 ลากิจ / ลาป่วย</option>
+                                    <option value="ขาดเวร">❌ ขาดเวร</option>
                                 </select>
                             </div>
                             <div class="md:col-span-2 p-5 bg-slate-50 border border-slate-200 rounded-2xl">
@@ -552,7 +785,9 @@
                                 <input type="text" id="s_note" placeholder="พิมพ์เวลา หรือระบุสาเหตุการลา" class="input-field bg-white">
                             </div>
                         </div>
-                        <button type="submit" id="btn-staff" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-3.5 rounded-xl transition flex items-center justify-center shadow-md font-kanit text-lg"><i class="ph-bold ph-paper-plane-tilt mr-2"></i> บันทึกการเข้าเวร</button>
+                        <button type="submit" id="btn-staff" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-3.5 rounded-xl transition flex items-center justify-center shadow-md font-kanit text-lg">
+                            <i class="ph-bold ph-paper-plane-tilt mr-2"></i> บันทึกการเข้าเวร
+                        </button>
                     </form>
                 </div>
 
@@ -560,19 +795,26 @@
         </div>
     </main>
 
-    <!-- Modal อัปเดตพัสดุ -->
-    <div id="eqUpdateModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 transition-opacity">
+    <!-- Modal อัปเดตพัสดุ (ออริจินัล) -->
+    <div id="eqUpdateModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 transition-opacity no-print">
         <div class="bg-white rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden transform transition-all font-sarabun border border-slate-100">
             <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-                <h3 class="font-bold text-slate-800 flex items-center gap-2 font-kanit text-lg"><div class="w-8 h-8 bg-teal-100 text-teal-600 rounded-lg flex items-center justify-center"><i class="ph-fill ph-wrench"></i></div> อัปเดตสถานะอุปกรณ์</h3>
-                <button type="button" onclick="closeEqModal()" class="text-slate-400 hover:text-rose-500 transition bg-white w-8 h-8 rounded-full flex items-center justify-center border border-slate-200"><i class="ph-bold ph-x"></i></button>
+                <h3 class="font-bold text-slate-800 flex items-center gap-2 font-kanit text-lg">
+                    <div class="w-8 h-8 bg-teal-100 text-teal-600 rounded-lg flex items-center justify-center"><i class="ph-fill ph-wrench"></i></div> 
+                    อัปเดตสถานะอุปกรณ์
+                </h3>
+                <button type="button" onclick="closeEqModal()" class="text-slate-400 hover:text-rose-500 transition bg-white w-8 h-8 rounded-full flex items-center justify-center border border-slate-200">
+                    <i class="ph-bold ph-x"></i>
+                </button>
             </div>
             <form onsubmit="submitEqUpdate(event)" class="p-6">
                 <input type="hidden" id="upd_id"><input type="hidden" id="upd_name"><input type="hidden" id="upd_brand"><input type="hidden" id="upd_model"><input type="hidden" id="upd_year"><input type="hidden" id="upd_warranty">
+                
                 <div class="mb-5 bg-slate-50 p-4 rounded-xl border border-slate-200 text-center shadow-inner">
                     <p id="disp_id" class="font-mono text-emerald-600 font-bold text-xs bg-emerald-100 inline-block px-2 py-0.5 rounded"></p>
                     <p id="disp_name" class="font-bold text-slate-800 text-base mt-2 leading-tight"></p>
                 </div>
+                
                 <div class="mb-4">
                     <label class="block text-[10px] font-bold text-slate-500 mb-1.5 uppercase tracking-wide">วันที่อัปเดต</label>
                     <input type="text" id="upd_date" readonly class="w-full rounded-xl border border-slate-200 bg-slate-100 text-slate-500 px-4 py-2.5 text-sm outline-none font-mono">
@@ -580,13 +822,16 @@
                 <div class="mb-4">
                     <label class="block text-[10px] font-bold text-slate-500 mb-1.5 uppercase tracking-wide">สถานะปัจจุบัน *</label>
                     <select id="upd_status" required class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-medium outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 shadow-sm cursor-pointer">
-                        <option value="ใช้งานได้">✅ ใช้งานได้ปกติ</option><option value="ชำรุด">❌ ชำรุด / แทงจำหน่าย</option><option value="อยู่ระหว่างดำเนินการซ่อม">⏳ ส่งซ่อม</option>
+                        <option value="ใช้งานได้">✅ ใช้งานได้ปกติ</option>
+                        <option value="ชำรุด">❌ ชำรุด / แทงจำหน่าย</option>
+                        <option value="อยู่ระหว่างดำเนินการซ่อม">⏳ ส่งซ่อม</option>
                     </select>
                 </div>
                 <div class="mb-8">
                     <label class="block text-[10px] font-bold text-slate-500 mb-1.5 uppercase tracking-wide">ระบุอาการเสีย / หมายเหตุ</label>
                     <input type="text" id="upd_note" placeholder="รายละเอียดเพิ่มเติม..." class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 shadow-sm">
                 </div>
+                
                 <div class="flex gap-3">
                     <button type="button" onclick="closeEqModal()" class="w-1/3 py-3 rounded-xl bg-white border border-slate-300 text-slate-600 font-bold hover:bg-slate-50 text-sm transition font-kanit">ยกเลิก</button>
                     <button type="submit" id="btn-update-eq" class="w-2/3 py-3 rounded-xl bg-emerald-600 text-white font-bold hover:bg-emerald-700 shadow-md shadow-emerald-600/20 transition font-kanit">บันทึกข้อมูล</button>
@@ -594,36 +839,33 @@
             </form>
         </div>
     </div>
-
+    <!-- Script ควบคุมการทำงานทั้งหมด -->
     <script>
-        // 🔒 Security & Init
-        document.addEventListener('contextmenu', event => event.preventDefault());
-        
-        // 🔴🔴🔴 นำลิงก์ฐานข้อมูลที่ Publish to Web (เป็นแบบ CSV) ของแต่ละชีตมาวางตรงนี้ 🔴🔴🔴
+        // 🔴 ลิงก์ฐานข้อมูลทั้งหมด
         const GAS_URL = "https://script.google.com/macros/s/AKfycbwnu_wHUys0gK1cv8YmPb39ziTCa_TbTFBXm-DIpIDzViFpJC0fSkHg_a_30841p_pRFQ/exec";
         const EQ_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRZZibUzzgdZ-lCiuC2r9LdaYrjHZKnbUdOYCxJLDaIF4qUmxw8LuKX1FlXr2ADxHPNknSsiWTkncqJ/pub?gid=850126798&single=true&output=csv";
+        const USAGE_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRZZibUzzgdZ-lCiuC2r9LdaYrjHZKnbUdOYCxJLDaIF4qUmxw8LuKX1FlXr2ADxHPNknSsiWTkncqJ/pub?gid=0&single=true&output=csv";    
+        const ELECTRIC_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRZZibUzzgdZ-lCiuC2r9LdaYrjHZKnbUdOYCxJLDaIF4qUmxw8LuKX1FlXr2ADxHPNknSsiWTkncqJ/pub?gid=1214972960&single=true&output=csv"; 
+        const BORROW_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRZZibUzzgdZ-lCiuC2r9LdaYrjHZKnbUdOYCxJLDaIF4qUmxw8LuKX1FlXr2ADxHPNknSsiWTkncqJ/pub?gid=559563872&single=true&output=csv";   
         
-        const USAGE_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRZZibUzzgdZ-lCiuC2r9LdaYrjHZKnbUdOYCxJLDaIF4qUmxw8LuKX1FlXr2ADxHPNknSsiWTkncqJ/pub?gid=0&single=true&output=csv";    // 👈 ใส่ลิงก์ CSV ของชีต Usage ที่นี่
-        const ELECTRIC_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRZZibUzzgdZ-lCiuC2r9LdaYrjHZKnbUdOYCxJLDaIF4qUmxw8LuKX1FlXr2ADxHPNknSsiWTkncqJ/pub?gid=1214972960&single=true&output=csv"; // 👈 ใส่ลิงก์ CSV ของชีต Electric ที่นี่
-        const BORROW_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRZZibUzzgdZ-lCiuC2r9LdaYrjHZKnbUdOYCxJLDaIF4qUmxw8LuKX1FlXr2ADxHPNknSsiWTkncqJ/pub?gid=559563872&single=true&output=csv";   // 👈 ใส่ลิงก์ CSV ของชีต Borrow ที่นี่
-        // 🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴
-        
-        // ตัวแปรเก็บข้อมูลฐานข้อมูล
         let adminEqData = []; 
         let readyToImportData = [];
         let realDB = { usage: [], electric: [], borrow: [], equipment: [] };
         
         let currentDashView = 'overview';
-        let currentTimeFilter = '6m';
         let chartsObj = {};
 
-        // === ฟังก์ชันแปลง ค.ศ. เป็น พ.ศ. สำหรับแสดงผลหน้าเว็บ ===
+        // ตัวแปรสำหรับระบบ Filter 
+        let availableMonthsList = []; 
+        let selectedMonthsList = []; 
+        let electricViewMode = 'all'; // all, school, room
+
+        // === ฟังก์ชันสำหรับแปลง ค.ศ. เป็น พ.ศ. ===
         function convertToThaiYear(text) {
-            if (!text) return text;
+            if (!text) return text; 
             text = String(text);
-            // จับตัวเลขที่ขึ้นต้นด้วย 202 และเปลี่ยนเป็น พ.ศ. (+543)
-            return text.replace(/\b(202\d)\b/g, function(match) {
-                return parseInt(match) + 543;
+            return text.replace(/\b(202\d)\b/g, function(match) { 
+                return parseInt(match) + 543; 
             });
         }
 
@@ -638,22 +880,19 @@
                 document.getElementById('password').value = '';
                 document.getElementById('errorMsg').classList.add('hidden');
 
-                // โหลดฐานข้อมูลทั้งหมดก่อนเข้าสู่ระบบ
+                let todayTh = new Date().toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' });
+                document.getElementById('printDateDisplay').innerText = `พิมพ์ ณ วันที่ ${todayTh}`;
+
                 await loadAllDatabases();
-                refreshDashboard(); // สร้างกราฟ
+                extractAllMonths(); // ดึงเดือนสำหรับระบบกรอง
+                refreshDashboard(); 
             } else {
                 const err = document.getElementById('errorMsg');
                 err.classList.remove('hidden');
                 setTimeout(() => err.classList.add('hidden'), 3000);
             }
         }
-
-        function logout() {
-            document.getElementById('adminZone').classList.add('hidden');
-            document.getElementById('loginZone').classList.remove('hidden');
-            document.getElementById('auth-guest').classList.remove('hidden');
-            document.getElementById('auth-user').classList.add('hidden');
-        }
+        function logout() { location.reload(); }
 
         // ==========================================
         // 📥 โหลดข้อมูลเข้าแดชบอร์ด
@@ -661,26 +900,132 @@
         async function loadAllDatabases() {
             showLoading('กำลังซิงค์ฐานข้อมูล...');
             try {
-                if(EQ_CSV_URL) {
-                    let res = await fetch(EQ_CSV_URL);
-                    realDB.equipment = parseCSVData(await res.text());
+                if(EQ_CSV_URL) { 
+                    let res = await fetch(EQ_CSV_URL); 
+                    realDB.equipment = parseCSVData(await res.text()); 
                     adminEqData = realDB.equipment; 
                 }
-                if(BORROW_CSV_URL) {
-                    let res = await fetch(BORROW_CSV_URL);
-                    realDB.borrow = parseCSVData(await res.text());
+                if(BORROW_CSV_URL) { 
+                    let res = await fetch(BORROW_CSV_URL); 
+                    realDB.borrow = parseCSVData(await res.text()); 
                 }
-                if(ELECTRIC_CSV_URL) {
-                    let res = await fetch(ELECTRIC_CSV_URL);
-                    realDB.electric = parseCSVData(await res.text());
+                if(ELECTRIC_CSV_URL) { 
+                    let res = await fetch(ELECTRIC_CSV_URL); 
+                    realDB.electric = parseCSVData(await res.text()); 
                 }
-                if(USAGE_CSV_URL) {
-                    let res = await fetch(USAGE_CSV_URL);
-                    realDB.usage = parseCSVData(await res.text());
+                if(USAGE_CSV_URL) { 
+                    let res = await fetch(USAGE_CSV_URL); 
+                    realDB.usage = parseCSVData(await res.text()); 
                 }
             } catch(e) { console.error("Database Load Error", e); }
             closeLoading();
             renderAdminEqTable(adminEqData);
+        }
+
+        // ------------------------------------------
+        // ระบบ Custom Time Filter (ใหม่)
+        // ------------------------------------------
+        function extractAllMonths() {
+            let tempSet = new Set();
+            realDB.usage.forEach(u => {
+                let vals = Object.values(u);
+                let rawDate = String(u['วันที่เข้าใช้บริการ'] || u['วันที่เข้าใช้'] || u['วันที่'] || vals[2] || '').replace(/'/g, '').trim();
+                let ym = extractYearMonthFromRaw(rawDate);
+                if(ym) tempSet.add(ym);
+            });
+            availableMonthsList = Array.from(tempSet).sort();
+            
+            if(availableMonthsList.length > 0) {
+                document.getElementById('dateEnd').value = availableMonthsList[availableMonthsList.length - 1];
+                let startIndex = Math.max(0, availableMonthsList.length - 6);
+                document.getElementById('dateStart').value = availableMonthsList[startIndex];
+            } else {
+                let d = new Date();
+                document.getElementById('dateEnd').value = d.toISOString().slice(0, 7);
+                d.setMonth(d.getMonth() - 5);
+                document.getElementById('dateStart').value = d.toISOString().slice(0, 7);
+            }
+            buildMonthSelectorUI();
+        }
+
+        function extractYearMonthFromRaw(rawDate) {
+            if(!rawDate) return null;
+            let parts = rawDate.includes('/') ? rawDate.split(' ')[0].split('/') : rawDate.split(' ')[0].split('-');
+            if(parts.length >= 3) {
+                let m = parts[1].padStart(2, '0');
+                let y = parts[2].length === 4 ? parts[2] : (parts[0].length === 4 ? parts[0] : parts[2]); 
+                return `${y}-${m}`; 
+            }
+            return null;
+        }
+
+        function getMonthsBetween(start, end) {
+            let dates = []; 
+            let currDate = new Date(start + "-01"); 
+            let endDate = new Date(end + "-01");
+            while (currDate <= endDate) {
+                dates.push(currDate.getFullYear() + "-" + String(currDate.getMonth() + 1).padStart(2, '0'));
+                currDate.setMonth(currDate.getMonth() + 1);
+            }
+            return dates;
+        }
+
+        function formatMonthYearLabel(ymStr) {
+            let mNames = ["", "ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
+            let parts = ymStr.split('-'); 
+            if(parts.length !== 2) return ymStr;
+            let y = parseInt(parts[0]); 
+            let m = parseInt(parts[1]);
+            let showYear = y > 2500 ? y : y + 543; 
+            return `${mNames[m]} ${String(showYear).slice(-2)}`;
+        }
+
+        function buildMonthSelectorUI() {
+            const container = document.getElementById('monthSelector');
+            let html = `<div class="col-span-3 pb-2 mb-2 border-b border-slate-100 flex justify-between items-center">
+                <span class="font-bold text-slate-700">เลือกเดือนที่จะแสดงผล</span>
+                <div>
+                    <button onclick="selectAllMonths(true)" class="text-[10px] bg-slate-100 px-2 py-1 rounded font-bold text-slate-600 hover:bg-slate-200">เลือกทั้งหมด</button>
+                    <button onclick="selectAllMonths(false)" class="text-[10px] bg-slate-100 px-2 py-1 rounded font-bold text-slate-600 hover:bg-slate-200 ml-1">ล้าง</button>
+                </div>
+            </div>
+            <div class="month-grid">`;
+            
+            const monthNames = ["", "ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
+            
+            let currentRange = getMonthsBetween(document.getElementById('dateStart').value, document.getElementById('dateEnd').value);
+            selectedMonthsList = currentRange;
+
+            availableMonthsList.forEach(ym => {
+                let [y, m] = ym.split('-');
+                let isChecked = selectedMonthsList.includes(ym) ? 'checked' : '';
+                let label = `${monthNames[parseInt(m)]} ${y}`; 
+                html += `<label class="flex items-center space-x-2 cursor-pointer hover:bg-slate-50 p-1.5 rounded">
+                    <input type="checkbox" class="month-cb rounded border-slate-300 text-emerald-600 focus:ring-emerald-500" value="${ym}" ${isChecked} onchange="updateSelectedMonths()">
+                    <span class="text-xs text-slate-700 font-medium whitespace-nowrap">${label}</span>
+                </label>`;
+            });
+            html += `</div>
+            <div class="col-span-3 mt-3 pt-3 border-t border-slate-100">
+                <button onclick="applyMonthFilter()" class="w-full bg-emerald-600 text-white font-bold py-2.5 rounded-lg text-xs hover:bg-emerald-700 shadow-sm transition">อัปเดตกราฟทั้งหมด</button>
+            </div>`;
+            container.innerHTML = html;
+        }
+
+        function toggleMonthSelector() { 
+            document.getElementById('monthSelector').classList.toggle('show'); 
+            buildMonthSelectorUI(); 
+        }
+        function selectAllMonths(isSelect) { 
+            document.querySelectorAll('.month-cb').forEach(cb => cb.checked = isSelect); 
+            updateSelectedMonths(); 
+        }
+        function updateSelectedMonths() { 
+            selectedMonthsList = Array.from(document.querySelectorAll('.month-cb:checked')).map(cb => cb.value).sort(); 
+        }
+        function applyMonthFilter() { 
+            document.getElementById('monthSelector').classList.remove('show'); 
+            refreshDashboard(true); 
         }
 
         // 🗂️ Tabs System
@@ -689,15 +1034,13 @@
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
             document.getElementById('form-' + tabId).classList.add('active');
             btnElement.classList.add('active');
-
             if (tabId === 'electric') updateEDate(); 
             if (tabId === 'dashboard') refreshDashboard();
         }
 
         // ==========================================
-        // 📊 DASHBOARD SYSTEMS (ดึงจากฐานข้อมูลจริง)
+        // 📊 DASHBOARD SYSTEMS
         // ==========================================
-        
         function switchDashboardView(viewId, btnElement) {
             currentDashView = viewId;
             document.querySelectorAll('.dash-view').forEach(el => el.classList.remove('active'));
@@ -707,223 +1050,316 @@
             refreshDashboard();
         }
 
-        function updateTimeFilter(timeVal, btnElement) {
-            currentTimeFilter = timeVal;
-            document.querySelectorAll('.time-filter-btn').forEach(btn => btn.classList.remove('active'));
-            btnElement.classList.add('active');
-            
-            let labelText = btnElement.innerText;
-            document.querySelectorAll('.filter-label').forEach(el => el.innerText = labelText);
+        function toggleElectricChart(mode, btnElement) {
+            electricViewMode = mode;
+            document.querySelectorAll('#dash-view-electric .toggle-btn').forEach(btn => btn.classList.remove('active', 'bg-slate-800', 'text-white'));
+            btnElement.classList.add('active', 'bg-slate-800', 'text-white');
             refreshDashboard();
         }
 
-        // ประมวลผลและสร้างกราฟ
-        function refreshDashboard() {
-            let monthsLimit = 6;
-            if(currentTimeFilter === '1m') monthsLimit = 1;
-            if(currentTimeFilter === '3m') monthsLimit = 3;
-            if(currentTimeFilter === '6m') monthsLimit = 6;
-            if(currentTimeFilter === '1y') monthsLimit = 12;
-            if(currentTimeFilter === 'all') monthsLimit = 999;
+        function refreshDashboard(fromCheckbox = false) {
+            if(!fromCheckbox) {
+                let startV = document.getElementById('dateStart').value;
+                let endV = document.getElementById('dateEnd').value;
+                if(startV > endV) { showError("เดือนเริ่มต้นต้องน้อยกว่าหรือเท่ากับเดือนสิ้นสุด"); return; }
+                selectedMonthsList = getMonthsBetween(startV, endV);
+            }
 
-            // ---------------------------------
-            // 1. ประมวลผล Equipment 
-            // ---------------------------------
-            let normalEq=0, repairEq=0, brokenEq=0;
+            if(selectedMonthsList.length === 0) { showError("กรุณาเลือกอย่างน้อย 1 เดือน"); return; }
+
+            let lbl = `${formatMonthYearLabel(selectedMonthsList[0])} ถึง ${formatMonthYearLabel(selectedMonthsList[selectedMonthsList.length-1])}`;
+            if(selectedMonthsList.length === 1) lbl = formatMonthYearLabel(selectedMonthsList[0]);
+            
+            let rl = document.getElementById('dashRangeLabel'); 
+            rl.innerText = "กำลังแสดงข้อมูล: " + lbl; 
+            rl.classList.remove('hidden');
+
+            const mNames = ["", "ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
+
+            // --- 1. EQUIPMENT ---
+            let normalEq=0, repairEq=0, brokenEq=0; let eqTableHTML = '';
             if(realDB.equipment.length > 0) {
                 realDB.equipment.forEach(e => {
                     let vals = Object.values(e);
+                    let id = vals[0]||'-'; let name = vals[1]||'-'; let cat = vals[2]||'-'; let yr = vals[5]||'-';
                     let s = String(e['สถานะปัจจุบัน'] || e['สถานะ'] || vals[6] || '').trim();
-                    let w = String(e['สถานะการรับประกัน'] || e['หมายเหตุ'] || vals[7] || '').trim();
-                    
+                    let w = String(e['สถานะการรับประกัน'] || vals[7] || '').trim();
+                    let d = vals[8]||'-'; let note = vals[9]||'-';
                     if ((s.includes('ปี') || s.includes('ไม่มี')) && (w.includes('ใช้งาน') || w.includes('ชำรุด'))) s = w;
                     
-                    if (s.includes('ใช้งานได้') || s === 'ปกติ' || s === 'ใช้งานปกติ') normalEq++;
-                    else if (s.includes('ซ่อม')) repairEq++;
-                    else if (s.includes('ชำรุด') || s.includes('เสีย') || s.includes('แทงจำหน่าย') || s.includes('สูญหาย')) brokenEq++;
-                });
-            } else { normalEq=45; repairEq=3; brokenEq=2; }
-
-            // ---------------------------------
-            // 2. ประมวลผล Borrow 
-            // ---------------------------------
-            let borrowedCount = 0; let borrowListHTML = '';
-            if(realDB.borrow.length > 0) {
-                let borrowing = realDB.borrow.filter(b => {
-                    let vals = Object.values(b);
-                    let st = String(b['สถานะ'] || vals[3] || '').trim();
-                    return st.includes('ยืม');
-                });
-                borrowedCount = borrowing.length; 
-                
-                let recent = [...realDB.borrow].reverse();
-                if (recent.length > 20) recent = recent.slice(0, 20);
-
-                recent.forEach(b => {
-                    let vals = Object.values(b);
-                    // ดึงวันที่และใช้ฟังก์ชัน convertToThaiYear แปลง ค.ศ. -> พ.ศ.
-                    let rawDate = String(b['วันที่'] || b['วันที่ทำรายการ'] || vals[0] || '-').replace(/'/g, '').trim();
-                    let d = convertToThaiYear(rawDate);
+                    let stBadge = '', icon = '';
+                    if (s.includes('ใช้งานได้') || s.includes('ปกติ') || s.includes('ใช้งานปกติ')) { 
+                        normalEq++; 
+                        stBadge = `<span class="bg-emerald-100 text-emerald-700 px-2 py-1 rounded-lg border border-emerald-200 text-[10px] font-bold shadow-sm whitespace-nowrap"><i class="ph-fill ph-check-circle mr-1"></i> ใช้งานได้ปกติ</span>`; 
+                    }
+                    else if (s.includes('ซ่อม')) { 
+                        repairEq++; 
+                        stBadge = `<span class="bg-amber-100 text-amber-700 px-2 py-1 rounded-lg border border-amber-200 text-[10px] font-bold shadow-sm whitespace-nowrap"><i class="ph-fill ph-wrench mr-1"></i> ส่งซ่อม</span>`; 
+                    }
+                    else { 
+                        brokenEq++; 
+                        stBadge = `<span class="bg-rose-100 text-rose-700 px-2 py-1 rounded-lg border border-rose-200 text-[10px] font-bold shadow-sm whitespace-nowrap"><i class="ph-fill ph-x-circle mr-1"></i> ชำรุด/จำหน่าย</span>`; 
+                    }
                     
-                    let item = String(b['ชื่ออุปกรณ์'] || vals[1] || '-').trim();
-                    let user = String(b['ผู้ยืม'] || vals[2] || '-').trim();
-                    let status = String(b['สถานะ'] || vals[3] || '').trim();
-                    
-                    let stBadge = status.includes('ยืม') ? `<span class="bg-amber-100 text-amber-700 px-2 py-1 rounded text-[10px] font-bold">กำลังยืม</span>` : 
-                                  (status.includes('คืน') ? `<span class="bg-emerald-100 text-emerald-700 px-2 py-1 rounded text-[10px] font-bold">คืนแล้ว</span>` : 
-                                  `<span class="bg-rose-100 text-rose-700 px-2 py-1 rounded text-[10px] font-bold">${status}</span>`);
-
-                    borrowListHTML += `<tr class="hover:bg-slate-50 border-b border-slate-100"><td class="p-4 text-xs">${d}</td><td class="p-4 font-bold text-slate-800">${item}</td><td class="p-4 text-slate-600">${user}</td><td class="p-4 text-center">${stBadge}</td></tr>`;
+                    eqTableHTML += `<tr class="hover:bg-slate-50 border-b border-slate-100">
+                        <td class="p-3 font-mono text-[11px] text-slate-500 text-center border-r border-slate-100">${id}</td>
+                        <td class="p-3"><div class="font-bold text-slate-800">${name}</div><div class="text-[10px] text-slate-400 mt-0.5"><i class="ph-bold ph-tag"></i> ${cat}</div></td>
+                        <td class="p-3 text-center text-xs text-slate-600">${yr}</td><td class="p-3 text-center">${stBadge}</td>
+                        <td class="p-3 text-center text-[10px] font-bold text-indigo-600 bg-indigo-50/30"><i class="ph-bold ph-calendar-check mr-1 text-indigo-400"></i> ${d}</td>
+                        <td class="p-3 text-xs text-slate-500 truncate max-w-[150px]" title="${note}">${note}</td>
+                    </tr>`;
                 });
             } else { 
-                borrowListHTML = `<tr><td colspan="4" class="text-center py-8 text-rose-500 font-bold text-xs"><i class="ph-bold ph-warning-circle"></i> โปรดระบุลิงก์ Borrow CSV ในโค้ดเพื่อดูข้อมูลจริง</td></tr>`;
+                eqTableHTML = `<tr><td colspan="6" class="text-center py-8 text-slate-400">ยังไม่มีข้อมูลครุภัณฑ์</td></tr>`; 
             }
-            if(!borrowListHTML) borrowListHTML = `<tr><td colspan="4" class="text-center py-8 text-slate-400">ไม่มีประวัติการทำรายการ</td></tr>`;
 
-            // ---------------------------------
-            // 3. ประมวลผล Electric 
-            // ---------------------------------
-            let eLabels = [], eRoomUnits = [], eRoomCosts = [], eRates = [], totalRoomPowerCost = 0;
-            if(realDB.electric.length > 0) {
-                let list = realDB.electric;
-                if(list.length > monthsLimit) list = list.slice(-monthsLimit);
+            // --- 2. BORROW ---
+            let borrowedCount = 0; let borrowListHTML = '';
+            let bStatus = { 'ยืม': 0, 'คืนแล้ว': 0, 'ชำรุด': 0 };
+
+            if(realDB.borrow.length > 0) {
+                let borrowing = realDB.borrow.filter(b => String(b['สถานะ'] || Object.values(b)[3] || '').trim().includes('ยืม'));
+                borrowedCount = borrowing.length; 
                 
-                list.forEach(e => {
-                    let vals = Object.values(e);
-                    let monthStr = String(e['ประจำเดือน'] || vals[0] || '-').replace(/'/g, '').trim();
-                    // แปลง ค.ศ. เป็น พ.ศ.
-                    monthStr = convertToThaiYear(monthStr);
-                    eLabels.push(monthStr);
+                let filteredBorrow = realDB.borrow.filter(b => {
+                    let dStr = String(b['วันที่'] || b['วันที่ทำรายการ'] || Object.values(b)[0] || '').replace(/'/g, '').trim();
+                    if(!dStr) return false;
+                    let parts = dStr.includes('/') ? dStr.split('/') : dStr.split('-');
+                    let m='', y='';
+                    if(parts.length >= 3) {
+                        if(parts[0].length === 4) { y = parts[0]; m = parts[1].padStart(2, '0'); } 
+                        else { m = parts[1].padStart(2, '0'); y = parts[2]; if(parseInt(y)<2500) y = parseInt(y)+543; } 
+                        let bYM = `${parseInt(y)-543}-${m}`; 
+                        return selectedMonthsList.includes(bYM);
+                    }
+                    return false;
+                }).reverse();
+
+                filteredBorrow.forEach(b => {
+                    let vals = Object.values(b);
+                    let rawDate = String(vals[0] || '-').replace(/'/g, '').trim();
+                    let d = convertToThaiYear(rawDate);
+                    let item = String(vals[1] || '-').trim(); 
+                    let user = String(vals[2] || '-').trim(); 
+                    let status = String(vals[3] || '').trim();
                     
-                    let roomPrev = parseFloat(e['เลขมิเตอร์ก่อนหน้า'] || vals[6] || 0);
-                    let roomCurr = parseFloat(e['เลขมิเตอร์หลังจด'] || vals[7] || 0);
-                    let rUnit = roomCurr > roomPrev ? (roomCurr - roomPrev) : 0;
+                    if(status.includes('ยืม')) bStatus['ยืม']++;
+                    else if(status.includes('คืน')) bStatus['คืนแล้ว']++;
+                    else bStatus['ชำรุด']++;
+
+                    let stBadge = status.includes('ยืม') ? `<span class="bg-amber-100 text-amber-700 px-2 py-1 rounded font-bold text-[10px]">กำลังยืม</span>` : 
+                                  (status.includes('คืน') ? `<span class="bg-emerald-100 text-emerald-700 px-2 py-1 rounded font-bold text-[10px]">คืนแล้ว</span>` : 
+                                  `<span class="bg-rose-100 text-rose-700 px-2 py-1 rounded font-bold text-[10px]">${status}</span>`);
+                    borrowListHTML += `<tr class="hover:bg-slate-50 border-b border-slate-100"><td class="p-4 text-xs font-mono">${d}</td><td class="p-4 font-bold text-slate-800">${item}</td><td class="p-4">${user}</td><td class="p-4 text-center">${stBadge}</td></tr>`;
+                });
+            }
+            if(!borrowListHTML) borrowListHTML = `<tr><td colspan="4" class="text-center py-8 text-slate-400">ไม่มีประวัติการทำรายการในช่วงเวลานี้</td></tr>`;
+
+            // --- 3. ELECTRIC ---
+            let eLabels = [], schUnits=[], schCosts=[], roomUnits=[], roomCosts=[], roomRates=[];
+            let totalRoomPowerCost = 0; let elecTableHTML = '';
+            
+            selectedMonthsList.forEach(ym => {
+                let y = parseInt(ym.split('-')[0]); 
+                let m = parseInt(ym.split('-')[1]);
+                let searchThaiMonth = mNames[m]; 
+                let searchThaiYear = y + 543;
+                
+                let foundE = realDB.electric.find(e => {
+                    let vals = Object.values(e); 
+                    let mStr = String(vals[0] || '').trim(); 
+                    return mStr.includes(searchThaiMonth) && (mStr.includes(y.toString()) || mStr.includes(searchThaiYear.toString()));
+                });
+
+                eLabels.push(formatMonthYearLabel(ym));
+                
+                if(foundE) {
+                    let vals = Object.values(foundE);
+                    let sUnit = parseFloat(vals[5] || 0); 
+                    let sCost = parseFloat(vals[4] || 0);
+                    let prevG = parseFloat(vals[6] || 0); 
+                    let currH = parseFloat(vals[7] || 0);
+                    let rUnit = currH > prevG ? (currH - prevG) : 0;
                     
-                    let rCost = 0;
+                    let rCost = 0; 
                     if(rUnit > 0) {
                         let base = 0;
                         if(rUnit <= 150) base = rUnit * 3.2484;
                         else if(rUnit <= 400) base = (150 * 3.2484) + ((rUnit - 150) * 4.2218);
                         else base = (150 * 3.2484) + (250 * 4.2218) + ((rUnit - 400) * 4.4217);
-                        
-                        let service = 38.22;
-                        let ft = rUnit * 0.3972; 
-                        rCost = (base + service + ft) * 1.07; 
+                        rCost = (base + 38.22 + (rUnit * 0.3972)) * 1.07; 
                     }
-
-                    eRoomUnits.push(rUnit); 
-                    eRoomCosts.push(rCost); 
-                    eRates.push(rUnit > 0 ? (rCost/rUnit).toFixed(2) : 0);
-                    totalRoomPowerCost += rCost;
-                });
-            } else {
-                eLabels = ['ก.ค.', 'ส.ค.', 'ก.ย.']; eRoomUnits = [120, 150, 140]; eRoomCosts = [560, 710, 650]; eRates = [4.6, 4.7, 4.6]; totalRoomPowerCost = 1920;
-            }
-
-            // ---------------------------------
-            // 4. ประมวลผล Usage 
-            // ---------------------------------
-            let uLabels = [], uCounts = [], totalUsers = 0, uPie = [0,0,0]; 
-            
-            if(realDB.usage.length > 0) {
-                let monthlyData = {};
-                
-                realDB.usage.forEach(u => {
-                    let vals = Object.values(u);
-                    let dateStr = String(u['วันที่เข้าใช้บริการ'] || u['วันที่เข้าใช้'] || u['วันที่'] || vals[2] || '').replace(/'/g, '').trim();
-                    let count = parseInt(u['จำนวนผู้เข้าใช้งาน'] || u['จำนวน'] || u['จำนวนคน'] || vals[20] || 1) || 1;
-                    let userType = String(u['ประเภทผู้ใช้งาน'] || u['ประเภทผู้รับบริการ'] || u['ประเภท'] || vals[4] || vals[5] || 'ประชาชนทั่วไป');
                     
-                    if (userType.includes('นักเรียน') || userType.includes('เด็ก')) uPie[0] += count;
-                    else if (userType.includes('ครู') || userType.includes('บุคลากร')) uPie[2] += count;
-                    else uPie[1] += count;
+                    schUnits.push(sUnit); schCosts.push(sCost); roomUnits.push(rUnit); roomCosts.push(rCost); 
+                    let avgR = rUnit > 0 ? (rCost/rUnit).toFixed(2) : 0;
+                    roomRates.push(avgR); totalRoomPowerCost += rCost;
+                    
+                    elecTableHTML += `<tr class="hover:bg-slate-50 border-b border-slate-100">
+                        <td class="p-3 font-bold border-r border-slate-200">${formatMonthYearLabel(ym)}</td>
+                        <td class="p-3 text-right bg-blue-50/20">${sUnit.toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
+                        <td class="p-3 text-right text-blue-600 font-bold bg-blue-50/20 border-r border-slate-200">${sCost.toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
+                        <td class="p-3 text-right bg-amber-50/20">${rUnit.toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
+                        <td class="p-3 text-right text-amber-600 font-bold bg-amber-50/20 border-r border-slate-200">${rCost.toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
+                        <td class="p-3 text-center text-slate-500 text-xs font-bold">${avgR}</td>
+                    </tr>`;
+                } else {
+                    schUnits.push(0); schCosts.push(0); roomUnits.push(0); roomCosts.push(0); roomRates.push(0);
+                    elecTableHTML += `<tr class="hover:bg-slate-50 border-b border-slate-100 text-slate-400"><td class="p-3 border-r border-slate-200">${formatMonthYearLabel(ym)}</td><td colspan="5" class="p-3 text-center text-xs">ไม่มีข้อมูล</td></tr>`;
+                }
+            });
 
-                    if(dateStr) {
-                        let parts = dateStr.includes('/') ? dateStr.split('/') : dateStr.split('-');
-                        let m = '', y = '';
-                        if(parts.length >= 3) {
-                            if(parts[0].length === 4) { y = parts[0].substring(2,4); m = parts[1].padStart(2, '0'); } 
-                            else { m = parts[1].padStart(2, '0'); y = parts[2].substring(2,4); } 
-                            
-                            let monthKey = `${y}-${m}`; 
-                            if(!monthlyData[monthKey]) monthlyData[monthKey] = 0;
-                            monthlyData[monthKey] += count;
-                        }
-                    }
-                });
-
-                let sortedKeys = Object.keys(monthlyData).sort();
-                let limitedKeys = sortedKeys;
-                if(sortedKeys.length > monthsLimit) limitedKeys = sortedKeys.slice(-monthsLimit);
-                
-                limitedKeys.forEach(k => {
-                    let mNames = ["", "ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
-                    let parts = k.split('-');
-                    let y = parts[0]; let m = parseInt(parts[1]);
-                    // แปลง ค.ศ. 26 เป็น พ.ศ. 69
-                    let showYear = parseInt(y) + 43; 
-                    if(y.length === 4) showYear = convertToThaiYear(y);
-
-                    uLabels.push(`${mNames[m]} ${showYear}`);
-                    uCounts.push(monthlyData[k]);
-                    totalUsers += monthlyData[k]; 
-                });
-            } else {
-                uLabels = ['ก.ค. 69', 'ส.ค. 69', 'ก.ย. 69']; uCounts = [120, 350, 410]; totalUsers = 880; uPie = [500, 280, 100];
-            }
-
-            // === อัปเดตหน้าจอ ===
+            // --- 4. USAGE ---
+            let uLabels = []; let mCounts = []; let fCounts = []; let totalUsers = 0; let pieType = [0,0,0];
+            let prevTotalUsers = 0; 
             
+            let monthsCount = selectedMonthsList.length;
+            let dPrevStart = new Date(selectedMonthsList[0] + "-01"); 
+            dPrevStart.setMonth(dPrevStart.getMonth() - monthsCount);
+            let dPrevEnd = new Date(selectedMonthsList[selectedMonthsList.length-1] + "-01"); 
+            dPrevEnd.setMonth(dPrevEnd.getMonth() - monthsCount);
+            let prevSelectedDates = getMonthsBetween(dPrevStart.toISOString().slice(0, 7), dPrevEnd.toISOString().slice(0, 7));
+
+            selectedMonthsList.forEach(ym => {
+                uLabels.push(formatMonthYearLabel(ym));
+                let mDay=0, fDay=0;
+                
+                if(realDB.usage.length > 0) {
+                    realDB.usage.forEach(u => {
+                        let vals = Object.values(u);
+                        let dateStr = String(vals[2] || '').replace(/'/g, '').trim(); 
+                        let count = parseInt(vals[20] || 1) || 1;
+                        
+                        let rowStringMatch = JSON.stringify(vals).toLowerCase();
+                        let isMale = rowStringMatch.includes('ชาย') || rowStringMatch.includes('ด.ช.') || rowStringMatch.includes('นาย');
+                        let isFemale = rowStringMatch.includes('หญิง') || rowStringMatch.includes('ด.ญ.') || rowStringMatch.includes('นาง') || rowStringMatch.includes('น.ส.');
+                        
+                        let userType = String(vals[4] || '').trim() + " " + String(vals[5] || '').trim(); 
+                        
+                        if(dateStr) {
+                            let parts = dateStr.includes('/') ? dateStr.split('/') : dateStr.split('-');
+                            let m = '', y = '';
+                            if(parts.length >= 3) {
+                                if(parts[0].length === 4) { y = parts[0]; m = parts[1].padStart(2, '0'); } 
+                                else { m = parts[1].padStart(2, '0'); y = parts[2]; if(parseInt(y)>2500) y = parseInt(y)-543; } 
+                                
+                                let uYM = `${y}-${m}`;
+                                if(uYM === ym) {
+                                    if(isFemale && !isMale) fDay += count;
+                                    else if(isMale && !isFemale) mDay += count;
+                                    else mDay += count; 
+                                    
+                                    if (userType.includes('นักเรียน')) pieType[0] += count;
+                                    else if (userType.includes('ครู') || userType.includes('บุคลากร')) pieType[2] += count;
+                                    else pieType[1] += count;
+                                    totalUsers += count;
+                                }
+                                if(prevSelectedDates.includes(uYM)) { prevTotalUsers += count; }
+                            }
+                        }
+                    });
+                }
+                mCounts.push(mDay); fCounts.push(fDay);
+            });
+
+            document.getElementById('usg-total').innerText = totalUsers.toLocaleString() + ' คน';
+            let avgDays = selectedMonthsList.length * 30; 
+            document.getElementById('usg-avg').innerText = (totalUsers / avgDays).toFixed(1) + ' คน/วัน';
+            
+            let diffEl = document.getElementById('usg-diff');
+            let diff = totalUsers - prevTotalUsers;
+            if(diff > 0) { diffEl.innerHTML = `<span class="text-emerald-600"><i class="fas fa-arrow-up"></i> เพิ่มขึ้น ${diff.toLocaleString()} คน</span>`; }
+            else if (diff < 0) { diffEl.innerHTML = `<span class="text-rose-600"><i class="fas fa-arrow-down"></i> ลดลง ${Math.abs(diff).toLocaleString()} คน</span>`; }
+            else { diffEl.innerHTML = `<span class="text-slate-500">เท่าเดิม</span>`; }
+
+            // === 🎨 RENDER CHARTS ===
             if (currentDashView === 'overview') {
                 animateValue('ov-users', totalUsers, 'คน');
                 animateValue('ov-borrow', borrowedCount, 'ชิ้น');
                 animateValue('ov-power', totalRoomPowerCost, 'บาท');
                 animateValue('ov-broken', repairEq + brokenEq, 'รายการ');
                 
-                renderChart('chartOverviewLine', 'line', uLabels, [{ label: 'จำนวนผู้ใช้งาน', data: uCounts, borderColor: '#6366f1', backgroundColor: 'rgba(99, 102, 241, 0.1)', fill: true, tension: 0.4 }]);
-                renderChart('chartOverviewPower', 'bar', eLabels, [{ label: 'ค่าไฟฟ้าห้องศูนย์ฯ (บาท)', data: eRoomCosts, backgroundColor: '#3b82f6', borderRadius: 6 }]);
+                let tCounts = mCounts.map((num, idx) => num + fCounts[idx]);
+                renderChart('chartOverviewLine', 'line', uLabels, [{ label: 'จำนวนผู้ใช้งานรวม', data: tCounts, borderColor: '#6366f1', backgroundColor: 'rgba(99, 102, 241, 0.1)', fill: true, tension: 0.4 }]);
+                renderChart('chartOverviewPower', 'bar', eLabels, [{ label: 'ค่าไฟห้องศูนย์ฯ (บาท)', data: roomCosts, backgroundColor: '#3b82f6', borderRadius: 6 }]);
             }
             else if (currentDashView === 'usage') {
-                renderChart('chartUsageBar', 'bar', uLabels, [{ label: 'ผู้ใช้สะสมรายเดือน', data: uCounts, backgroundColor: '#10b981', borderRadius: 6 }]);
-                renderChart('chartUsagePie', 'doughnut', ['นักเรียน', 'ประชาชนทั่วไป', 'ครู/บุคลากร'], [{ data: uPie, backgroundColor: ['#10b981', '#f59e0b', '#3b82f6'], borderWidth: 0 }], true);
+                renderChart('chartUsageLine', 'line', uLabels, [
+                    { label: 'ผู้เข้าใช้ชาย', data: mCounts, borderColor: '#3b82f6', backgroundColor: '#3b82f6', tension: 0.3 },
+                    { label: 'ผู้เข้าใช้หญิง', data: fCounts, borderColor: '#ec4899', backgroundColor: '#ec4899', tension: 0.3 }
+                ]);
+                renderChart('chartUsagePie', 'doughnut', ['นักเรียน', 'ประชาชนทั่วไป', 'ครู/บุคลากร'], [{ data: pieType, backgroundColor: ['#10b981', '#f59e0b', '#3b82f6'], borderWidth: 0 }], true);
             }
             else if (currentDashView === 'electric') {
-                renderChart('chartElecUnit', 'line', eLabels, [{ label: 'หน่วยไฟฟ้าศูนย์ฯ (Unit)', data: eRoomUnits, borderColor: '#f59e0b', backgroundColor: 'rgba(245, 158, 11, 0.1)', fill: true, tension: 0.4 }]);
-                renderChart('chartElecCost', 'line', eLabels, [{ label: 'ค่าไฟฟ้า (บาท/ตามเรต 15A)', data: eRoomCosts, borderColor: '#3b82f6', backgroundColor: 'transparent', tension: 0.1, borderDash: [5, 5] }]);
+                document.getElementById('dashElectricTable').innerHTML = elecTableHTML;
+                
+                let datasets = [];
+                if(elecMode === 'all') {
+                    datasets = [
+                        { label: 'ค่าไฟโรงเรียน (บาท)', data: schCosts, borderColor: '#94a3b8', backgroundColor: 'transparent', borderDash: [5, 5], tension: 0.2 },
+                        { label: 'ค่าไฟห้องศูนย์ฯ (บาท)', data: roomCosts, borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.1)', fill: true, tension: 0.3 }
+                    ];
+                } else if(elecMode === 'school') {
+                    datasets = [{ label: 'ค่าไฟโรงเรียนรวม (บาท)', data: schCosts, borderColor: '#0f172a', backgroundColor: 'rgba(15, 23, 42, 0.1)', fill: true, tension: 0.3 }];
+                } else {
+                    datasets = [{ label: 'ค่าไฟห้องศูนย์ฯ (บาท)', data: roomCosts, borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.1)', fill: true, tension: 0.3 }];
+                }
+                renderChart('chartElectricMain', 'line', eLabels, datasets);
             }
             else if (currentDashView === 'equipment') {
-                renderChart('chartEqStatus', 'pie', ['ใช้งานได้ปกติ', 'ส่งซ่อม/ชำรุด'], [{ data: [normalEq, repairEq+brokenEq], backgroundColor: ['#10b981', '#f43f5e'], borderWidth: 0 }], true);
+                document.getElementById('eqTotalCount').innerText = `ทั้งหมด ${realDB.equipment.length} รายการ`;
+                document.getElementById('dashEqTable').innerHTML = eqTableHTML;
+                renderChart('chartEqStatus', 'pie', ['ใช้งานได้ปกติ', 'ส่งซ่อม', 'ชำรุด/จำหน่าย'], [{ data: [normalEq, repairEq, brokenEq], backgroundColor: ['#10b981', '#f59e0b', '#f43f5e'], borderWidth: 0 }], true);
+            }
+            else if (currentDashView === 'borrow') {
                 document.getElementById('dashBorrowTable').innerHTML = borrowListHTML;
+                renderChart('chartBorrowPie', 'doughnut', Object.keys(bStatus), [{ data: Object.values(bStatus), backgroundColor: ['#f59e0b', '#10b981', '#f43f5e'], borderWidth: 0 }], true);
             }
         }
 
         function renderChart(canvasId, type, labels, datasets, isPie = false) {
-            const ctx = document.getElementById(canvasId);
+            const ctx = document.getElementById(canvasId); 
             if (!ctx) return;
             if (chartsObj[canvasId]) chartsObj[canvasId].destroy();
-            let options = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: isPie, position: 'bottom', labels: { usePointStyle: true, font: { family: 'Prompt' } } } } };
-            if (!isPie) { options.scales = { y: { beginAtZero: true, grid: { borderDash: [5, 5], color: '#f1f5f9' } }, x: { grid: { display: false } } }; } 
-            else { options.cutout = type === 'doughnut' ? '70%' : '0%'; }
-            chartsObj[canvasId] = new Chart(ctx.getContext('2d'), { type: type, data: { labels: labels, datasets: datasets }, options: options });
+            
+            let options = { 
+                responsive: true, 
+                maintainAspectRatio: false, 
+                plugins: { 
+                    legend: { 
+                        display: true, 
+                        position: 'bottom', 
+                        labels: { usePointStyle: true, font: { family: 'Prompt' } } 
+                    } 
+                } 
+            };
+            if (!isPie) { 
+                options.scales = { 
+                    y: { beginAtZero: true, grid: { borderDash: [5, 5], color: '#f1f5f9' } }, 
+                    x: { grid: { display: false } } 
+                }; 
+            } else { 
+                options.cutout = type === 'doughnut' ? '70%' : '0%'; 
+            }
+            chartsObj[canvasId] = new Chart(ctx.getContext('2d'), { 
+                type: type, 
+                data: { labels: labels, datasets: datasets }, 
+                options: options 
+            });
         }
 
         function animateValue(id, end, unit) {
-            let startTimestamp = null;
-            const duration = 500;
-            const obj = document.getElementById(id);
+            let startTimestamp = null; 
+            const duration = 600; 
+            const obj = document.getElementById(id); 
             if(!obj) return;
             const step = (timestamp) => {
                 if (!startTimestamp) startTimestamp = timestamp;
                 const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-                
-                if(unit === 'บาท') {
-                    let current = (progress * end).toFixed(2);
-                    obj.innerHTML = parseFloat(current).toLocaleString('en-US', {minimumFractionDigits: 2}) + ` <span class="text-sm font-normal text-slate-500">${unit}</span>`;
-                } else {
-                    let current = Math.floor(progress * end);
-                    obj.innerHTML = current.toLocaleString() + ` <span class="text-sm font-normal text-slate-500">${unit}</span>`;
+                if(unit === 'บาท') { 
+                    obj.innerHTML = parseFloat((progress * end).toFixed(2)).toLocaleString('en-US', {minimumFractionDigits: 2}) + ` <span class="text-sm font-normal text-slate-500">${unit}</span>`; 
+                } else { 
+                    obj.innerHTML = Math.floor(progress * end).toLocaleString() + ` <span class="text-sm font-normal text-slate-500">${unit}</span>`; 
                 }
-                
                 if (progress < 1) window.requestAnimationFrame(step);
                 else {
                     if(unit === 'บาท') obj.innerHTML = parseFloat(end).toLocaleString('en-US', {minimumFractionDigits: 2}) + ` <span class="text-sm font-normal text-slate-500">${unit}</span>`;
@@ -934,365 +1370,325 @@
         }
 
         // ==========================================
-        // ฟังก์ชันระบบเดิมทั้งหมด (ห้ามลบ)
+        // Utilities & ระบบ Form หลังบ้าน (แก้ไขแปลงพ.ศ.สมบูรณ์)
         // ==========================================
-        
         function showLoading(msg) { Swal.fire({ title: msg, allowOutsideClick: false, didOpen: () => Swal.showLoading() }); }
         function closeLoading() { Swal.close(); }
         function showSuccess(msg) { Swal.fire({ icon: 'success', title: 'สำเร็จ', text: msg, timer: 2000, showConfirmButton: false, confirmButtonColor: '#059669' }); }
         function showError(msg) { Swal.fire({ icon: 'error', title: 'ผิดพลาด', text: msg, confirmButtonColor: '#0f172a' }); }
-
+        
         function handleDragOver(e) { e.preventDefault(); document.getElementById('dropZone').classList.add('bg-emerald-100', 'border-emerald-400'); }
         function handleDrop(e) { e.preventDefault(); document.getElementById('dropZone').classList.remove('bg-emerald-100', 'border-emerald-400'); processFile(e.dataTransfer.files[0]); }
         function handleFileSelect(e) { processFile(e.target.files[0]); }
 
         function processFile(file) {
-            if(!file) return;
+            if(!file) return; 
             const res = document.getElementById('validationResult');
-            res.classList.remove('hidden');
+            res.classList.remove('hidden'); 
             res.innerHTML = `<div class="flex items-center justify-center p-6 bg-white rounded-2xl border border-slate-200 shadow-sm"><div class="spinner text-emerald-500 mr-3"></div><span class="text-slate-600 font-bold text-sm">กำลังตรวจสอบและแปลงข้อมูล...</span></div>`;
-
+            
             const reader = new FileReader();
             reader.onload = function(e) {
                 try {
-                    const data = new Uint8Array(e.target.result);
+                    const data = new Uint8Array(e.target.result); 
                     const workbook = XLSX.read(data, {type: 'array'});
-                    const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const worksheet = workbook.Sheets[workbook.SheetNames[0]]; 
                     const rawData = XLSX.utils.sheet_to_json(worksheet, {header: 1, defval: ""});
                     
                     let cleanedData = [];
                     for(let i=0; i<rawData.length; i++) {
-                        let row = rawData[i];
+                        let row = rawData[i]; 
                         if(row.every(cell => !cell)) continue;
                         if(String(row[0]).includes('จังหวัด') || String(row[2]).includes('วันที่')) continue;
-
+                        
                         let rDate = String(row[2] || '').trim();
-                        // 🌟 แก้ไข: ดึงข้อมูลเป็น ค.ศ. เสมอเพื่อนำเข้า Google Sheets
+                        
+                        // 🌟 ระบบแปลงวันที่ เป็น พ.ศ. เสมอ เพื่อนำเข้าให้ถูกต้องตามร้องขอ
                         if(!isNaN(parseFloat(rDate)) && parseFloat(rDate) > 30000 && !rDate.includes('/') && !rDate.includes('-')) {
-                            let d = new Date(Math.round((parseFloat(rDate) - 25569) * 86400 * 1000));
+                            let d = new Date(Math.round((parseFloat(rDate) - 25569) * 86400 * 1000)); 
                             let py = d.getFullYear(); 
-                            if(py > 2500) py -= 543; // ถ้ามาเป็น พ.ศ. ให้แปลงเป็น ค.ศ. ก่อนนำเข้า
+                            if(py < 2500) py += 543; 
                             row[2] = `'${d.getDate().toString().padStart(2,'0')}/${(d.getMonth()+1).toString().padStart(2,'0')}/${py}`;
                         } 
                         else if (rDate.includes('/') || rDate.includes('-')) {
-                            let sep = rDate.includes('/') ? '/' : '-';
+                            let sep = rDate.includes('/') ? '/' : '-'; 
                             let parts = rDate.split(' ')[0].split(sep); 
                             if (parts.length === 3 && parts[0].length === 4) { 
-                                let y = parseInt(parts[0]); let m = parts[1].padStart(2, '0'); let d = parts[2].padStart(2, '0');
-                                if (y > 2500) y -= 543; row[2] = `'${d}/${m}/${y}`;
-                            } else if (parts.length === 3 && parts[2].length === 4) { 
-                                let d = parts[0].padStart(2, '0'); let m = parts[1].padStart(2, '0'); let y = parseInt(parts[2]);
-                                if (y > 2500) y -= 543; row[2] = `'${d}/${m}/${y}`;
-                            } else { row[2] = `'` + rDate; }
+                                let y = parseInt(parts[0]); 
+                                let m = parts[1].padStart(2, '0'); 
+                                let d = parts[2].padStart(2, '0'); 
+                                if (y < 2500) y += 543; 
+                                row[2] = `'${d}/${m}/${y}`; 
+                            } 
+                            else if (parts.length === 3 && parts[2].length === 4) { 
+                                let d = parts[0].padStart(2, '0'); 
+                                let m = parts[1].padStart(2, '0'); 
+                                let y = parseInt(parts[2]); 
+                                if (y < 2500) y += 543; 
+                                row[2] = `'${d}/${m}/${y}`; 
+                            } 
+                            else { row[2] = `'` + rDate; }
                         } else { row[2] = `'` + rDate; }
 
                         let rTime = String(row[3] || '').trim();
-                        if(!isNaN(parseFloat(rTime)) && parseFloat(rTime) < 1 && !rTime.includes(':')) {
-                            let totalSecs = Math.round(parseFloat(rTime) * 86400);
-                            let h = Math.floor(totalSecs / 3600); let m = Math.floor((totalSecs % 3600) / 60);
-                            row[3] = `'${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}`;
-                        } else if (rTime.includes(':')) {
-                            let tParts = rTime.split(':'); row[3] = `'${tParts[0].padStart(2,'0')}:${tParts[1].padStart(2,'0')}`;
-                        } else { row[3] = `'` + rTime; }
+                        if(!isNaN(parseFloat(rTime)) && parseFloat(rTime) < 1 && !rTime.includes(':')) { 
+                            let totalSecs = Math.round(parseFloat(rTime) * 86400); 
+                            let h = Math.floor(totalSecs / 3600); 
+                            let m = Math.floor((totalSecs % 3600) / 60); 
+                            row[3] = `'${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}`; 
+                        } 
+                        else if (rTime.includes(':')) { 
+                            let tParts = rTime.split(':'); 
+                            row[3] = `'${tParts[0].padStart(2,'0')}:${tParts[1].padStart(2,'0')}`; 
+                        } 
+                        else { row[3] = `'` + rTime; }
                         
                         cleanedData.push(row);
                     }
                     setTimeout(() => validateData(cleanedData, file.name), 800); 
                 } catch(error) { res.innerHTML = `<div class="bg-rose-50 border border-rose-200 p-4 rounded-xl text-sm"><p class="text-rose-700 font-bold"><i class="ph-fill ph-warning"></i> ไม่สามารถอ่านไฟล์ได้</p></div>`; }
-            };
+            }; 
             reader.readAsArrayBuffer(file);
         }
 
         function validateData(data, fileName) {
-            const res = document.getElementById('validationResult');
+            const res = document.getElementById('validationResult'); 
             let errors = [];
-            if(data.length === 0) { res.innerHTML = `<div class="bg-rose-50 border border-rose-200 p-4 rounded-xl text-sm"><p class="text-rose-700 font-bold"><i class="ph-fill ph-warning"></i> ไฟล์ไม่มีข้อมูล</p></div>`; return; }
-
+            if(data.length === 0) { res.innerHTML = `<div class="bg-rose-50 border border-rose-200 p-4 rounded-xl text-sm"><p class="text-rose-700 font-bold">ไม่มีข้อมูล</p></div>`; return; }
+            
             data.forEach((row, index) => {
                 const rowNum = index + 2; 
-                let dateVal = String(row[2] || '').replace(/'/g, '').trim();
-                let timeVal = String(row[3] || '').replace(/'/g, '').trim();
+                let dateVal = String(row[2] || '').replace(/'/g, '').trim(); 
+                let timeVal = String(row[3] || '').replace(/'/g, '').trim(); 
                 let countVal = row[20];
-
-                if (!dateVal) errors.push(`แถว ${rowNum}: ขาด "วันที่เข้าใช้บริการ" (คอลัมน์ C)`);
-                if (!timeVal) errors.push(`แถว ${rowNum}: ขาด "เวลาเข้าใช้บริการ" (คอลัมน์ D)`);
-                if (!countVal || isNaN(countVal) || parseInt(countVal) <= 0) errors.push(`แถว ${rowNum}: "จำนวนผู้เข้าใช้งาน" ไม่ใช่ตัวเลข (คอลัมน์ U)`);
+                if (!dateVal) errors.push(`แถว ${rowNum}: ขาดวันที่`); 
+                if (!timeVal) errors.push(`แถว ${rowNum}: ขาดเวลา`); 
+                if (!countVal || isNaN(countVal) || parseInt(countVal) <= 0) errors.push(`แถว ${rowNum}: ยอดคนไม่ใช่ตัวเลข`);
             });
 
-            if (errors.length > 0) {
-                let errList = errors.slice(0,5).map(err => `<li>• ${err}</li>`).join('');
-                if(errors.length > 5) errList += `<li class="text-slate-400 mt-2">...และอื่นๆ อีก ${errors.length - 5} จุด</li>`;
-                res.innerHTML = `<div class="bg-white rounded-2xl border border-rose-200 shadow-sm p-6 text-sm"><div class="flex items-center gap-2 mb-3"><i class="ph-fill ph-x-circle text-rose-500 text-2xl"></i> <h4 class="text-rose-700 font-bold text-base">พบข้อผิดพลาด ${errors.length} จุด</h4></div><ul class="text-rose-600 text-sm ml-8 space-y-1">${errList}</ul></div>`;
-            } else {
-                readyToImportData = data;
-                res.innerHTML = `<div class="bg-emerald-50 rounded-2xl border border-emerald-200 shadow-sm p-6 flex flex-col sm:flex-row justify-between items-center gap-5"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm"><i class="ph-fill ph-check-circle text-emerald-500 text-3xl"></i></div><div><h4 class="text-emerald-800 font-bold text-base">ข้อมูลถูกต้อง 100%</h4><p class="text-emerald-600 text-sm mt-0.5">พร้อมนำเข้าข้อมูล <b>${data.length}</b> รายการ</p></div></div><button id="btnImport" onclick="executeImport()" class="w-full sm:w-auto px-8 py-3 bg-emerald-600 text-white rounded-full font-bold hover:bg-emerald-700 transition shadow-md shadow-emerald-600/30 text-sm font-kanit">ยืนยันนำเข้าข้อมูล</button></div>`;
+            if (errors.length > 0) { 
+                res.innerHTML = `<div class="bg-white rounded-2xl border border-rose-200 shadow-sm p-6 text-sm"><div class="flex items-center gap-2 mb-3"><i class="ph-fill ph-x-circle text-rose-500 text-2xl"></i> <h4 class="text-rose-700 font-bold text-base">พบข้อผิดพลาด ${errors.length} จุด</h4></div><ul class="text-rose-600 text-sm ml-8 space-y-1">${errors.slice(0,5).map(err => `<li>• ${err}</li>`).join('')}</ul></div>`; 
+            } 
+            else { 
+                readyToImportData = data; 
+                res.innerHTML = `<div class="bg-emerald-50 rounded-2xl border border-emerald-200 shadow-sm p-6 flex flex-col sm:flex-row justify-between items-center gap-5"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm"><i class="ph-fill ph-check-circle text-emerald-500 text-3xl"></i></div><div><h4 class="text-emerald-800 font-bold text-base">ข้อมูลถูกต้อง 100%</h4><p class="text-emerald-600 text-sm mt-0.5">พร้อมนำเข้าข้อมูล <b>${data.length}</b> รายการ</p></div></div><button id="btnImport" onclick="executeImport()" class="w-full sm:w-auto px-8 py-3 bg-emerald-600 text-white rounded-full font-bold hover:bg-emerald-700 transition shadow-md shadow-emerald-600/30 text-sm font-kanit">ยืนยันนำเข้าข้อมูล</button></div>`; 
             }
         }
         
         async function executeImport() {
-            const btn = document.getElementById('btnImport');
+            const btn = document.getElementById('btnImport'); 
             if (!readyToImportData || readyToImportData.length === 0) return;
-
-            btn.disabled = true; btn.classList.add('opacity-70');
-
-            let successCount = 0; let failCount = 0; let errorDetail = "";
+            
+            btn.disabled = true; 
+            btn.classList.add('opacity-70');
+            
+            let successCount = 0; 
+            let failCount = 0; 
+            let errorDetail = ""; 
             const total = readyToImportData.length;
-
+            
             for (let i = 0; i < total; i++) {
-                btn.innerHTML = `<div class="spinner border-t-white"></div> นำเข้า ${i + 1}/${total}...`;
+                btn.innerHTML = `<div class="spinner border-t-white"></div> นำเข้า ${i + 1}/${total}...`; 
                 const payload = { sheetName: "Usage", rowData: readyToImportData[i] };
                 try {
-                    const response = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
+                    const response = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) }); 
                     const textResult = await response.text(); 
-                    try {
-                        const result = JSON.parse(textResult);
+                    try { 
+                        const result = JSON.parse(textResult); 
                         if (result.status === 'success') successCount++; 
-                        else { failCount++; errorDetail = result.message; }
-                    } catch (parseErr) {
-                        failCount++; errorDetail = "Google บล็อกการเข้าถึง"; break; 
-                    }
-                } catch (err) { 
-                    failCount++; errorDetail = "ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์"; break; 
-                }
+                        else { failCount++; errorDetail = result.message; } 
+                    } catch (parseErr) { failCount++; break; }
+                } catch (err) { failCount++; break; }
                 await new Promise(res => setTimeout(res, 400));
             }
 
-            if (failCount === 0) {
-                showSuccess(`นำเข้าสำเร็จ ${successCount} รายการ`);
-                document.getElementById('validationResult').classList.add('hidden');
-                document.getElementById('fileInput').value = '';
-                readyToImportData = [];
-            } else {
-                Swal.fire({
-                    icon: 'error', title: `ระบบขัดข้อง! (สำเร็จ ${successCount}/${total})`,
-                    html: `<p class="text-rose-600 font-bold mb-2">สาเหตุ:</p><p class="text-sm bg-rose-50 p-3 rounded-lg border border-rose-200">${errorDetail}</p>`,
-                    confirmButtonColor: '#0f172a'
-                });
-                btn.disabled = false; btn.innerHTML = 'ลองใหม่อีกครั้ง'; btn.classList.remove('opacity-70');
+            if (failCount === 0) { 
+                showSuccess(`นำเข้าสำเร็จ ${successCount} รายการ`); 
+                document.getElementById('validationResult').classList.add('hidden'); 
+                document.getElementById('fileInput').value = ''; 
+                readyToImportData = []; 
+            } else { 
+                btn.disabled = false; 
+                btn.innerHTML = 'ลองใหม่อีกครั้ง'; 
+                btn.classList.remove('opacity-70'); 
+                showError("เกิดข้อผิดพลาดในการนำเข้า"); 
             }
         }
 
-        function extractDriveId(url) {
-            if (!url) return "";
-            let match = url.match(/\/d\/(.+?)\/|\/folders\/(.+?)(?:\/|\?|$)\vert{}\?id=(.+?)(?:&\vert{}$)/);
-            return match ? (match[1] || match[2] || match[3]) : url.trim();
+        function extractDriveId(url) { 
+            if (!url) return ""; 
+            let match = url.match(/\/d\/(.+?)\/|\/folders\/(.+?)(?:\/|\?|$)\vert{}\?id=(.+?)(?:&\vert{}$)/); 
+            return match ? (match[1] || match[2] || match[3]) : url.trim(); 
         }
 
+        // ระบบบันทึกและจัดการไฟล์แนบทั้งหมด (แก้ไขใหม่ให้ 100% แนบไฟล์ได้จริง)
         async function submitData(e, sheetName, inputIds, btnId) {
             e.preventDefault(); 
-            const btn = document.getElementById(btnId);
+            const btn = document.getElementById(btnId); 
             const origHtml = btn.innerHTML;
             
             if (sheetName === 'Electric') updateEDate();
-
-            if (sheetName === 'Gallery') {
-                const coverInput = document.getElementById('g_cover');
-                const folderInput = document.getElementById('g_folder');
-                coverInput.value = extractDriveId(coverInput.value);
-                folderInput.value = extractDriveId(folderInput.value);
+            if (sheetName === 'Gallery') { 
+                document.getElementById('g_cover').value = extractDriveId(document.getElementById('g_cover').value); 
+                document.getElementById('g_folder').value = extractDriveId(document.getElementById('g_folder').value); 
             }
             
-            const rowData = inputIds.map(id => document.getElementById(id).value);
+            const rowData = inputIds.map(id => document.getElementById(id).value); 
             let payload = { sheetName: sheetName, rowData: rowData };
 
             if(sheetName === 'Electric') {
-                const p = parseFloat(document.getElementById('e_room_meter_prev').value);
-                const c = parseFloat(document.getElementById('e_room_meter_curr').value);
-                if(c < p) return showError('เลขมิเตอร์ปัจจุบันต้องมากกว่าเดือนที่แล้ว');
-                
                 const fileInput = document.getElementById('e_file');
                 if(fileInput && fileInput.files.length > 0) {
-                    const file = fileInput.files[0];
+                    const file = fileInput.files[0]; 
                     if(file.size > 3 * 1024 * 1024) return showError('ไฟล์เกิน 3MB');
-                    btn.disabled = true; btn.innerHTML = '<div class="spinner"></div> กำลังแนบไฟล์...';
-                    try {
-                        const base64String = await getBase64(file);
-                        payload.fileObj = { filename: file.name, mimeType: file.type, base64: base64String.split(',')[1] };
+                    
+                    btn.disabled = true; 
+                    btn.innerHTML = '<div class="spinner"></div> กำลังแปลงไฟล์...';
+                    
+                    try { 
+                        const base64String = await getBase64(file); 
+                        payload.fileObj = { 
+                            filename: file.name, 
+                            mimeType: file.type, 
+                            base64: base64String.split(',')[1] 
+                        }; 
                         payload.fileColIndex = 8; 
-                    } catch(err) { return showError('เตรียมไฟล์ล้มเหลว'); }
-                } else { btn.disabled = true; btn.innerHTML = '<div class="spinner"></div> บันทึก...'; }
-            } else { btn.disabled = true; btn.innerHTML = '<div class="spinner"></div> กำลังบันทึก...'; }
+                    } catch(err) { return showError('การเตรียมไฟล์ล้มเหลว'); }
+                } else { 
+                    btn.disabled = true; 
+                    btn.innerHTML = '<div class="spinner"></div> กำลังบันทึก...'; 
+                }
+            } else { 
+                btn.disabled = true; 
+                btn.innerHTML = '<div class="spinner"></div> กำลังบันทึก...'; 
+            }
 
             try {
-                const response = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
+                const response = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) }); 
                 const result = await response.json();
-                if(result.status === 'success') {
-                    showSuccess('บันทึกข้อมูลเรียบร้อย'); e.target.reset(); 
-                    if(sheetName === 'Electric') {
-                        document.getElementById('e_preview_rate').innerText = '-';
-                        document.getElementById('e_preview_room_units').innerText = '0 หน่วย';
-                        clearFileSelection(); document.getElementById('e_month').value = ""; 
-                    }
+                
+                if(result.status === 'success') { 
+                    showSuccess('บันทึกข้อมูลเรียบร้อย'); 
+                    e.target.reset(); 
+                    if(sheetName === 'Electric') { clearFileSelection(); } 
                 } else { showError(result.message); }
-            } catch (err) {
-                showSuccess('ส่งข้อมูลแล้ว (รอระบบอัปเดต)'); e.target.reset();
-            } finally { btn.disabled = false; btn.innerHTML = origHtml; }
-        }
-
-        function getBase64(file) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader(); reader.readAsDataURL(file);
-                reader.onload = () => resolve(reader.result); reader.onerror = error => reject(error);
-            });
-        }
-
-        async function processAIBillScan(input, event) {
-            if (!input.files || input.files.length === 0) return;
-            event.stopPropagation();
-            const file = input.files[0];
-            const statusEl = document.getElementById('ai_scan_status');
-            
-            statusEl.classList.remove('hidden');
-            statusEl.innerHTML = '<div class="spinner border-t-emerald-600 text-emerald-200"></div> <span id="ocr_progress" class="text-emerald-700 font-bold text-xs">กำลังปลุก AI...</span>';
-            
-            try {
-                const worker = await Tesseract.createWorker('tha+eng', 1, {
-                    logger: m => { if(m.status === 'recognizing text' && document.getElementById('ocr_progress')) document.getElementById('ocr_progress').innerText = `กำลังสแกน... ${Math.round(m.progress * 100)}%`; }
-                });
-                await worker.setParameters({ tessedit_pageseg_mode: Tesseract.PSM.AUTO });
-                const ret = await worker.recognize(file);
-                const text = ret.data.text;
-                await worker.terminate();
-
-                let foundCount = 0;
-                
-                const peaMatch = text.match(/0200\d{8}/);
-                if (peaMatch) { document.getElementById('e_pea_no').value = peaMatch[0]; foundCount++; }
-                
-                const allLongNums = text.match(/\b\d{12,14}\b/g) || [];
-                const invMatch = allLongNums.find(n => !n.startsWith('0200'));
-                if (invMatch) { document.getElementById('e_invoice_no').value = invMatch; foundCount++; }
-                
-                const dateMatch = text.match(/\b(?:0[1-9]|[12]\d|3[01])\/(?:0[1-9]|1[0-2])\/(?:25\d{2}|\d{2})\b/);
-                if (dateMatch) { 
-                    document.getElementById('e_read_date').value = dateMatch[0]; foundCount++; 
-                    const parts = dateMatch[0].split('/');
-                    if(parts.length >= 2) {
-                        const m = parseInt(parts[1], 10);
-                        const months = ["", "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
-                        if (m >= 1 && m <= 12) document.getElementById('e_month').value = months[m]; 
-                        updateEDate();
-                    }
-                }
-
-                const allMoneys = [...text.matchAll(/\b(\d{1,3}(?:,\d{3})*\.\d{2})\b/g)].map(m => parseFloat(m[1].replace(/,/g, '')));
-                const validMoneys = allMoneys.filter(v => v > 1000 && v < 500000);
-                if (validMoneys.length > 0) {
-                    const el = document.getElementById('e_school_bill');
-                    el.value = Math.max(...validMoneys).toFixed(2);
-                    el.dispatchEvent(new Event('input')); foundCount++;
-                }
-
-                let consumption = "";
-                const meterTableMatch = text.match(/\d{3,8}\.000\s*\d{3,8}\.000\s*([\d,]+(?:\.\d{1,2})?)/);
-                if (meterTableMatch) consumption = meterTableMatch[1].replace(/,/g, '');
-                if (consumption) {
-                    const el = document.getElementById('e_school_unit');
-                    el.value = parseFloat(consumption).toString(); 
-                    el.dispatchEvent(new Event('input')); foundCount++;
-                }
-
-                if (foundCount >= 3) {
-                    statusEl.innerHTML = `<i class="ph-fill ph-check-circle text-emerald-500 text-lg"></i> <span class="text-emerald-700 font-bold text-xs">ดึงข้อมูลสำเร็จ (กรุณาตรวจทานความถูกต้อง)</span>`;
-                } else { throw new Error("Data incomplete"); }
-
-                const dt = new DataTransfer(); dt.items.add(file);
-                const mf = document.getElementById('e_file'); mf.files = dt.files;
-                updateFileName(mf);
-
-            } catch (err) {
-                statusEl.innerHTML = '<i class="ph-fill ph-warning-circle text-rose-500 text-lg"></i> <span class="text-rose-700 font-bold text-xs">บิลไม่ชัดเจน กรุณากรอกข้อมูลด้วยตนเอง</span>';
+            } catch (err) { 
+                showSuccess('ส่งข้อมูลแล้ว (รอระบบอัปเดต)'); 
+                e.target.reset(); 
+            } finally { 
+                btn.disabled = false; 
+                btn.innerHTML = origHtml; 
             }
         }
 
-        function updateEDate() {
-            const m = document.getElementById('e_month').value; const y = document.getElementById('e_year').value;
-            if (m && y) document.getElementById('e_date').value = m + " " + y;
+        function getBase64(file) { 
+            return new Promise((resolve, reject) => { 
+                const reader = new FileReader(); 
+                reader.readAsDataURL(file); 
+                reader.onload = () => resolve(reader.result); 
+                reader.onerror = error => reject(error);
+            }); 
         }
 
+        async function processAIBillScan(input, event) {
+            if (!input.files || input.files.length === 0) return; 
+            event.stopPropagation(); 
+            const file = input.files[0]; 
+            const statusEl = document.getElementById('ai_scan_status');
+            
+            statusEl.classList.remove('hidden'); 
+            statusEl.innerHTML = '<div class="spinner border-t-emerald-600 text-emerald-200"></div> <span id="ocr_progress" class="text-emerald-700 font-bold text-xs">กำลังปลุก AI...</span>';
+            
+            try {
+                const worker = await Tesseract.createWorker('tha+eng', 1, { 
+                    logger: m => { if(m.status === 'recognizing text' && document.getElementById('ocr_progress')) document.getElementById('ocr_progress').innerText = `สแกน... ${Math.round(m.progress * 100)}%`; } 
+                });
+                await worker.setParameters({ tessedit_pageseg_mode: Tesseract.PSM.AUTO }); 
+                const ret = await worker.recognize(file); 
+                const text = ret.data.text; 
+                await worker.terminate();
+                
+                let foundCount = 0;
+                const peaMatch = text.match(/0200\d{8}/); 
+                if (peaMatch) { document.getElementById('e_pea_no').value = peaMatch[0]; foundCount++; }
+                
+                const allLongNums = text.match(/\b\d{12,14}\b/g) || []; 
+                const invMatch = allLongNums.find(n => !n.startsWith('0200')); 
+                if (invMatch) { document.getElementById('e_invoice_no').value = invMatch; foundCount++; }
+                
+                const dateMatch = text.match(/\b(?:0[1-9]|[12]\d|3[01])\/(?:0[1-9]|1[0-2])\/(?:25\d{2}|\d{2})\b/);
+                if (dateMatch) { document.getElementById('e_read_date').value = dateMatch[0]; foundCount++; }
+                
+                const allMoneys = [...text.matchAll(/\b(\d{1,3}(?:,\d{3})*\.\d{2})\b/g)].map(m => parseFloat(m[1].replace(/,/g, ''))); 
+                const validMoneys = allMoneys.filter(v => v > 1000 && v < 500000);
+                if (validMoneys.length > 0) { 
+                    const el = document.getElementById('e_school_bill'); 
+                    el.value = Math.max(...validMoneys).toFixed(2); 
+                    el.dispatchEvent(new Event('input')); 
+                    foundCount++; 
+                }
+                
+                const meterTableMatch = text.match(/\d{3,8}\.000\s*\d{3,8}\.000\s*([\d,]+(?:\.\d{1,2})?)/);
+                if (meterTableMatch) { 
+                    const el = document.getElementById('e_school_unit'); 
+                    el.value = parseFloat(meterTableMatch[1].replace(/,/g, '')).toString(); 
+                    el.dispatchEvent(new Event('input')); 
+                    foundCount++; 
+                }
+                
+                if (foundCount >= 3) { statusEl.innerHTML = `<i class="ph-fill ph-check-circle text-emerald-500 text-lg"></i> <span class="text-emerald-700 font-bold text-xs">ดึงข้อมูลสำเร็จ</span>`; } 
+                else { throw new Error("Data incomplete"); }
+                
+                const dt = new DataTransfer(); dt.items.add(file); 
+                const mf = document.getElementById('e_file'); mf.files = dt.files; 
+                updateFileName(mf);
+            } catch (err) { statusEl.innerHTML = '<i class="ph-fill ph-warning-circle text-rose-500 text-lg"></i> <span class="text-rose-700 font-bold text-xs">บิลไม่ชัดเจน</span>'; }
+        }
+
+        function updateEDate() { 
+            const m = document.getElementById('e_month').value; 
+            const y = document.getElementById('e_year').value; 
+            if (m && y) document.getElementById('e_date').value = m + " " + y; 
+        }
+        
         document.querySelectorAll('.room-calc').forEach(input => {
             input.addEventListener('input', function() {
-                const prev = parseFloat(document.getElementById('e_room_meter_prev').value);
-                const curr = parseFloat(document.getElementById('e_room_meter_curr').value);
+                const prev = parseFloat(document.getElementById('e_room_meter_prev').value); 
+                const curr = parseFloat(document.getElementById('e_room_meter_curr').value); 
                 const preview = document.getElementById('e_preview_room_units');
-                if (!isNaN(prev) && !isNaN(curr)) {
-                    const diff = curr - prev;
-                    if (diff >= 0) preview.innerText = diff.toFixed(2) + ' หน่วย';
-                    else preview.innerText = "ข้อมูลผิดพลาด";
+                if (!isNaN(prev) && !isNaN(curr)) { 
+                    const diff = curr - prev; 
+                    if (diff >= 0) preview.innerText = diff.toFixed(2) + ' หน่วย'; 
+                    else preview.innerText = "ข้อมูลผิดพลาด"; 
                 } else { preview.innerText = '0 หน่วย'; }
             });
         });
-
+        
         document.querySelectorAll('.calc-trigger').forEach(input => {
             input.addEventListener('input', function() {
-                const bill = parseFloat(document.getElementById('e_school_bill').value);
-                const unit = parseFloat(document.getElementById('e_school_unit').value);
+                const bill = parseFloat(document.getElementById('e_school_bill').value); 
+                const unit = parseFloat(document.getElementById('e_school_unit').value); 
                 const preview = document.getElementById('e_preview_rate');
-                if (!isNaN(bill) && !isNaN(unit) && unit > 0) preview.innerText = (bill / unit).toFixed(4) + ' บาท/หน่วย';
+                if (!isNaN(bill) && !isNaN(unit) && unit > 0) preview.innerText = (bill / unit).toFixed(4) + ' บาท/หน่วย'; 
                 else preview.innerText = '- บาท/หน่วย';
             });
         });
 
         function updateFileName(input) {
-            const display = document.getElementById('file_name_display');
-            const textSpan = document.getElementById('file_name_text');
-            const linkInput = document.getElementById('e_bill_img');
             if(input.files && input.files.length > 0) {
-                const file = input.files[0];
-                textSpan.innerText = file.name + ` (${(file.size/(1024*1024)).toFixed(2)} MB)`;
-                display.classList.remove('hidden');
-                linkInput.value = ''; linkInput.disabled = true; linkInput.placeholder = 'แนบไฟล์รูปภาพแล้ว...'; linkInput.classList.add('bg-slate-100');
+                document.getElementById('file_name_text').innerText = input.files[0].name; 
+                document.getElementById('file_name_display').classList.remove('hidden');
+                document.getElementById('e_bill_img').value = ''; 
+                document.getElementById('e_bill_img').disabled = true; 
+                document.getElementById('e_bill_img').classList.add('bg-slate-100');
             } else { clearFileSelection(); }
         }
         function clearFileSelection() {
-            document.getElementById('e_file').value = ''; document.getElementById('ai_scan_file').value = ''; 
+            document.getElementById('e_file').value = ''; 
+            document.getElementById('ai_scan_file').value = ''; 
             document.getElementById('file_name_display').classList.add('hidden');
-            const linkInput = document.getElementById('e_bill_img');
-            linkInput.disabled = false; linkInput.placeholder = 'หรือวางลิงก์ที่นี่...'; linkInput.classList.remove('bg-slate-100');
-        }
-
-        function parseCSVData(csv) {
-            const lines = csv.split('\n'); const result = [];
-            if(lines.length <= 1) return result;
-            const headers = lines[0].split(',').map(h => h.replace(/^"|"$/g, '').trim().replace(/\r$/, ''));
-            for (let i = 1; i < lines.length; i++) {
-                if(!lines[i].trim() || lines[i].trim() === '\r') continue; 
-                const obj = {}; let rowStr = lines[i]; let inQ = false; let val = ""; let cols = [];
-                for(let char of rowStr) {
-                    if(char === '"') inQ = !inQ;
-                    else if(char === ',' && !inQ) { cols.push(val.trim()); val = ""; }
-                    else val += char;
-                }
-                cols.push(val.trim().replace(/\r$/, ''));
-                if (cols.every(v => !v)) continue;
-                headers.forEach((h, idx) => { obj[h.replace(/\s+/g, ' ').trim()] = cols[idx] ? cols[idx].replace(/^"|"$/g, '') : ""; });
-                result.push(obj);
-            }
-            return result;
-        }
-
-        function renderAdminEqTable(data) {
-            const tbody = document.getElementById('adminEqTableBody'); let html = '';
-            data.forEach((row, idx) => {
-                const id = row['เลขพัสดุ / รหัสครุภัณฑ์'] || row['เลขพัสดุ/รหัสครุภัณฑ์'] || '-';
-                const name = row['ชื่ออุปกรณ์'] || '-';
-                let status = (row['สถานะปัจจุบัน'] || row['สถานะ'] || '-').trim();
-                let warn = (row['สถานะการรับประกัน'] || row['การรับประกัน'] || '-').trim();
-                if ((status.includes('ปี') || status.includes('ไม่มี')) && (warn.includes('ใช้งาน') || warn.includes('ชำรุด'))) status = warn;
-                
-                let bCls = 'bg-amber-100 text-amber-700 border-amber-200';
-                if (status.includes('ใช้งานได้') || status === 'ปกติ') bCls = 'bg-emerald-100 text-emerald-700 border-emerald-200';
-                else if (status.includes('ชำรุด') || status.includes('เสีย')) bCls = 'bg-rose-100 text-rose-700 border-rose-200';
-
-                html += `<tr class="search-eq-row hover:bg-slate-50 transition border-b border-slate-100">
-                    <td class="p-4 font-mono text-[11px] text-slate-500 text-center">${id}</td>
-                    <td class="p-4 font-bold text-sm text-slate-800">${name}</td>
-                    <td class="p-4 text-center"><span class="${bCls} px-3 py-1.5 rounded-lg border text-[10px] font-bold shadow-sm">${status}</span></td>
-                    <td class="p-4 text-center text-xs text-slate-500">${row['วันที่อัปเดต'] || '-'}</td>
-                    <td class="p-4 text-center no-print"><button onclick="openEqModal(${idx})" class="text-[11px] font-bold text-emerald-600 bg-white border border-emerald-200 px-4 py-1.5 rounded-lg hover:bg-emerald-50 hover:border-emerald-400 transition shadow-sm">แก้ไข</button></td>
-                </tr>`;
-            });
-            tbody.innerHTML = data.length ? html : `<tr><td colspan="5" class="text-center py-10 text-slate-400">ไม่มีข้อมูล</td></tr>`;
+            document.getElementById('e_bill_img').disabled = false; 
+            document.getElementById('e_bill_img').classList.remove('bg-slate-100');
         }
 
         function filterEqTable() {
@@ -1300,39 +1696,25 @@
             document.querySelectorAll('.search-eq-row').forEach(row => row.style.display = row.innerText.toLowerCase().includes(q) ? '' : 'none');
         }
 
-        function exportAdminPDF() { window.print(); }
-
         function openEqModal(idx) {
-            const r = adminEqData[idx];
+            const r = adminEqData[idx]; 
             const d = new Date(); document.getElementById('upd_date').value = `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
-            document.getElementById('upd_id').value = r['เลขพัสดุ / รหัสครุภัณฑ์'] || r['เลขพัสดุ/รหัสครุภัณฑ์'] || '';
-            document.getElementById('disp_id').innerText = document.getElementById('upd_id').value;
-            document.getElementById('upd_name').value = r['ชื่ออุปกรณ์'] || '';
-            document.getElementById('disp_name').innerText = document.getElementById('upd_name').value;
+            document.getElementById('upd_id').value = r['เลขพัสดุ / รหัสครุภัณฑ์'] || r['เลขพัสดุ/รหัสครุภัณฑ์'] || ''; document.getElementById('disp_id').innerText = document.getElementById('upd_id').value;
+            document.getElementById('upd_name').value = r['ชื่ออุปกรณ์'] || ''; document.getElementById('disp_name').innerText = document.getElementById('upd_name').value;
             document.getElementById('upd_brand').value = r['ยี่ห้อ'] || ''; document.getElementById('upd_model').value = r['รุ่น'] || ''; document.getElementById('upd_year').value = r['ปีที่จัดซื้อ'] || '';
-            
-            let s = (r['สถานะปัจจุบัน'] || '').trim(); let w = (r['สถานะการรับประกัน'] || '').trim();
-            if(s.includes('ปี') && w.includes('ใช้งาน')) s = w;
-            document.getElementById('upd_warranty').value = w;
-            
-            const sel = document.getElementById('upd_status');
-            if (s.includes('ใช้งานได้') || s === 'ปกติ') sel.value = 'ใช้งานได้';
-            else if (s.includes('ซ่อม')) sel.value = 'อยู่ระหว่างดำเนินการซ่อม';
-            else sel.value = 'ชำรุด'; 
-            document.getElementById('upd_note').value = r['หมายเหตุ'] || '';
-            document.getElementById('eqUpdateModal').classList.remove('hidden');
+            let s = (r['สถานะปัจจุบัน'] || '').trim(); let w = (r['สถานะการรับประกัน'] || '').trim(); if(s.includes('ปี') && w.includes('ใช้งาน')) s = w; document.getElementById('upd_warranty').value = w;
+            const sel = document.getElementById('upd_status'); if (s.includes('ใช้งานได้') || s === 'ปกติ') sel.value = 'ใช้งานได้'; else if (s.includes('ซ่อม')) sel.value = 'อยู่ระหว่างดำเนินการซ่อม'; else sel.value = 'ชำรุด'; 
+            document.getElementById('upd_note').value = r['หมายเหตุ'] || ''; document.getElementById('eqUpdateModal').classList.remove('hidden');
         }
         function closeEqModal() { document.getElementById('eqUpdateModal').classList.add('hidden'); }
 
         async function submitEqUpdate(e) {
-            e.preventDefault(); const btn = document.getElementById('btn-update-eq'); const oTxt = btn.innerHTML;
-            btn.disabled = true; btn.innerHTML = '<div class="spinner"></div>';
+            e.preventDefault(); const btn = document.getElementById('btn-update-eq'); const oTxt = btn.innerHTML; btn.disabled = true; btn.innerHTML = '<div class="spinner"></div>';
             const rData = ['upd_date','upd_id','upd_name','upd_brand','upd_model','upd_year','upd_status','upd_warranty','upd_note'].map(i => document.getElementById(i).value);
             try {
                 const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ sheetName: 'Equipment', rowData: rData }) });
                 if((await res.json()).status === 'success') { showSuccess('อัปเดตสำเร็จ!'); closeEqModal(); loadAllDatabases(); }
-            } catch (err) { showSuccess('ส่งข้อมูลแล้ว รอการอัปเดต'); closeEqModal(); loadAllDatabases(); }
-            finally { btn.disabled = false; btn.innerHTML = oTxt; }
+            } catch (err) { showSuccess('ส่งข้อมูลแล้ว รอการอัปเดต'); closeEqModal(); loadAllDatabases(); } finally { btn.disabled = false; btn.innerHTML = oTxt; }
         }
     </script>
 </body>
