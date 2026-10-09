@@ -293,16 +293,16 @@
         .month-selector-dropdown { 
             display: none; 
             position: absolute; 
-            z-index: 9999; /* ⭐ เพิ่ม Z-index ให้สูงสุดเพื่อลอยอยู่บนชิ้นส่วนอื่นทั้งหมด */
+            z-index: 9999; /* ⭐ เพิ่ม Z-index ให้ลอยเหนือสุด */
             background: rgba(255, 255, 255, 0.98); 
             backdrop-filter: blur(10px); 
             border: 1px solid var(--theme-border); 
             border-radius: 20px; 
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.2); /* เพิ่มเงาให้เห็นชัดขึ้นว่าลอยอยู่ */
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); 
             padding: 24px; 
             width: 380px; 
             right: 0; 
-            top: 110%; /* ⭐ บังคับให้เริ่มแสดงผลใต้ปุ่มฟันเฟืองเสมอ */
+            top: 110%; /* ⭐ บังคับให้เริ่มแสดงผลใต้ปุ่มเสมอ */
             margin-top: 5px; 
             transition: all 0.3s ease; 
         }
@@ -314,9 +314,9 @@
             display: grid; 
             grid-template-columns: repeat(3, 1fr); 
             gap: 12px; 
-            max-height: 280px; /* ปรับลดความสูงลงนิดหน่อยเพื่อไม่ให้ล้นจอ */
+            max-height: 280px; /* ⭐ ปรับความสูงลงเพื่อไม่ให้ทะลุขอบล่างจอ */
             overflow-y: auto; 
-            padding-right: 5px; /* เผื่อที่ให้ Scrollbar */
+            padding-right: 5px; 
         }
         
         .month-cb { 
@@ -514,7 +514,6 @@
             
         </div>
     </header>
-
     <main class="flex-grow w-full max-w-[1440px] mx-auto px-4 py-8 relative z-10">
 
         <!-- 🔒 Login Zone -->
@@ -550,6 +549,7 @@
                 </a>
             </div>
         </div>
+
         <!-- 🛠️ Admin Workspace Zone -->
         <div id="adminZone" class="hidden w-full animate-fade-in space-y-6">
             
@@ -641,10 +641,10 @@
                         </div>
                     </div>
 
-                    <!-- 📅 Smart Date Filter Engine (แก้ปัญหา Dropdown ไม่แสดง) -->
-                    <div class="bg-gradient-to-r from-slate-50 to-white border border-slate-200 rounded-[20px] p-6 mb-8 font-sarabun text-sm flex flex-col xl:flex-row items-start xl:items-center justify-between gap-5 no-print shadow-sm relative overflow-hidden">
+                    <!-- 📅 Smart Date Filter Engine (✅ แก้ปัญหา Dropdown โดนซ่อนและทับกัน) -->
+                    <div class="bg-gradient-to-r from-slate-50 to-white border border-slate-200 rounded-[20px] p-6 mb-8 font-sarabun text-sm flex flex-col xl:flex-row items-start xl:items-center justify-between gap-5 no-print shadow-sm relative overflow-visible">
                         
-                        <div class="absolute right-0 top-0 w-64 h-full bg-gradient-to-l from-indigo-50 to-transparent opacity-50"></div>
+                        <div class="absolute right-0 top-0 w-64 h-full bg-gradient-to-l from-indigo-50 to-transparent opacity-50 rounded-[20px]"></div>
 
                         <div class="flex items-center gap-4 w-full xl:w-auto relative z-10">
                             <div class="w-12 h-12 bg-white shadow-sm border border-slate-100 rounded-full flex items-center justify-center text-indigo-500 text-2xl flex-shrink-0">
@@ -656,9 +656,9 @@
                             </div>
                         </div>
                         
-                        <div class="flex items-center gap-3 flex-wrap w-full xl:w-auto justify-start xl:justify-end relative z-10">
-                            <!-- ✅ แก้ไข UI กล่องเลือกเดือนให้กว้างและกดได้จริง -->
-                            <div class="flex items-center bg-white border border-slate-300 rounded-xl overflow-hidden shadow-sm focus-within:border-indigo-400 focus-within:ring-2 focus-within:ring-indigo-100 transition-all p-1">
+                        <div class="flex items-center gap-3 flex-wrap w-full xl:w-auto justify-start xl:justify-end relative z-20">
+                            <!-- ✅ แก้ไข UI กล่องเลือกเดือนให้กว้างและใช้งานง่ายขึ้น -->
+                            <div class="flex items-center bg-white border border-slate-300 rounded-xl overflow-visible shadow-sm focus-within:border-indigo-400 focus-within:ring-2 focus-within:ring-indigo-100 transition-all p-1">
                                 <span class="px-3 text-slate-400"><i class="ph-bold ph-calendar-plus text-lg"></i></span>
                                 <select id="dateStart" class="py-2.5 px-3 w-[140px] bg-slate-50 rounded-lg outline-none font-bold text-slate-700 font-sarabun text-base cursor-pointer hover:bg-slate-100 border border-slate-200">
                                     <option value="">กำลังโหลด...</option>
@@ -695,7 +695,6 @@
                             <h4 id="dashRangeLabel" class="font-bold text-slate-800 text-[15px] mt-0.5 font-kanit">กำลังโหลดข้อมูล...</h4>
                         </div>
                     </div>
-
                     <!-- 1. VIEW: ภาพรวม (Overview) -->
                     <div id="dash-view-overview" class="dash-view active">
                         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 font-kanit">
@@ -753,6 +752,7 @@
                             </div>
                         </div>
                     </div>
+                    
                     <!-- 2. VIEW: ผู้ใช้งาน (กราฟเส้นแยกเพศ + ข้อมูลละเอียด) -->
                     <div id="dash-view-usage" class="dash-view">
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 font-kanit">
@@ -789,7 +789,6 @@
                             </div>
                         </div>
                     </div>
-
                     <!-- 3. VIEW: ไฟฟ้า (Electric & Utilities) -->
                     <div id="dash-view-electric" class="dash-view">
                         <div class="flex justify-center mb-6 no-print">
@@ -867,7 +866,6 @@
                                         </tbody>
                                     </table>
                                 </div>
-                                <!-- ระบบแบ่งหน้า Pagination -->
                                 <div class="p-4 border-t border-slate-100 bg-white flex justify-between items-center text-xs font-bold text-slate-500 no-print">
                                     <span id="borrowPageInfo">กำลังประมวลผลข้อมูล...</span>
                                     <div class="flex gap-1.5" id="borrowPagination"></div>
@@ -917,7 +915,6 @@
                                         </tbody>
                                     </table>
                                 </div>
-                                <!-- ระบบแบ่งหน้า Pagination -->
                                 <div class="p-4 border-t border-slate-100 bg-slate-50 flex justify-between items-center text-xs font-bold text-slate-500 no-print">
                                     <span id="eqPageInfo">กำลังประมวลผลข้อมูล...</span>
                                     <div class="flex gap-1.5" id="eqPagination"></div>
@@ -1014,7 +1011,6 @@
                         </button>
                     </form>
                 </div>
-
                 <!-- 3. Form Electric -->
                 <div id="form-electric" class="form-section">
                     <h2 class="text-2xl font-bold text-slate-800 font-kanit mb-6 border-b border-slate-100 pb-5 flex items-center gap-3">
@@ -1122,6 +1118,7 @@
                         </button>
                     </form>
                 </div>
+
                 <!-- 4. Form Activity -->
                 <div id="form-activity" class="form-section">
                     <h2 class="text-2xl font-bold text-slate-800 font-kanit mb-6 border-b border-slate-100 pb-5 flex items-center gap-3">
@@ -1165,7 +1162,6 @@
                         </button>
                     </form>
                 </div>
-
                 <!-- 5. Form Gallery -->
                 <div id="form-gallery" class="form-section">
                     <h2 class="text-2xl font-bold text-slate-800 font-kanit mb-6 border-b border-slate-100 pb-5 flex items-center gap-3">
@@ -1248,7 +1244,6 @@
                         </div>
                     </div>
                 </div>
-
                 <!-- 7. Form Staff -->
                 <div id="form-staff" class="form-section">
                     <h2 class="text-2xl font-bold text-slate-800 font-kanit mb-6 border-b border-slate-100 pb-5 flex items-center gap-3">
@@ -1379,11 +1374,11 @@
             </form>
         </div>
     </div>
-
     <!-- ========================================== -->
     <!-- ⚙️ ADVANCED JAVASCRIPT CORE ENGINE -->
     <!-- ========================================== -->
     <script>
+        // 🔴 ข้อมูล Database URLs (6 ลิงก์หลัก)
         const GAS_URL = "https://script.google.com/macros/s/AKfycbwnu_wHUys0gK1cv8YmPb39ziTCa_TbTFBXm-DIpIDzViFpJC0fSkHg_a_30841p_pRFQ/exec";
         
         const USAGE_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRZZibUzzgdZ-lCiuC2r9LdaYrjHZKnbUdOYCxJLDaIF4qUmxw8LuKX1FlXr2ADxHPNknSsiWTkncqJ/pub?gid=0&single=true&output=csv";    
@@ -1404,9 +1399,13 @@
         let selectedMonthsList = []; 
         let electricViewMode = 'all'; 
 
+        // ตัวแปร Pagination สำหรับตาราง
         let currentPage = { dashEq: 1, borrow: 1, manageEq: 1 };
         const rowsPerPage = 10;
 
+        // ==========================================
+        // 🔔 Notification System
+        // ==========================================
         function showToast(message, type = 'success', duration = 4000) {
             const container = document.getElementById('toast-container');
             if (!container) return;
@@ -1443,6 +1442,7 @@
             `;
             
             container.appendChild(toast);
+            
             setTimeout(() => { 
                 toast.style.opacity = '0'; 
                 toast.style.transform = 'translateX(100%)'; 
@@ -1452,7 +1452,7 @@
         }
 
         // ==========================================
-        // 🧠 Smart Utility Functions 
+        // 🧠 Smart Utility Functions (ฟังก์ชันอัจฉริยะ)
         // ==========================================
         function extractYearMonthFromRaw(rawDate) {
             if(!rawDate) return null;
@@ -1495,26 +1495,37 @@
         }
 
         function formatMonthYearLabelFull(ymStr) {
-            if(!ymStr) return "-";
             let mNames = ["", "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
             let p = ymStr.split('-'); 
             if(p.length !== 2) return ymStr; 
+            
             return `${mNames[parseInt(p[1])]} ${p[0]}`;
         }
         
         function formatMonthYearLabel(ymStr) {
-            if(!ymStr) return "-";
             let mNames = ["", "ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
             let p = ymStr.split('-'); 
             if(p.length !== 2) return ymStr; 
+            
             return `${mNames[parseInt(p[1])]} ${String(p[0]).slice(-2)}`;
         }
 
-        function showLoading(msg) { Swal.fire({ title: msg, allowOutsideClick: false, didOpen: () => Swal.showLoading() }); }
-        function closeLoading() { Swal.close(); }
-        function showSuccess(msg) { Swal.fire({ icon: 'success', title: 'สำเร็จ', text: msg, timer: 2000, showConfirmButton: false, confirmButtonColor: '#059669' }); }
-        function showError(msg) { Swal.fire({ icon: 'error', title: 'ผิดพลาด', text: msg, confirmButtonColor: '#0f172a' }); }
+        function showLoading(msg) { 
+            Swal.fire({ title: msg, allowOutsideClick: false, didOpen: () => Swal.showLoading() }); 
+        }
+        function closeLoading() { 
+            Swal.close(); 
+        }
+        function showSuccess(msg) { 
+            Swal.fire({ icon: 'success', title: 'สำเร็จ', text: msg, timer: 2000, showConfirmButton: false, confirmButtonColor: '#059669' }); 
+        }
+        function showError(msg) { 
+            Swal.fire({ icon: 'error', title: 'ผิดพลาด', text: msg, confirmButtonColor: '#0f172a' }); 
+        }
 
+        // ==========================================
+        // 🔐 Authentication & Initialization
+        // ==========================================
         async function login() {
             const p = document.getElementById('password').value;
             if(btoa(p) === 'NjY0NDA3NjM=') { 
@@ -1531,7 +1542,7 @@
                 showToast('เข้าสู่ระบบสิทธิ์ผู้ดูแลเรียบร้อยแล้ว', 'success');
 
                 await loadAllDatabases();
-                extractAllMonths(); // เรียกใช้ฟังก์ชันตัวกรองเดือน
+                extractAllMonths();
                 refreshDashboard(); 
             } else {
                 const err = document.getElementById('errorMsg');
@@ -1556,14 +1567,23 @@
             });
         }
         
-        function prepareAndPrintPDF() { window.print(); }
+        function prepareAndPrintPDF() { 
+            window.print(); 
+        }
 
+        // ==========================================
+        // 📥 ระบบเชื่อมต่อฐานข้อมูล Google Sheets
+        // ==========================================
         async function loadAllDatabases() {
             showLoading('กำลังซิงค์และวิเคราะห์ฐานข้อมูล...');
             try {
                 const [resEq, resBorrow, resElec, resUsage, resActivity, resStaff] = await Promise.all([
-                    fetch(EQ_CSV_URL), fetch(BORROW_CSV_URL), fetch(ELECTRIC_CSV_URL), 
-                    fetch(USAGE_CSV_URL), fetch(ACTIVITY_CSV_URL), fetch(STAFF_CSV_URL)
+                    fetch(EQ_CSV_URL), 
+                    fetch(BORROW_CSV_URL), 
+                    fetch(ELECTRIC_CSV_URL), 
+                    fetch(USAGE_CSV_URL),
+                    fetch(ACTIVITY_CSV_URL),
+                    fetch(STAFF_CSV_URL)
                 ]);
                 
                 realDB.equipment = parseCSVData(await resEq.text()); 
@@ -1581,26 +1601,24 @@
                 showToast("เกิดข้อผิดพลาดในการดึงข้อมูลจากฐานข้อมูล", "error");
             }
             closeLoading();
-            renderAdminEqTable();
+            renderAdminEqTable(); // แสดงผลตารางจัดการพัสดุ (ถูกประกาศไว้ใน Part 12)
         }
 
         // ==========================================
-        // 📅 ระบบ Custom Date Filter (Select Dropdown - แก้ปัญหากำลังโหลด)
+        // 📅 ระบบ Custom Date Filter (Select Dropdown)
         // ==========================================
         function extractAllMonths() {
-            let tempArray = []; // ใช้ Array ตรงๆ แทน Set เพื่อหลีกเลี่ยงปัญหาของ Browser
+            let tempSet = new Set();
             
-            // พยายามดึงเดือนจาก Usage (ถ้ามีข้อมูล)
             if(realDB.usage && realDB.usage.length > 0) {
                 realDB.usage.forEach(u => {
                     let vals = Object.values(u);
                     let rawDate = String(u['วันที่เข้าใช้บริการ'] || u['วันที่เข้าใช้'] || vals[2] || '').replace(/'/g, '').trim();
                     let ym = extractYearMonthFromRaw(rawDate);
-                    if(ym && !tempArray.includes(ym)) tempArray.push(ym);
+                    if(ym) tempSet.add(ym);
                 });
             }
             
-            // พยายามดึงเดือนจาก Electric (ถ้ามีข้อมูล)
             if(realDB.electric && realDB.electric.length > 0) {
                 realDB.electric.forEach(e => {
                     let mStr = String(e['ประจำเดือน'] || Object.values(e)[0] || '').trim();
@@ -1614,36 +1632,19 @@
                         let mIndex = mNames.findIndex(n => n && mStr.includes(n));
                         
                         if(mIndex > 0) {
-                            let newYM = `${y}-${String(mIndex).padStart(2,'0')}`;
-                            if(!tempArray.includes(newYM)) tempArray.push(newYM);
+                            tempSet.add(`${y}-${String(mIndex).padStart(2,'0')}`);
                         }
                     }
                 });
             }
 
-            // เรียงลำดับ Array 
-            availableMonthsList = tempArray.sort();
+            availableMonthsList = Array.from(tempSet).sort();
             
             let startSel = document.getElementById('dateStart');
             let endSel = document.getElementById('dateEnd');
             let optionsHtml = '';
             
-            // ⭐ บังคับสร้างเดือนปัจจุบันเสมอ ป้องกัน Error (Fallback)
-            let d = new Date();
-            let currentY = d.getFullYear() + 543;
-            let currentM = String(d.getMonth() + 1).padStart(2, '0');
-            let currentYM = `${currentY}-${currentM}`;
-            
-            if(availableMonthsList.length === 0) {
-                availableMonthsList = [currentYM]; 
-            } else if (!availableMonthsList.includes(currentYM)) {
-                availableMonthsList.push(currentYM);
-                availableMonthsList.sort(); // เรียงลำดับอีกครั้งหลังเพิ่ม
-            }
-            
-            // นำ HTML ใส่ลงใน Select
-            if(startSel && endSel) {
-                // สร้าง Option Tags แบบเจาะจง
+            if(availableMonthsList.length > 0) {
                 availableMonthsList.forEach(ym => {
                     let label = formatMonthYearLabelFull(ym);
                     optionsHtml += `<option value="${ym}">${label}</option>`;
@@ -1652,13 +1653,22 @@
                 startSel.innerHTML = optionsHtml;
                 endSel.innerHTML = optionsHtml;
                 
-                // ล็อกให้เลือกเดือนล่าสุดที่มีใน List
                 let endYM = availableMonthsList[availableMonthsList.length - 1];
-                let startIndex = Math.max(0, availableMonthsList.length - 6); 
+                let startIndex = Math.max(0, availableMonthsList.length - 6);
                 let startYM = availableMonthsList[startIndex];
                 
                 startSel.value = startYM;
                 endSel.value = endYM;
+            } else {
+                let d = new Date();
+                let y = d.getFullYear() + 543;
+                let m = String(d.getMonth() + 1).padStart(2, '0');
+                let ym = `${y}-${m}`;
+                let label = formatMonthYearLabelFull(ym);
+                
+                optionsHtml = `<option value="${ym}">${label}</option>`;
+                startSel.innerHTML = optionsHtml;
+                endSel.innerHTML = optionsHtml;
             }
             
             buildMonthSelectorUI();
@@ -1666,8 +1676,6 @@
 
         function buildMonthSelectorUI() {
             const container = document.getElementById('monthSelector');
-            if(!container) return; 
-
             let html = `
                 <div class="pb-4 mb-4 border-b border-slate-100 flex justify-between items-center">
                     <span class="font-bold text-slate-800">เลือกเดือนแบบอิสระ (ข้ามเดือน)</span>
@@ -1676,20 +1684,12 @@
                         <button onclick="selectAllMonths(false)" class="text-[11px] bg-rose-50 px-3 py-1.5 rounded-lg text-rose-600 font-bold hover:bg-rose-100 transition">ล้าง</button>
                     </div>
                 </div>
-                <div class="month-grid max-h-[250px] overflow-y-auto">
+                <div class="month-grid">
             `;
             
             const monthNames = ["", "ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
             
-            let startV = document.getElementById('dateStart') ? document.getElementById('dateStart').value : '';
-            let endV = document.getElementById('dateEnd') ? document.getElementById('dateEnd').value : '';
-            
-            selectedMonthsList = getMonthsBetween(startV, endV);
-
-            // ถ้าไม่มีเดือนที่เลือกเลย ให้เลือกอันล่าสุดเป็นค่าเริ่มต้น
-            if(selectedMonthsList.length === 0 && availableMonthsList.length > 0) {
-                selectedMonthsList = [availableMonthsList[availableMonthsList.length - 1]];
-            }
+            selectedMonthsList = getMonthsBetween(document.getElementById('dateStart').value, document.getElementById('dateEnd').value);
 
             availableMonthsList.forEach(ym => {
                 let [y, m] = ym.split('-');
@@ -1715,22 +1715,8 @@
             container.innerHTML = html;
         }
 
-        // ระบบคลิกนอกกล่องแล้วปิด Dropdown
-        document.addEventListener('click', function(event) {
-            const selector = document.getElementById('monthSelector');
-            const button = document.querySelector('button[onclick="toggleMonthSelector()"]');
-            
-            if (selector && button) {
-                const isClickInside = selector.contains(event.target) || button.contains(event.target);
-                if (!isClickInside && selector.classList.contains('show')) {
-                    selector.classList.remove('show');
-                }
-            }
-        });
-
         function toggleMonthSelector() { 
-            const selector = document.getElementById('monthSelector');
-            if(selector) selector.classList.toggle('show'); 
+            document.getElementById('monthSelector').classList.toggle('show'); 
         }
         
         function selectAllMonths(isSelect) { 
@@ -1743,12 +1729,11 @@
         }
         
         function applyMonthFilter() { 
-            const selector = document.getElementById('monthSelector');
-            if(selector) selector.classList.remove('show'); 
+            document.getElementById('monthSelector').classList.remove('show'); 
             refreshDashboard(true); 
             showToast('อัปเดตข้อมูลตามช่วงเวลาใหม่แล้ว', 'success');
         }
-       
+
         // ==========================================
         // 📊 ระบบการสลับมุมมอง (Tabs & Dashboard Views)
         // ==========================================
@@ -1782,39 +1767,23 @@
             btnElement.classList.add('active', 'bg-slate-800', 'text-white');
             refreshDashboard(true);
         }
-
         // ==========================================
         // 🧠 ระบบประมวลผลข้อมูล (Dashboard Data Processor)
         // ==========================================
         function refreshDashboard(fromCheckbox = false) {
             
-            let startEl = document.getElementById('dateStart');
-            let endEl = document.getElementById('dateEnd');
-            
-            let startV = startEl ? startEl.value : '';
-            let endV = endEl ? endEl.value : '';
-
+            // กรณีรีเฟรชจากการกดปุ่มอัปเดตข้อมูล (Input Select)
             if(!fromCheckbox) {
-                if(!startV || !endV) {
-                    if(availableMonthsList.length > 0) {
-                        startV = availableMonthsList[Math.max(0, availableMonthsList.length - 6)];
-                        endV = availableMonthsList[availableMonthsList.length - 1];
-                    } else {
-                        let d = new Date();
-                        startV = `${d.getFullYear() + 543}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-                        endV = startV;
-                    }
-                } else if(startV > endV) { 
+                let startV = document.getElementById('dateStart').value;
+                let endV = document.getElementById('dateEnd').value;
+                if(startV > endV) { 
                     showToast("เดือนเริ่มต้นต้องน้อยกว่าหรือเท่ากับเดือนสิ้นสุด", "error"); 
                     return; 
                 }
                 selectedMonthsList = getMonthsBetween(startV, endV);
             }
 
-            if(!selectedMonthsList || selectedMonthsList.length === 0) {
-                 selectedMonthsList = [startV]; 
-            }
-            
+            if(!selectedMonthsList || selectedMonthsList.length === 0) return;
             selectedMonthsList.sort();
 
             let lbl = '';
@@ -1829,9 +1798,7 @@
                 rl.innerText = "กำลังแสดงข้อมูลตั้งแต่: " + lbl;
                 rl.classList.remove('hidden');
             }
-            
-            let printDisp = document.getElementById('printRangeDisplay');
-            if(printDisp) printDisp.innerText = "ข้อมูล " + lbl;
+            document.getElementById('printRangeDisplay').innerText = "ข้อมูล " + lbl;
 
             const mNames = ["", "ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
             const mNameThai = ["", "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
@@ -1871,6 +1838,7 @@
                 });
             }
             
+            // Pagination Eq
             if(document.getElementById('dashEqTable')) {
                 renderTableWithPagination('dashEqTable', eqDataArr, currentPage.dashEq, rowsPerPage, (row) => {
                     return `<tr class="hover:bg-slate-50 border-b border-slate-100 transition-colors">
@@ -1907,12 +1875,6 @@
                 filteredBorrow.forEach(b => {
                     let vals = Object.values(b);
                     let rawDate = String(vals[0] || '-').replace(/'/g, '').trim();
-                    
-                    if(rawDate.includes('/202') || rawDate.includes('/203')) {
-                        rawDate = rawDate.replace(/\b(202\d|203\d)\b/g, match => parseInt(match) + 543);
-                    }
-                    let d = rawDate;
-                    
                     let item = String(vals[1] || '-').trim(); 
                     let user = String(vals[2] || '-').trim(); 
                     let status = String(vals[3] || '').trim();
@@ -1930,7 +1892,7 @@
                         stBadge = `<span class="bg-rose-100 text-rose-700 px-3 py-1.5 rounded-lg border border-rose-200 font-bold text-[10px] shadow-sm">${status}</span>`;
                     }
                     
-                    borrowDataArr.push({ d, item, user, stBadge });
+                    borrowDataArr.push({ d: rawDate, item, user, stBadge });
                 });
             }
             
@@ -2029,11 +1991,13 @@
             let pieType = [0,0,0];
             let prevTotalUsers = 0; 
             
+            // ใช้ฟังก์ชัน getMonthsBetween เพื่อหา 6 เดือนก่อนหน้าเป๊ะๆ ป้องกันบัก
             let prevMonthsList = [];
             if(selectedMonthsList.length > 0) {
                 let sYM = selectedMonthsList[0];
                 let [sY, sM] = sYM.split('-').map(Number);
                 
+                // ถอยหลังไปตามจำนวนเดือนที่เลือก
                 let pM = sM - selectedMonthsList.length;
                 let pY = sY;
                 while(pM < 1) {
@@ -2091,6 +2055,7 @@
                 fCounts.push(fDay);
             });
 
+            // อัปเดตข้อมูลบนการ์ด UI
             if(document.getElementById('usg-total')) {
                 document.getElementById('usg-total').innerHTML = `${totalUsers.toLocaleString()} <span class="text-base text-emerald-600 font-normal">คน</span>`;
                 
@@ -2109,6 +2074,7 @@
                 }
             }
 
+            // === 🎨 RENDER CHARTS ===
             if (currentDashView === 'overview') {
                 animateValue('ov-users', totalUsers, 'คน');
                 animateValue('ov-borrow', borrowedCount, 'ชิ้น');
@@ -2181,6 +2147,9 @@
             }
         }
 
+        // ==========================================
+        // 📊 ระบบสร้างกราฟและแอนิเมชันตัวเลข 
+        // ==========================================
         function renderChart(canvasId, type, labels, datasets, isPie = false) {
             const ctx = document.getElementById(canvasId); 
             if (!ctx) return;
@@ -2249,6 +2218,9 @@
             window.requestAnimationFrame(step);
         }
 
+        // ==========================================
+        // 🗃️ ระบบแบ่งหน้าตาราง (Pagination System) 
+        // ==========================================
         function renderTableWithPagination(tbodyId, fullData, page, perPage, renderRowFn, paginationContainerId, pageInfoId) {
             const tbody = document.getElementById(tbodyId);
             const pagContainer = document.getElementById(paginationContainerId);
@@ -2393,6 +2365,9 @@
             if(thClicked) thClicked.className = 'sort-icon ' + (dir === 'asc' ? 'sort-asc' : 'sort-desc');
         }
 
+        // ==========================================
+        // 📥 ระบบการนำเข้าข้อมูล Excel สู่ Usage (ตรวจซ้ำอัตโนมัติ)
+        // ==========================================
         function parseCSVData(csv) {
             const lines = csv.split('\n'); 
             const res = []; 
@@ -2467,6 +2442,7 @@
                         
                         let rDate = String(row[2] || '').trim();
                         
+                        // แปลงวันที่ Excel เป็นพ.ศ.
                         if(!isNaN(parseFloat(rDate)) && parseFloat(rDate) > 30000 && !rDate.includes('/') && !rDate.includes('-')) {
                             let d = new Date(Math.round((parseFloat(rDate) - 25569) * 86400 * 1000)); 
                             let py = d.getFullYear(); 
@@ -2499,6 +2475,7 @@
                             row[3] = `'` + rTime; 
                         }
                         
+                        // 🛑 ป้องกันข้อมูลซ้ำ (เช็คจาก 5 ปัจจัย)
                         let newDate = String(row[2]).replace(/'/g, '').trim();
                         let newTime = String(row[3]).replace(/'/g, '').trim();
                         let newFName = String(row[9]||'').trim();
@@ -2645,7 +2622,7 @@
                 document.getElementById('validationResult').classList.add('hidden'); 
                 document.getElementById('fileInput').value = ''; 
                 readyToImportData = []; 
-                loadAllDatabases(); 
+                loadAllDatabases(); // Refresh Data Automatically
             } else { 
                 btn.disabled = false; 
                 btn.innerHTML = '<i class="ph-bold ph-arrow-counter-clockwise"></i> มีข้อผิดพลาด ลองอีกครั้ง'; 
@@ -2654,10 +2631,20 @@
             }
         }
 
+        // ==========================================
+        // ✍️ ระบบ Submit บันทึกฟอร์มอื่นๆ (Borrow, Electric, Activity, Gallery, Staff)
+        // ==========================================
         function extractDriveId(url) { 
             if (!url) return ""; 
             let match = url.match(/\/d\/(.+?)\/|\/folders\/(.+?)(?:\/|\?|$)\vert{}\?id=(.+?)(?:&\vert{}$)/); 
             return match ? (match[1] || match[2] || match[3]) : url.trim(); 
+        }
+
+        // ✅ เพิ่มฟังก์ชันอัปเดตวันที่ให้ Form ค่าไฟฟ้า
+        function updateEDate() {
+            const m = document.getElementById('e_month').value;
+            const y = document.getElementById('e_year').value;
+            if(m && y) document.getElementById('e_date').value = `${m} ${y}`;
         }
 
         async function submitData(e, sheetName, inputIds, btnId) {
@@ -2765,9 +2752,11 @@
             display.classList.add('hidden');
         }
 
+        // ==========================================
+        // 🤖 ระบบ AI OCR สแกนบิลไฟฟ้าอัจฉริยะ (Tesseract.js)
+        // ==========================================
         async function processAIBillScan(input, event) {
             if (!input.files || input.files.length === 0) return; 
-            
             event.stopPropagation(); 
             const file = input.files[0]; 
             const statusEl = document.getElementById('ai_scan_status');
@@ -2831,7 +2820,7 @@
                 }
                 
                 if (foundCount >= 3) { 
-                    statusEl.innerHTML = `<i class="ph-fill ph-check-circle text-emerald-500 text-lg"></i> <span class="text-emerald-700 font-bold text-xs">ดึงข้อมูลสำเร็จ! กรุณาตรวจสอบความถูกต้องอีกครั้ง</span>`; 
+                    statusEl.innerHTML = `<i class="ph-fill ph-check-circle text-emerald-500 text-lg"></i> <span class="text-emerald-700 font-bold text-xs">ดึงข้อมูลสำเร็จ! กรุณาตรวจสอบความถูกต้อง</span>`; 
                 } else { 
                     throw new Error("Data incomplete"); 
                 }
@@ -2848,6 +2837,69 @@
                     <span class="text-rose-700 font-bold text-xs">ภาพบิลไม่ชัดเจน กรุณากรอกตัวเลขด้วยตนเอง</span>
                 `; 
             }
+        }
+
+        // ==========================================
+        // 🖥️ ระบบจัดการและอัปเดตทะเบียนพัสดุ (Equipment Admin Module)
+        // ==========================================
+        
+        // ✅ เพิ่มฟังก์ชัน renderAdminEqTable() ที่ขาดหายไป (สาเหตุหน้าจอขาวค้าง)
+        function renderAdminEqTable() {
+            let currentData = adminEqData || realDB.equipment;
+            if(!currentData || currentData.length === 0) {
+                const tbody = document.getElementById('adminEqTableBody');
+                if(tbody) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="5" class="text-center py-12 text-rose-500 font-bold bg-rose-50/30">
+                                <i class="ph-bold ph-warning-circle text-3xl block mb-2"></i>ไม่พบข้อมูลในฐานข้อมูลครุภัณฑ์
+                            </td>
+                        </tr>`;
+                }
+                return;
+            }
+            
+            let html = '';
+            // กรองข้อมูลเฉพาะที่จำเป็นเพื่อนำมาแสดงผล
+            currentData.forEach(r => {
+                let idx = currentData.indexOf(r);
+                let id = r['เลขพัสดุ / รหัสครุภัณฑ์'] || r['เลขพัสดุ/รหัสครุภัณฑ์'] || '-'; 
+                let name = r['ชื่ออุปกรณ์'] || r['รายการพัสดุ'] || '-'; 
+                let status = (r['สถานะปัจจุบัน'] || r['สถานะ'] || '-').trim();
+                
+                let bCls = 'bg-amber-100 text-amber-700 border border-amber-200';
+                if (status.includes('ปกติ') || status.includes('ใช้งานได้')) {
+                    bCls = 'bg-emerald-100 text-emerald-700 border border-emerald-200';
+                } else if (status.includes('ชำรุด') || status.includes('เสีย') || status.includes('จำหน่าย')) {
+                    bCls = 'bg-rose-100 text-rose-700 border border-rose-200';
+                }
+                
+                html += `
+                    <tr class="hover:bg-slate-50 border-b border-slate-100 transition-colors">
+                        <td class="p-4 font-mono text-[11px] text-slate-500 text-center bg-slate-50/50 border-r border-slate-100">${id}</td>
+                        <td class="p-4 font-bold text-sm text-slate-800">${name}</td>
+                        <td class="p-4 text-center">
+                            <span class="${bCls} px-3 py-1.5 rounded-lg text-[10px] font-bold min-w-[80px] inline-block shadow-sm">${status}</span>
+                        </td>
+                        <td class="p-4 text-center text-xs text-slate-500 font-medium">${r['วันที่อัปเดต'] || '-'}</td>
+                        <td class="p-4 text-center no-print border-l border-slate-100">
+                            <button onclick="openEqModal(${idx})" class="text-[11px] font-bold text-emerald-600 bg-emerald-50 px-4 py-2 rounded-lg border border-emerald-200 hover:bg-emerald-600 hover:text-white transition-colors shadow-sm">แก้ไข</button>
+                        </td>
+                    </tr>`;
+            });
+            
+            const tbody = document.getElementById('adminEqTableBody');
+            if(tbody) {
+                tbody.innerHTML = html;
+            }
+            
+            const pageInfo = document.getElementById('manageEqPageInfo');
+            if(pageInfo) {
+                pageInfo.innerText = `แสดงข้อมูลทั้งหมด ${currentData.length} รายการ`; 
+            }
+            
+            const pag = document.getElementById('manageEqPagination');
+            if(pag) pag.innerHTML = '';
         }
 
         function filterEqTable() {
@@ -2875,7 +2927,7 @@
                 let bCls = 'bg-amber-100 text-amber-700 border border-amber-200';
                 if (status.includes('ปกติ') || status.includes('ใช้งานได้')) {
                     bCls = 'bg-emerald-100 text-emerald-700 border border-emerald-200';
-                } else if (status.includes('ชำรุด') || status.includes('เสีย')) {
+                } else if (status.includes('ชำรุด') || status.includes('เสีย') || status.includes('จำหน่าย')) {
                     bCls = 'bg-rose-100 text-rose-700 border border-rose-200';
                 }
                 
@@ -2997,7 +3049,7 @@
                     showSuccess('อัปเดตสถานะพัสดุสำเร็จ!'); 
                     showToast(`อัปเดตสถานะ: ${document.getElementById('upd_name').value}`, 'success');
                     closeEqModal(); 
-                    loadAllDatabases(); 
+                    loadAllDatabases(); // โหลดใหม่เพื่อให้หน้าจออัปเดต
                 } else {
                     showError("เกิดความขัดข้องระหว่างบันทึกข้อมูล: " + result.message);
                 }
